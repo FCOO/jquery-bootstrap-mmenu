@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="da" style="font-size: 100%">
+<head>
+	<title>fcoo.dk - jquery-bootstrap-mmenu - Demo</title>
+	<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv='x-dns-prefetch-control' content='on'>
+
+	<meta name='copyright' content='FCOO'>
+	<meta name='owner' content='FCOO'>
+
+    <link  href="bower_components.css" rel="stylesheet">	
+    <link  href="../src/jquery-bootstrap-mmenu.css" rel="stylesheet">	
+    <link  href="css/all.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div id="page">
+        <div class="header">
+            <a href="#menu"><i class="fa fa-bars"></i>&nbsp;Open menu</a>
+        </div>
+        <div class="content">
+            <p>
+                <strong>This is a demo.</strong><br />
+                Click the menu icon to open the menu.
+            </p>
+        </div>
+        <nav id="menu">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li>
+                    <span>About us</span>
+                    <ul>
+                        <li><a href="#about/history">History</a></li>
+                        <li>
+                            <span>The team</span>
+                            <ul>
+                                <li>
+                                    <a href="#about/team/management">Management</a>
+                                </li>
+                                <li>
+                                    <a href="#about/team/sales">Sales</a>
+                                </li>
+                                <li>
+                                    <a href="#about/team/development">Development</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><a href="#about/address">Our address</a></li>
+                    </ul>
+                </li>
+                <li><a href="#contact">Contact</a></li>
+
+                <li class="Divider">Other demos</li>
+                <li><a href="advanced.html">Advanced demo</a></li>
+                <li><a href="onepage.html">One page demo</a></li>
+            </ul>
+        </nav>
+    </div>
+
+	<script src="bower_components.js"></script>
+	<script src="../src/jquery-bootstrap-mmenu.js"></script>
+	<script>
+        new Mmenu(document.querySelector('#menu'));
+
+        document.addEventListener('click', function (evnt) {
+            var anchor = evnt.target.closest('a[href^="#/"]');
+            if (anchor) {
+                alert("Thank you for clicking, but that's a demo link.");
+                evnt.preventDefault();
+            }
+        });
+	</script>
+</body>
+</html>

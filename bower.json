@@ -1,0 +1,46 @@
+{
+    "name": "jquery-bootstrap-mmenu",
+    "version": "0.0.0",
+    "homepage": "https://github.com/FCOO/jquery-bootstrap-mmenu",
+    "authors": [
+        "Niels Holt"
+    ],
+    "description": "",
+    "main": [
+        "dist/jquery-bootstrap-mmenu.js",
+        "dist/jquery-bootstrap-mmenu.css"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/FCOO/jquery-bootstrap-mmenu.git"
+    },
+    "dependencies": {
+        "jquery": "latest",
+        "jquery-bootstrap": "fcoo/jquery-bootstrap#^1.91.2",
+        "mmenu-js": "FrDH/mmenu-js#^8.5.24"
+    },
+    "devDependencies": {
+        "bourbon": "latest",
+        "modernizr-mixin": "latest",
+        "mathsass": "latest"
+    },
+    "overrides": {
+        "mmenu-js": {
+            "main": [
+                "dist/mmenu.js",
+                "dist/mmenu.css"
+            ]
+        }
+    },
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "moduleType": [
+        "es6"
+    ]
+}
