@@ -1,10 +1,10 @@
 /***********************************************
-	jquery-bootstrap-mmenu.scss, 
+    jquery-bootstrap-mmenu.scss,
 
-	(c) 2021, FCOO
+    (c) 2021, FCOO
 
-	https://github.com/FCOO/jquery-bootstrap-mmenu
-	https://github.com/FCOO
+    https://github.com/FCOO/jquery-bootstrap-mmenu
+    https://github.com/FCOO
 
 
 ************************************************/
@@ -16,4 +16,210 @@
 
 //MATHSASS - https://github.com/terkel/mathsass
 @import "../bower_components/mathsass/dist/math";
+
+
+//ALL BOOTSTRAP AND JQUERY-BOOTSTRAP SCSS-VARIABLES
+@import "../bower_components/jquery-bootstrap/src/include-jquery-bootstrap-variables";
+
+
+/***********************************************
+Setting different _include_-variables to include
+or exclude parts of the css
+***********************************************/
+//STYLING
+$mm_IE11Fallbacks       : true; //Whether or not to include support for Internet Explorer 11 throughout the entire CSS framework.
+
+$mm_include_vertical    : true; //Whether or not to include CSS for vertical submenus throughout the entire CSS framework.
+
+    $mm_include_rtl         : false;    //Whether or not to include CSS for RTL support throughout the entire CSS framework.
+
+
+//EXTENTIONS
+$mm_include_borderstyle : true;     //Whether or not to include CSS for the borderStyle extension throughout the entire CSS framework.
+
+$mm_include_effects     : true;     //Whether or not to include CSS for the effects extension throughout the entire CSS framework.
+
+    $mm_include_fullscreen  : false;    //Whether or not to include CSS for the fullscreen extension throughout the entire CSS framework.
+
+    $mm_include_listview    : false;    //Whether or not to include CSS for the listview extension throughout the entire CSS framework.
+
+$mm_include_multiline   : true;     //Whether or not to include CSS for the multiline extension throughout the entire CSS framework.
+
+    $mm_include_pagedim     : false;    //Whether or not to include CSS for the pageDim extension throughout the entire CSS framework.
+
+    $mm_include_popup       : false;    //Whether or not to include CSS for the popup extension throughout the entire CSS framework.
+
+$mm_include_positioning : true;     //Whether or not to include CSS for the positioning extension throughout the entire CSS framework.
+
+    $mm_include_shadows     : false;    //Whether or not to include CSS for the shadowns extension throughout the entire CSS framework.
+
+    $mm_include_themes      : false;    //Whether or not to include CSS for the themes extension throughout the entire CSS framework.
+
+
+//ADD-ONS
+$mm_include_autoheight  : true;     //Whether or not to include CSS for the autoHeight add-on throughout the entire CSS framework.
+
+$mm_include_counters    : true;     //Whether or not to include CSS for the counters add-on throughout the entire CSS framework.
+
+$mm_include_dividers    : true;     //Whether or not to include CSS for the dividers add-on throughout the entire CSS framework.
+
+    $mm_include_drag        : false;    //Whether or not to include CSS for the drag add-on throughout the entire CSS framework.
+
+    $mm_include_dropdown    : false;    //Whether or not to include CSS for the dropdown add-on throughout the entire CSS framework.
+
+$mm_include_iconbar     : true;     //Whether or not to include CSS for the iconbar add-on throughout the entire CSS framework.
+
+    $mm_include_iconpanels  : false;    //Whether or not to include CSS for the iconPanels add-on throughout the entire CSS framework.
+
+$mm_include_keyboardnavigation: true;//Whether or not to include CSS for the keyboardNavigation add-on throughout the entire CSS framework.
+
+$mm_include_navbars     : true;     //Whether or not to include CSS for the navbars add-on throughout the entire CSS framework.
+
+$mm_include_searchfield : true;     //Whether or not to include CSS for the searchfield add-on throughout the entire CSS framework.
+
+$mm_include_sectionindexer: true;   //Whether or not to include CSS for the sectionIndexer add-on throughout the entire CSS framework.
+
+$mm_include_setselected : true;     //Whether or not to include CSS for the setSelected add-on throughout the entire CSS framework.
+
+    $mm_include_sidebar     : false;    //Whether or not to include CSS for the sidebar add-on throughout the entire CSS framework.
+
+
+//Toggles - https://mmenujs.com/docs/addons/toggles.html
+    $mm_include_toggles     : false; //Whether or not to include CSS for toggles throughout the entire CSS framework.
+
+    $mm_include_checks      : false; //Whether or not to include CSS for checks throughout the entire CSS framework.
+
+
+    $mm_opt_screenreader    : false;
+
+/***********************************************
+COLORS AND STYLE
+***********************************************/
+//Colors
+    $mm_backgroundColor             : $control-bg-color;                                //#f3f3f3 !default;
+    $mm_borderColor                 : $control-border-color;                            //rgba(#000, 0.1) !default;
+  //$mm_dimmedTextColor             : Using default =                                   //rgba(#000, 0.3) !default;
+    $mm_emphasizedBackgroundColor   : darken($control-bg-color, $darken-hover-percent); //rgba(#fff, 0.4) !default;
+  //$mm_highlightedBackgroundColor  : Not used                                          //rgba(#000, 0.05) !default;
+    $mm_textColor                   : $control-color;                                   //rgba(#000, 0.75) !default;
+
+//Sizes
+$mm_listitemSize    : $button-square-dimension;     //44px !default;
+
+$mm_btnSize         : $button-square-dimension;     //50px !default;
+$mm_padding         : $input-btn-padding-y;         //10px !default;
+$mm_lineHeight      : $button-square-dimension;     //20px !default;
+
+//$mm_listitemIndent =  NOTE Must be in px
+$mm_listitemIndent  : (16px / 1rem) * $mm_padding * 2; //$mm_padding * 2 !default;
+
+
+$mm_panelPadding    : $mm_padding * 2 !default;
+
+
+$mm_subpanelOffset  : 30% !default;
+
+$mm_menuWidth       : 0.8 !default;
+$mm_menuMinWidth    : 240px !default;
+$mm_menuMaxWidth    : 440px !default;
+$mm_menuHeight      : 0.8 !default;
+$mm_menuMinHeight   : 140px !default;
+$mm_menuMaxHeight   : 880px !default;
+
+
+$mm_counterWidth    : $mm_btnSize !default;
+
+$mm_dropdownShadow  : 0 2px 10px rgba( #000, 0.3 ) !default;
+$mm_dropdownTipX    : 20px !default;
+$mm_dropdownTipY    : 10px !default;
+
+$mm_iconbarSize     : $button-square-dimension + 2 * $input-btn-padding-x; //$mm_btnSize !default;
+
+$mm_sectionIndexerSize  : 20px !default;
+
+/***********************************************
+IMPORT MMENU SCSS
+***********************************************/
+@import "../bower_components/mmenu-js/src/mmenu";
+
+
+/***********************************************
+ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
+***********************************************/
+.mm-listitem__text {
+}
+
+.mm-listitem__btn {
+};
+
+//Only padding-left for sub-menus
+.mm-listitem_vertical > .mm-panel {
+    padding: 0 0 0 5px !important;
+}
+
+//Adjust font-size and height
+.mm-listitem {
+    font-size : $font-size-base;
+    min-height: #{$button-square-dimension};
+
+    .mm-menu-sm & {
+        font-size : $font-size-sm;
+        min-height: #{$button-square-dimension-sm};
+    }
+}
+
+//Adjust size when in no-touch-mode
+.mm-menu-sm {
+    --mm-line-height    : #{$button-square-dimension-sm};
+    --mm-listitem-size  : #{$button-square-dimension-sm};
+    --mm-navbar-size    : #{$button-square-dimension-sm};
+    --mm-iconbar-size   : #{$button-square-dimension-sm + 2 * $input-btn-padding-x-sm}
+}
+
+//Adjust chevrolet arrow on right side
+.mm-btn_prev:before, .mm-btn_next:after {
+    --chevrolet-dim: 0.625rem; // = 10px
+
+    width : var(--chevrolet-dim) !important;
+    height: var(--chevrolet-dim) !important;
+    right : var(--chevrolet-dim) !important;
+
+    .mm-listitem.mm-listitem_vertical & {
+        --chevrolet-dim: 0.3125rem; // = 5px
+    }
+}
+
+.mm-navbar__btn {
+    .mm-menu-sm & {
+        width: $button-square-dimension-sm;
+    }
+}
+
+
+//Buttons inside icon-bar on left side
+.mm-iconbar {
+    .btn.btn-standard.square {
+        margin-left  : auto;
+        margin-right : auto;
+        margin-bottom: $button-square-dimension / 2;
+
+        &.btn-sm {
+            margin-bottom: $button-square-dimension-sm / 2;
+        }
+    }
+    .mm-iconbar__top, .mm-iconbar__bottom {
+    }
+
+}
+
+.mm-listitem__text {
+    display: flex;
+    &  > *:first-child {
+        flex: 1;
+    }
+
+    &.padding-right-none {
+        padding-right: 0 !important;
+    }
+}
 

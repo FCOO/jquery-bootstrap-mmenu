@@ -1,16 +1,16 @@
 {
-    "name"		 : "jquery-bootstrap-mmenu",
-    "version"	 : "0.0.0",
-    "homepage"   : "https://github.com/FCOO/jquery-bootstrap-mmenu",
-    "author"     : "Niels Holt nho@fcoo.dk",
-    "description": "package.json is only use for building the package. see bower.json for more info",
-    "repository" : {
-        "type": "git",
-        "url" : "git://github.com/FCOO/jquery-bootstrap-mmenu.git"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "grunt-fcoo-grunt-plugin": "^5.0.0"
-    },
-    "license": "MIT"
+  "name": "jquery-bootstrap-mmenu",
+  "version": "0.0.1",
+  "homepage": "https://github.com/FCOO/jquery-bootstrap-mmenu",
+  "author": "Niels Holt nho@fcoo.dk",
+  "description": "package.json is only use for building the package. see bower.json for more info",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/FCOO/jquery-bootstrap-mmenu.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt-fcoo-grunt-plugin": "^5.0.0"
+  },
+  "license": "MIT"
 }
