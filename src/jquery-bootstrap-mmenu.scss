@@ -162,6 +162,10 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     font-size : $font-size-base;
     min-height: #{$button-square-dimension};
 
+    .mm-listitem-content {
+        line-height: 1.5 !important;
+    }
+
     .mm-menu-sm & {
         font-size : $font-size-sm;
         min-height: #{$button-square-dimension-sm};

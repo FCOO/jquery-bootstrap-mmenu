@@ -1358,6 +1358,8 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-listitem {
   font-size: 1rem;
   min-height: 2.25rem; }
+  .mm-listitem .mm-listitem-content {
+    line-height: 1.5 !important; }
   .mm-menu-sm .mm-listitem {
     font-size: 0.875rem;
     min-height: 1.8125rem; }

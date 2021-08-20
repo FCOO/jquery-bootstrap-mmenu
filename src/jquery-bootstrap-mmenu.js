@@ -14,7 +14,8 @@
     //Create $.BSMMENU = record with const etc.
     //All options marked with (*) are set to its default value when creating the mmenu
     $.BSMMENU = {
-        defaultOptions: {
+        defaultMmenuOptions: {
+            //OPTIONS FOR MMENU
             counters       : false,
             //(*)slidingSubmenus: false,   //Whether or not submenus should come sliding in from the right.
                                            //If false, submenus expand below their parent. To expand a single submenu below its parent item, add the class "Vertical" to it.
@@ -74,33 +75,45 @@
     };
 
 
-
-
-
-
-
-
-    /******************************************
+    /************************************************
     BsMmenu
-    *******************************************/
-    $.BsMmenu = function(menuOptions, options, configuration){
-//window.bsIsTouch
+    options = {
+        favorites = false or {
+            get   : function(id) - return true if menu-item with id is added to favorites
+            add   : function(id) - called when menu-item with id is added to favorites
+            remove: function(id) - called when menu-item with id is removed from favorites
+        }
+        inclBar    : BOOLEAN, if true a bar top-right with buttons from items with options.addToBar = true and favorites (optional) and close-all (if barCloseAll=true)
+        barCloseAll: BOOLEAN, if true a top-bar button is added that closes all open submenus
+
+
+    ************************************************/
+    $.BsMmenu = function(options = {}, mmenuOptions = {}, configuration = {}){
+        var _this = this;
+
+        this.prev = null;
+        this.next = null;
+        this.first = null;
+        this.last = null;
+
+        this.ulId = 'bsmm_ul_0';
+
+        //Setting and adjusting mmenuOptions = the options for Mmenu
         //Using sliding submenus and navbar with title if it is a touch device
-        this.options = this.options || {};
-        this.options =
-            $.extend(true, {}, $.BSMMENU.defaultOptions, {
+        this.mmenuOptions =
+            $.extend(true, {}, $.BSMMENU.defaultMmenuOptions, {
                 slidingSubmenus: window.bsIsTouch,
 
                 navbar    : {
-                    add   : !!window.bsIsTouch || !!this.options.title,
-                    title : this.options.title || ' '
+                    add   : !!window.bsIsTouch || !!options.title,
+                    title : options.title || ' '
                 },
 /* mangler
                 backButton: {
                     // back button options
                 }
 */
-            }, options || {});
+            }, mmenuOptions);
 
         this.configuration =
             $.extend(true, {}, $.BSMMENU.configuration, {
@@ -110,201 +123,230 @@
                     selected  : $.BSMMENU.className_selected,
                     vertical  : $.BSMMENU.className_vertical,
                 }
-            }, configuration || {});
+            }, configuration);
 
-        var _this = this,
-            list = $.isArray(menuOptions) ? menuOptions : (menuOptions.list || menuOptions.items || menuOptions.itemList || []);
 
+        //Set and adjust options for the menu
+        this.options = options;
+
+        this.menu = this;
+
+        //Craete ul to hold the menu
+        this._createUl();
+
+        //Adjust and add favorites
+        if (this.options.favorites){
+            if (this.options.favorites === true)
+                this.options.favorites = {};
+
+            this.options.favorites = $.extend({
+                get   : function(/*id*/){ return false; },
+                add   : function(/*id*/){},
+                remove: function(/*id*/){}
+            }, this.options.favorites);
+
+            //Add menu-item with favorites
+            this.favoritesItem = $.bsMmenuItem({
+                id      : '____FAVORITES___',
+                icon    : [['fas text-checked fa-star fa-fw', 'far fa-star fa-fw']],
+                text    : {da: 'Favoritter', en: 'Favorites'},
+                addToBar: true,
+                list    : []
+            }, this);
+
+            this.append(this.favoritesItem);
+        }
+
+        //Create and add sub-items
+        var list = $.isArray(options) ? options : (options.list || options.items || options.itemList || []);
         $.each(list, function(index, opt){
-            _this.append(new $.BsMmenuItem(opt));
+           _this.append($.bsMmenuItem(opt, _this));
         });
+
     };
 
 
-    $.bsMmenu = function(menuOptions, options){
-        return new $.BsMmenu(menuOptions, options);
+    $.bsMmenu = function(options, mmenuOptions){
+        return new $.BsMmenu(options, mmenuOptions);
     };
 
     //bsMMenu as jQuery prototype
-    $.fn.bsMmenu = function(menuOptions, options){
+    $.fn.bsMmenu = function(options, mmenuOptions){
         return this.each(function() {
             if (!$.data(this, "bsMmenu"))
-                new $.BsMmenu(menuOptions, options);
-            $.data(this, "bsMmenu").createElement($(this));
+                new $.BsMmenu(options, mmenuOptions);
+            $.data(this, "bsMmenu").create($(this));
         });
     };
 
     //Extend the prototype
     $.BsMmenu.prototype = {
 
-        //append
+        /***********************************
+        append
+        ***********************************/
         append: function(item){
-            this.list = this.list || [];
-            item.menu = this;
-            this.list.push(item);
-            return this;
+            item.prev = this.last;
+            item.next = null;
+            if (this.last)
+                this.last.next = item;
+            this.last = item;
+            this.first = this.first || item;
         },
 
+        /***********************************
+        _createUl
+        ***********************************/
+        _createUl: function(){
+            this.$ul = this.$ul || $('<ul/>');
+            this.$ul.attr('id', this.ulId);
+
+        },
+
+        /**********************************
+        create
+        **********************************/
         create: function($elem){
-            var $ul = this.$ul = $('<ul/>').appendTo($elem);
+            this._createUl();
+            this.$ul.appendTo($elem);
 
             $elem.addClass( $._bsGetSizeClass({baseClass: 'mm-menu', useTouchSize: true}) );
 
+            if (this.options.inclBar){
+                var buttonList = [];
+                if (this.options.barCloseAll)
+                    buttonList.push( $.bsButton({
+                        icon   : 'fa-home',
+                        title: {da:'Luk alle', en:'Close all'},
+                        square : true,
+                        tagName: 'div',
+                        onClick: $.proxy(this.closeAll, this)}
+                    ).get(0) );
 
-            $.each(this.list, function(index, item){
-                item.createElement($ul);
-            });
+                var item = this.first;
+                while (item){
+                    if (item.options.addToBar)
+                        buttonList.push(
+                            $.bsButton({
+                                icon    : item.options.icon || 'fa',
+                                title   : item.options.text || null,
+                                square  : true,
+                                tagName : 'div',
+                                onClick : $.proxy(item.open, item, true)
+                            }).get(0)
+                        );
+                    item = item.next;
+                }
 
-            var mmenu = this.mmenu = new window.Mmenu($elem.get(0), this.options, this.configuration );
+                if (buttonList.length)
+                    this.mmenuOptions.iconbar = {
+                        use: true,
+                        top: buttonList,
+                        //bottom: []ELEMENT
+                    };
+            }
 
-            this.api = mmenu.API;
+            this.mmenu = new window.Mmenu($elem.get(0), this.mmenuOptions, this.configuration );
 
-            $elem.data('bsMmenu', mmenu);
+            this.panel = $elem.find('#'+this.ulId).get(0);
+
+            this.api = this.mmenu.API;
+            $elem.data('bsMmenu', this.mmenu);
 
             return this;
         },
 
-        _getItem: function(id, list = []){
-            var _this = this,
+        /**********************************
+        _getItem
+        **********************************/
+        _getItem: function(id, parent){
+            var item = parent.first,
                 result = null;
-            $.each(list, function(index, item){
+            while (item){
                 if (item.id == id)
                     result = item;
                 else
-                    result = _this._getItem(id, item.list);
+                    result = this._getItem(id, item);
 
-                return !result;
-            });
+                if (result)
+                    item = null;
+                else
+                    item = item.next;
+            }
             return result;
         },
 
+        /**********************************
+        getItem
+        **********************************/
         getItem: function(id){
-            return this._getItem(id, this.list);
+            return this._getItem(id, this);
         },
 
+        /**********************************
+        remove
+        **********************************/
+        remove: function(idOrItem){
+            var item = typeof idOrItem == 'string' ? this.getItem(idOrItem) : idOrItem;
+            if (item)
+                item.remove();
+            return item;
+        },
+
+        /**********************************
+        closeAll
+        **********************************/
         closeAll: function(){
             this.api.closeAllPanels();
-        }
-
-    };
-
-
-    /******************************************
-    BsMmenuItem
-    *******************************************/
-    var nextId = 0;
-    $.BsMmenuItem = function(options){
-        var _this = this;
-        this.options = options;
-
-        this.id = options.id || 'bsmm_'+nextId++;
-
-        var list = this.options.list || [];
-        $.each(list, function(index, opt){
-            _this.append(new $.BsMmenuItem(opt));
-        });
-    };
-
-var test = true;
-    //Extend the prototype
-    $.BsMmenuItem.prototype = {
-        //append
-        append: function(item){
-            this.list = this.list || [];
-            this.list.push(item);
         },
 
-        //createElement
-        createElement: function($parentUl){
-            this.$li      = $('<li/>').appendTo($parentUl);
-            this.liElem   = this.$li.get(0);
-            this.$outer   = $('<span/>').appendTo(this.$li);
-            this.$content = $('<span/>').appendTo(this.$outer);
+        /**********************************
+        _updateFavorites
+        Update and sort the list of favorites
+        ***********************************/
+        _updateFavorites: function(){
+            if (!this.favoritesItem) return;
 
-            if (this.list || this.options.niels)
-                this.$content._bsAddHtml(this.options);
-            else {
-                if (test)
-                    $.bsCheckbox({
-                        //semiSelected: true,
-                        id: this.id,
-                        icon: 'fa-home',
-                        text: this.options.text,
-                        onChange: function(/*id, selected/*, $buttonGroup*/){
-                            //console.log('9: bsSelectListPopover', id, selected)
-                        },
-                    })
-                    .appendTo( this.$content );
-                else
-                    $.bsCheckbox({
-                        type: 'radio',
-                        semiSelected: true,
-                        disabled: true,
-                        text: this.options.text,
-                        onChange: function(/*id, selected/*, $buttonGroup*/){
-                            //console.log('bsCheckbox as radio', id, selected)
-                        },
-                    })
-                    .appendTo( this.$content );
-
-                test = !test;
-
-//MANGLER                if (true){
-                    this.$favoriteButton =
-                        $.bsIconCheckboxButton({
-                            id  : this.id,
-                            icon: ['', 'fas text-checked fa-star', 'far fa-star'],
-                            title: {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
-                            transparent: true,
-                            square     : true,
-                            noBorder   : true,
-                            onChange: $.proxy(this._toggleFavorite, this)
-                        }).appendTo(this.$outer);
-                    this.$outer.addClass('padding-right-none');
-//MANGLER                }
+            //Update index for all items
+            var nextIndex = 0,
+                item = this.favoritesItem.next;
+            while (item){
+                nextIndex = item._updateIndex(nextIndex);
+                item = item.next;
             }
 
-            //Create and append sub-items
-            if (this.list)
-                var $ul = this.$ul = $('<ul/>').appendTo(this.$li);
+            //Move all items into a list and sort it
+            var itemList = [];
+            item = this.favoritesItem.first;
+            while (item){
+                itemList.push(item);
+                item = item.next;
+            }
+            itemList.sort(function(itemA, itemB){ return itemA.index - itemB.index; });
 
-//                if (false)
-//                    $ul.addClass($.BSMMENU.className_vertical);
+            if (itemList.length){
+                //Append favorite-items in sorted order
+                this.favoritesItem.first = null;
+                this.favoritesItem.last = null;
 
+                //Re-append the items and re-arrange its li-element
+                var _favoritesItem = this.favoritesItem,
+                    $ul = this.favoritesItem.$ul;
 
+                $.each(itemList, function(index, item){
+                    item.prev = _favoritesItem.last;
+                    item.next = null;
+                    if (_favoritesItem.last)
+                        _favoritesItem.last.next = item;
+                    _favoritesItem.last = item;
+                    _favoritesItem.first = _favoritesItem.first || item;
 
-                $.each(this.list, function(index, item){
-                    item.createElement($ul);
+                    item.$li.detach().appendTo($ul);
+
                 });
-        },
-
-
-        _getApi: function(){
-            this.api = this.api || this.menu.api;
-            return this.api;
-        },
-
-        _toggleFavorite: function(id, selected){
-            this.toggleFavorite(selected);
-        },
-        toggleFavorite: function(/*selected*/){
-//HERconsole.log(this.id, 'favorite', selected);
-        },
-
-        open: function(closeAllOther){
-            if (closeAllOther)
-                this.menu.closeAll();
-            this._getApi.openPanel(this.liElem);
+            }
         }
-
-
     };
-
-/********************************************************************
-TILFØJ item og sub-list efter mmenu er dannet: https://mmenujs.com/tutorials/dynamic-content.html
-********************************************************************/
-
-
 
     /******************************************
     Initialize/ready
