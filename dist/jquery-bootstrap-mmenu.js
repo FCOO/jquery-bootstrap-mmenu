@@ -379,13 +379,13 @@
                 }
                 this.menu.favoritesItem.append(this.favoriteItem);
             }
-            else {
+            else
                 this.favoriteItem.remove();
 
-                //Update star-button
-                this.$favoriteButton._cbxSet(false, true);
+            //Update star-button
+            this.$favoriteButton._cbxSet(selected, true);
 
-            }
+
             this.menu._updateFavorites();
         },
 
