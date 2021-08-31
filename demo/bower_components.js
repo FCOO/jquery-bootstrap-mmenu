@@ -57099,15 +57099,12 @@ module.exports = g;
 
         //Add <i> with check-icon if it is a checkbox
         $('<i/>')
-            .addClass('fas')
+            .addClass('checkbox-icon fas')
             .addClass(options.type == 'checkbox' ? 'fa-check' : 'fa-circle')
             .appendTo( $label );
 
-        if (options.text)
-            $('<span/>').i18n( options.text ).appendTo( $label );
-        else
-            if (options.content)
-                $('<div/>')._bsAddHtml( options.content ).appendTo( $label );
+        var content = options.content ? options.content : {icon: options.icon, text: options.text};
+        $('<div/>')._bsAddHtml( content ).appendTo( $label );
 
         return $result;
     };

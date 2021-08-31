@@ -129,8 +129,8 @@
                 this.checkbox = $.bsCheckbox({
                     id          : this.id,
                     type        : this.type,
-                    icon        : 'fa-home',
                     multiLines  : true,
+                    icon        : this.options.icon,
                     text        : this.options.text,
                     content     : this.options.content,
                     onClick     : $.proxy(owner._onClick, owner)

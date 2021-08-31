@@ -9929,15 +9929,15 @@ div.checkbox, div.radio {
       div.checkbox input:disabled + label::before, div.radio input:disabled + label::before {
         background-color: #fff !important;
         cursor: not-allowed !important; }
-    div.checkbox input + label i, div.radio input + label i {
+    div.checkbox input + label i.checkbox-icon, div.radio input + label i.checkbox-icon {
       line-height: 1;
       text-align: center;
       color: transparent;
       position: absolute;
       left: 0px; }
-    div.checkbox input:not(:checked):not(:disabled):hover + label i, div.radio input:not(:checked):not(:disabled):hover + label i {
+    div.checkbox input:not(:checked):not(:disabled):hover + label i.checkbox-icon, div.radio input:not(:checked):not(:disabled):hover + label i.checkbox-icon {
       color: #cccccc; }
-    div.checkbox input:checked + label i, div.radio input:checked + label i {
+    div.checkbox input:checked + label i.checkbox-icon, div.radio input:checked + label i.checkbox-icon {
       color: #fff; }
 
 div.radio input + label::before {
@@ -9959,7 +9959,7 @@ div.checkbox, div.radio {
       margin-top: 0.1875rem;
       width: 1.125rem;
       height: 1.125rem; }
-    div.checkbox input + label i, div.radio input + label i {
+    div.checkbox input + label i.checkbox-icon, div.radio input + label i.checkbox-icon {
       font-size: 0.875rem;
       width: 0.875rem;
       height: 0.875rem;
@@ -9989,7 +9989,7 @@ div.checkbox-sm, div.radio-sm {
       margin-top: 0.15625rem;
       width: 1rem;
       height: 1rem; }
-    div.checkbox-sm input + label i, div.radio-sm input + label i {
+    div.checkbox-sm input + label i.checkbox-icon, div.radio-sm input + label i.checkbox-icon {
       font-size: 0.75rem;
       width: 0.75rem;
       height: 0.75rem;
