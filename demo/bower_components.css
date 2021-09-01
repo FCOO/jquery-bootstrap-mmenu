@@ -9969,7 +9969,7 @@ div.checkbox, div.radio {
 div.checkbox input label::before {
   border-radius: 0.25rem; }
 
-div.radio input + label i {
+div.radio input + label i.checkbox-icon {
   font-size: 0.375rem;
   width: 0.375rem;
   height: 0.375rem;
@@ -9999,7 +9999,7 @@ div.checkbox-sm, div.radio-sm {
 div.checkbox-sm input label::before {
   border-radius: 0.1875rem; }
 
-div.radio-sm input + label i {
+div.radio-sm input + label i.checkbox-icon {
   font-size: 0.375rem;
   width: 0.375rem;
   height: 0.375rem;
