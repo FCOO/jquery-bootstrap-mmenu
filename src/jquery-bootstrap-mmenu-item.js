@@ -145,7 +145,7 @@
                     this.$favoriteButton =
                        $.bsIconCheckboxButton({
                             id  : this.id,
-                            icon: ['', 'fas text-checked fa-star', 'far fa-star'],
+                            icon: ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_MENU + ' fa-star'],
                             title: {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
                             transparent: true,
                             square     : true,
@@ -163,7 +163,7 @@
                 if (this.options.removeFavoriteButton){
                     $.bsButton({
                         id          : this.id,
-                        icon        : [['far fa-star fa-fw', "fa fa-slash fa-fw"]],
+                        icon        : [[$.FONTAWESOME_PREFIX_MENU + ' fa-star fa-fw', $.FONTAWESOME_PREFIX + " fa-slash fa-fw"]],
                         title       : {da:'Fjern fra Favoritter', en:'Remove from Favorites'},
                         transparent : true,
                         square      : true,

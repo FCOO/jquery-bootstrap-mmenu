@@ -1,4 +1,3 @@
-@charset "UTF-8";
 /***********************************************
     jquery-bootstrap-mmenu.scss,
 
@@ -35,16 +34,28 @@ in integer px from rem
 /*Not used. No lg-buttons
 $input-btn-padding-y-lg: .75rem;
 $input-btn-padding-x-lg: $input-btn-padding-y-lg;
-*/
-/* VERSION 1.x
-//$font-size-sm = .875rem; // = 14px
-$font-size-sm: rem(13px); //<= TODO MANGLER. Skal muligvis sættes til 14px og så skal padding for buttons rettes tilsvarrende
 
-$input-btn-padding-y-sm: rem(4px);
-$input-btn-padding-x-sm: $input-btn-padding-y-sm;
+Syntax and relations:
+In Bootstrap
+    $input-btn-padding(-x|-y)[-sm|-lg]
+    $btn-padding(-x|-y)[-sm|-lg] = $input-btn-padding(-x|-y)[-sm|-lg]
+
+
+
+In jquery-bootstrap
+    $input-btn-padding-x-sm = 3px
+    $input-btn-padding-y-sm = 4px
+
+    xs-versions added
+    $input-btn-padding-x-xs = 2px
+    $input-btn-padding-y-xs = 3px
+
 */
 /************************************************************
-Including "size" xs as in Bootstrap 3
+Including "size" xs as in Bootstrap 4
+************************************************************/
+/************************************************************
+Add line-heights for xs
 ************************************************************/
 /************************************************************
 Border-colors
@@ -57,6 +68,9 @@ releative to container (rem -> em)
 $font-size-base         : 1rem !default;
 $spacer                 : 1rem !default;
 */
+/************************************************************
+Set margin for buttons in block
+************************************************************/
 /************************************************************
 Adjust dropdown-menu
 ************************************************************/
@@ -206,9 +220,9 @@ IMPORT MMENU SCSS
  * http://creativecommons.org/licenses/by-nc/4.0/
  */
 :root {
-  --mm-line-height: 2.25rem;
-  --mm-listitem-size: 2.25rem;
-  --mm-navbar-size: 2.25rem;
+  --mm-line-height: 2.125rem;
+  --mm-listitem-size: 2.125rem;
+  --mm-navbar-size: 2.125rem;
   --mm-offset-top: 0;
   --mm-offset-right: 0;
   --mm-offset-bottom: 0;
@@ -237,7 +251,7 @@ IMPORT MMENU SCSS
   background: #f8f9fa;
   border-color: #ced4da;
   color: #515961;
-  line-height: 2.25rem;
+  line-height: 2.125rem;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -281,7 +295,7 @@ IMPORT MMENU SCSS
   transform: translate3d(100%, 0, 0);
   transition: transform 0.4s ease; }
   .mm-panel:after {
-    height: 2.25rem; }
+    height: 2.125rem; }
   .mm-panel:not(.mm-hidden) {
     display: block; }
   .mm-panel:after {
@@ -307,7 +321,7 @@ IMPORT MMENU SCSS
     bottom: 0; }
 
 .mm-panel__content {
-  padding: 0.625rem 0.625rem 0; }
+  padding: 0.5rem 0.5rem 0; }
 
 .mm-panels {
   background: #f8f9fa;
@@ -324,7 +338,7 @@ IMPORT MMENU SCSS
 .mm-listitem_vertical > .mm-panel {
   display: none;
   width: 100%;
-  padding: 0.3125rem 0 0.3125rem 0.3125rem;
+  padding: 0.25rem 0 0.25rem 0.25rem;
   transform: none !important; }
   .mm-listitem_vertical > .mm-panel:before, .mm-listitem_vertical > .mm-panel:after {
     content: none;
@@ -334,7 +348,7 @@ IMPORT MMENU SCSS
   display: block; }
 
 .mm-listitem_vertical > .mm-listitem__btn {
-  height: 2.25rem;
+  height: 2.125rem;
   height: var(--mm-listitem-size);
   bottom: auto; }
 
@@ -343,14 +357,14 @@ IMPORT MMENU SCSS
 
 .mm-listitem_opened > .mm-listitem__btn:after {
   transform: rotate(225deg);
-  right: 9px; }
+  right: 7px; }
 
 .mm-btn {
   flex-grow: 0;
   flex-shrink: 0;
   position: relative;
   box-sizing: border-box;
-  width: 2.25rem;
+  width: 2.125rem;
   padding: 0; }
   .mm-btn:before, .mm-btn:after {
     border: 2px solid rgba(0, 0, 0, 0.3);
@@ -371,12 +385,12 @@ IMPORT MMENU SCSS
 
 .mm-btn_prev:before {
   transform: rotate(-45deg);
-  left: 13px;
+  left: 11px;
   right: auto; }
 
 .mm-btn_next:after {
   transform: rotate(135deg);
-  right: 13px;
+  right: 11px;
   left: auto; }
 
 .mm-btn_close:before, .mm-btn_close:after {
@@ -394,15 +408,15 @@ IMPORT MMENU SCSS
 .mm-btn_close:before {
   border-right: none;
   border-bottom: none;
-  right: 8px; }
+  right: 6px; }
 
 .mm-btn_close:after {
   border-left: none;
   border-top: none;
-  right: 15px; }
+  right: 13px; }
 
 .mm-navbar {
-  min-height: 2.25rem;
+  min-height: 2.125rem;
   border-bottom: 1px solid #ced4da;
   background: #f8f9fa;
   color: rgba(0, 0, 0, 0.3);
@@ -415,7 +429,7 @@ IMPORT MMENU SCSS
   opacity: 1;
   transition: opacity 0.4s ease; }
   .mm-navbar > * {
-    min-height: 2.25rem; }
+    min-height: 2.125rem; }
   @supports (position: sticky) {
     .mm-navbar_sticky {
       position: sticky;
@@ -434,8 +448,8 @@ IMPORT MMENU SCSS
 .mm-navbar__title {
   flex: 1 1 50%;
   display: flex;
-  padding-left: 0.625rem;
-  padding-right: 0.625rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
   overflow: hidden; }
   .mm-navbar__title:not(:last-child) {
     padding-right: 0; }
@@ -446,7 +460,7 @@ IMPORT MMENU SCSS
   .mm-navbar__btn:not(.mm-hidden) + .mm-navbar__title {
     padding-left: 0; }
     .mm-navbar__btn:not(.mm-hidden) + .mm-navbar__title:last-child {
-      padding-right: 2.25rem; }
+      padding-right: 2.125rem; }
 
 .mm-listview {
   list-style: none;
@@ -473,7 +487,7 @@ IMPORT MMENU SCSS
     border-bottom-style: solid;
     display: block;
     position: absolute;
-    left: 10px;
+    left: 8px;
     right: 0;
     bottom: 0; }
   .mm-listitem a,
@@ -492,8 +506,8 @@ IMPORT MMENU SCSS
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  padding-left: 10px;
-  padding-right: 0.3125rem;
+  padding-left: 8px;
+  padding-right: 0.25rem;
   flex-grow: 1;
   flex-basis: 10%; }
 
@@ -501,7 +515,7 @@ IMPORT MMENU SCSS
   background: rgba(3, 2, 1, 0);
   border-color: inherit;
   width: auto;
-  padding-right: 2.25rem;
+  padding-right: 2.125rem;
   position: relative; }
   .mm-listitem__btn:not(.mm-listitem__text) {
     border-left-width: 1px;
@@ -821,7 +835,7 @@ IMPORT MMENU SCSS
 .mm-counter {
   color: rgba(0, 0, 0, 0.3);
   display: block;
-  padding-left: 0.625rem;
+  padding-left: 0.5rem;
   float: right;
   text-align: right;
   color: var(--mm-color-text-dimmed); }
@@ -831,16 +845,16 @@ IMPORT MMENU SCSS
 
 .mm-divider {
   position: relative;
-  min-height: 2.25rem;
-  padding: -0.39375rem;
+  min-height: 2.125rem;
+  padding: -0.371875rem;
   background: #f8f9fa;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   min-height: var(--mm-line-height);
   padding: calc( ((var(--mm-listitem-size) * 0.65) - var(--mm-line-height)) * 0.5);
-  padding-right: 0.3125rem;
-  padding-left: 10px;
+  padding-right: 0.25rem;
+  padding-left: 8px;
   font-size: 75%;
   text-transform: uppercase;
   background: var(--mm-color-background);
@@ -877,22 +891,22 @@ IMPORT MMENU SCSS
   display: none !important; }
 
 :root {
-  --mm-iconbar-size: 2.875rem; }
+  --mm-iconbar-size: 2.75rem; }
 
 .mm-menu_iconbar-left .mm-panels,
 .mm-menu_iconbar-left .mm-navbars_top,
 .mm-menu_iconbar-left .mm-navbars_bottom {
-  margin-left: 2.875rem;
+  margin-left: 2.75rem;
   margin-left: var(--mm-iconbar-size); }
 
 .mm-menu_iconbar-right .mm-panels,
 .mm-menu_iconbar-right .mm-navbars_top,
 .mm-menu_iconbar-right .mm-navbars_bottom {
-  margin-right: 2.875rem;
+  margin-right: 2.75rem;
   margin-right: var(--mm-iconbar-size); }
 
 .mm-iconbar {
-  width: 2.875rem;
+  width: 2.75rem;
   border-color: #ced4da;
   background: #f8f9fa;
   color: rgba(0, 0, 0, 0.3);
@@ -932,7 +946,7 @@ IMPORT MMENU SCSS
   .mm-iconbar__bottom > * {
     box-sizing: border-box;
     display: block;
-    padding: 0.5625rem 0; }
+    padding: 0.53125rem 0; }
   .mm-iconbar__top a,
   .mm-iconbar__top a:hover,
   .mm-iconbar__bottom a,
@@ -944,22 +958,22 @@ IMPORT MMENU SCSS
   background: var(--mm-color-background-emphasis); }
 
 :root {
-  --mm-iconpanel-size: 2.25rem; }
+  --mm-iconpanel-size: 2.125rem; }
 
 .mm-panel_iconpanel-1 {
-  width: calc(100% - 2.25rem);
+  width: calc(100% - 2.125rem);
   width: calc(100% - (var(--mm-iconpanel-size) * 1)); }
 
 .mm-panel_iconpanel-2 {
-  width: calc(100% - 4.5rem);
+  width: calc(100% - 4.25rem);
   width: calc(100% - (var(--mm-iconpanel-size) * 2)); }
 
 .mm-panel_iconpanel-3 {
-  width: calc(100% - 6.75rem);
+  width: calc(100% - 6.375rem);
   width: calc(100% - (var(--mm-iconpanel-size) * 3)); }
 
 .mm-panel_iconpanel-first ~ .mm-panel {
-  width: calc(100% - 2.25rem);
+  width: calc(100% - 2.125rem);
   width: calc(100% - var(--mm-iconpanel-size)); }
 
 .mm-menu_iconpanel .mm-panels > .mm-panel {
@@ -1021,7 +1035,7 @@ IMPORT MMENU SCSS
   flex: 1 1 50%;
   display: flex;
   justify-content: flex-start;
-  padding: 0 0.625rem;
+  padding: 0 0.5rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch; }
   .mm-navbar__breadcrumbs > * {
@@ -1037,7 +1051,7 @@ IMPORT MMENU SCSS
     padding-left: 0; }
 
 .mm-navbar_tabs > * {
-  padding: 0 0.3125rem;
+  padding: 0 0.25rem;
   border: 1px solid transparent; }
 
 .mm-navbar__tab_selected {
@@ -1096,15 +1110,15 @@ IMPORT MMENU SCSS
   background: var(--mm-color-background-emphasis); }
 
 .mm-searchfield {
-  height: 2.25rem;
+  height: 2.125rem;
   display: flex;
   flex-grow: 1;
   height: var(--mm-navbar-size);
   padding: 0;
   overflow: hidden; }
   .mm-searchfield input {
-    height: 1.575rem;
-    line-height: 1.575rem; }
+    height: 1.4875rem;
+    line-height: 1.4875rem; }
     .mm-searchfield input, .mm-searchfield input:hover, .mm-searchfield input:focus {
       background: rgba(0, 0, 0, 0.05);
       color: #515961; }
@@ -1116,7 +1130,7 @@ IMPORT MMENU SCSS
     min-height: unset;
     max-height: unset;
     margin: 0;
-    padding: 0 0.3125rem;
+    padding: 0 0.25rem;
     box-sizing: border-box;
     border: none !important;
     border-radius: 4px;
@@ -1138,12 +1152,12 @@ IMPORT MMENU SCSS
   position: relative;
   width: 100%;
   max-width: 100%;
-  padding: 0 0.3125rem;
+  padding: 0 0.25rem;
   box-sizing: border-box; }
 
 .mm-panel__noresultsmsg {
   color: rgba(0, 0, 0, 0.3);
-  padding: 2.25rem 0;
+  padding: 2.125rem 0;
   color: var(--mm-color-text-dimmed);
   text-align: center;
   font-size: 150%; }
@@ -1161,9 +1175,9 @@ IMPORT MMENU SCSS
   border-left: none !important; }
 
 .mm-searchfield__cancel {
-  line-height: 2.25rem;
+  line-height: 2.125rem;
   display: block;
-  padding-right: 0.3125rem;
+  padding-right: 0.25rem;
   margin-right: -100px;
   line-height: var(--mm-navbar-size);
   text-decoration: none;
@@ -1176,7 +1190,7 @@ IMPORT MMENU SCSS
   display: none; }
 
 .mm-listitem_nosubitems > .mm-listitem__text {
-  padding-right: 0.3125rem; }
+  padding-right: 0.25rem; }
 
 .mm-listitem_onlysubitems > .mm-listitem__text:not(.mm-listitem__btn) {
   z-index: -1;
@@ -1357,7 +1371,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 
 .mm-listitem {
   font-size: 1rem;
-  min-height: 2.25rem; }
+  min-height: 2.125rem; }
   .mm-listitem .mm-listitem-content {
     line-height: 1.5 !important; }
   .mm-menu-sm .mm-listitem {
@@ -1385,7 +1399,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-iconbar .btn.btn-standard.square {
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 1.125rem; }
+  margin-bottom: 1.0625rem; }
   .mm-iconbar .btn.btn-standard.square.btn-sm {
     margin-bottom: 0.90625rem; }
 

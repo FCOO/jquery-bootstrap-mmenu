@@ -11,6 +11,10 @@
 (function ($, i18next, window/*, document, undefined*/) {
     "use strict";
 
+
+    //FONTAWESOME_PREFIX_MENU = the classname-prefix used for icons in the menu. Fontawesome 5: Free: 'far'
+    $.FONTAWESOME_PREFIX_MENU = 'far';
+
     //Create $.BSMMENU = record with const etc.
     //All options marked with (*) are set to its default value when creating the mmenu
     $.BSMMENU = {
@@ -148,7 +152,7 @@
             //Add menu-item with favorites
             this.favoritesItem = $.bsMmenuItem({
                 id      : '____FAVORITES___',
-                icon    : [['fas text-checked fa-star fa-fw', 'far fa-star fa-fw']],
+                icon    : [['fas text-checked fa-star fa-fw', $.FONTAWESOME_PREFIX_MENU + ' fa-star fa-fw']],
                 text    : {da: 'Favoritter', en: 'Favorites'},
                 addToBar: true,
                 list    : []
