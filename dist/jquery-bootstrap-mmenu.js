@@ -145,7 +145,7 @@
                     this.$favoriteButton =
                        $.bsIconCheckboxButton({
                             id  : this.id,
-                            icon: ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_MENU + ' fa-star'],
+                            icon: ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star'],
                             title: {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
                             transparent: true,
                             square     : true,
@@ -163,7 +163,7 @@
                 if (this.options.removeFavoriteButton){
                     $.bsButton({
                         id          : this.id,
-                        icon        : [[$.FONTAWESOME_PREFIX_MENU + ' fa-star fa-fw', $.FONTAWESOME_PREFIX + " fa-slash fa-fw"]],
+                        icon        : [[$.FONTAWESOME_PREFIX_STANDARD + ' fa-star fa-fw', $.FONTAWESOME_STANDARD + " fa-slash fa-fw"]],
                         title       : {da:'Fjern fra Favoritter', en:'Remove from Favorites'},
                         transparent : true,
                         square      : true,
@@ -486,10 +486,6 @@
 (function ($, i18next, window/*, document, undefined*/) {
     "use strict";
 
-
-    //FONTAWESOME_PREFIX_MENU = the classname-prefix used for icons in the menu. Fontawesome 5: Free: 'far'
-    $.FONTAWESOME_PREFIX_MENU = 'far';
-
     //Create $.BSMMENU = record with const etc.
     //All options marked with (*) are set to its default value when creating the mmenu
     $.BSMMENU = {
@@ -627,7 +623,7 @@
             //Add menu-item with favorites
             this.favoritesItem = $.bsMmenuItem({
                 id      : '____FAVORITES___',
-                icon    : [['fas text-checked fa-star fa-fw', $.FONTAWESOME_PREFIX_MENU + ' fa-star fa-fw']],
+                icon    : [['fas text-checked fa-star fa-fw', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star fa-fw']],
                 text    : {da: 'Favoritter', en: 'Favorites'},
                 addToBar: true,
                 list    : []

@@ -55264,6 +55264,795 @@ module.exports = g;
 }(jQuery, this, document));
 ;
 /****************************************************************************
+    jquery-bootstrap.js,
+
+    (c) 2017, FCOO
+
+    https://github.com/fcoo/jquery-bootstrap
+    https://github.com/fcoo
+
+****************************************************************************/
+
+(function ($, i18next, window, document, undefined) {
+    "use strict";
+
+    /*
+
+    Almost all elements comes in two sizes: normal and small set by options.small: false/true
+
+    In jquery-bootstrap.scss sizing class-postfix -xs is added (from Bootstrap 3)
+
+    Elements to click or touch has a special implementation:
+    For device with 'touch' the Bootstrap size 'normal' and 'small' are used
+    For desktop (only mouse) we using smaller version (large = Bootstrap normal, normal = Bootstrap small, small = Bootstrap x-small)
+
+    The variable window.bsIsTouch must be overwriten with the correct value in the application
+
+    */
+
+    //Create namespace
+    var ns = window;
+
+    /*
+    Create $.BSASMODAL = record with {className: asModal-function} where className is added to any $element that have a asModal-function
+    Ex.:
+    $.BSASMODAL['BSTABLE'] = function(){ //Create bsModal for this }
+    var myTable = $.bsTable({...}); //Add 'BSTABLE' to class-name for  result
+    myTable.asModal({...});
+    */
+    $.BSASMODAL = $.BSASMODAL || {};
+    $.fn.asModal = function(options){
+        var _this   = this,
+            asModal = null;
+
+        $.each($.BSASMODAL, function(id, asModalFunc){
+            if (_this.hasClass(id)){
+                asModal = asModalFunc;
+                return false;
+            }
+        });
+        return asModal ? $.proxy(asModal, this)( options ) : null;
+    };
+
+    //Allow test-pages to set bsIsTouch to fixed value
+    ns.bsIsTouch = typeof ns.bsIsTouch == "boolean" ? ns.bsIsTouch : true;
+
+    $.EMPTY_TEXT = '___***EMPTY***___';
+
+    //FONTAWESOME_PREFIX = the classname-prefix used when non is given. Fontawesome 4.X: 'fa', Fontawesome 5: Free: 'fas' Pro: 'far' or 'fal'
+    $.FONTAWESOME_PREFIX = $.FONTAWESOME_PREFIX || 'fa';
+
+
+    //FONTAWESOME_PREFIX_STANDARD = the classname-prefix used for buttons in standard radio/checkbox-buttons and icons in modal header. Fontawesome 5: Free: 'far'
+    $.FONTAWESOME_PREFIX_STANDARD = $.FONTAWESOME_PREFIX_STANDARD || 'far';
+
+
+    //ICONFONT_PREFIXES = STRING or []STRING with regexp to match class-name setting font-icon class-name. Fontawesome 5: 'fa.?' accepts 'fas', 'far', etc. as class-names => will not add $.FONTAWESOME_PREFIX
+    $.ICONFONT_PREFIXES = 'fa.?';
+
+    /******************************************************
+    $divXXGroup
+    ******************************************************/
+    function $divXXGroup( groupTypeClass, options ){
+        return $('<div/>')
+                   ._bsAddBaseClassAndSize( $.extend({}, options, {
+                       baseClass   : groupTypeClass,
+                       useTouchSize: true
+                   }));
+    }
+
+    //$._bsAdjustIconAndText: Adjust options to fit with {icon"...", text:{da:"", en:".."}
+    // options == {da:"..", en:".."} => return {text: options}
+    // options == array of ??        => array of $._bsAdjustIconAndText( ??? )
+    // options == STRING             => return {text: options}
+
+    $._bsAdjustIconAndText = function( options ){
+        if (!options)
+            return options;
+        if ($.isArray( options )){
+            var result = [];
+            $.each( options, function(index, content){
+                result.push( $._bsAdjustIconAndText(content) );
+            });
+            return result;
+        }
+
+        if ($.type( options ) == "object"){
+            if (!options.icon && !options.text)
+                return {text: options };
+            else
+                return options;
+        }
+        else
+            //options == simple type (string, number etc.)
+            return {text: options };
+
+    };
+
+    //$._bsAdjustText: Adjust options to fit with {da:"...", en:"..."}
+    // options == {da:"..", en:".."} => return options
+    // options == STRING             => return {da: options}
+    $._bsAdjustText = function( options ){
+        if (!options)
+            return options;
+        if ($.type( options ) == "string")
+            return {da: options, en:options};
+        return options;
+    };
+
+    //$._bsAdjustOptions: Adjust options to allow text/name/header etc.
+    $._bsAdjustOptions = function( options, defaultOptions, forceOptions ){
+        //*********************************************************************
+        //adjustContentOptions: Adjust options for the content of elements
+        function adjustContentAndContextOptions( options, context ){
+            options.iconClass = options.iconClass || options.iconClassName;
+            options.textClass = options.textClass || options.textClassName;
+
+            //If context is given => convert all function to proxy
+            if (context)
+                $.each( options, function( id, value ){
+                    if ($.isFunction( value ))
+                        options[id] = $.proxy( value, context );
+                });
+
+            return options;
+        }
+        //*********************************************************************
+
+        options = $.extend( true, {}, defaultOptions || {}, options, forceOptions || {} );
+
+        $.each(['selected', 'checked', 'active', 'open', 'isOpen'], function(index, id){
+            if (options[id] !== undefined){
+                options.selected = !!options[id];
+                return false;
+            }
+        });
+
+        options.list = options.list || options.buttons || options.items || options.children;
+
+        options = adjustContentAndContextOptions( options, options.context );
+
+        //Adjust options.content
+        if (options.content){
+            if ($.isArray( options.content ) )
+                //Adjust each record in options.content
+                for (var i=0; i<options.content.length; i++ )
+                    options.content[i] = adjustContentAndContextOptions( options.content[i], options.context );
+            else
+                if ($.type( options.content ) == "object")
+                    options.content = adjustContentAndContextOptions( options.content, options.context );
+        }
+
+        //Sert context = null to avoid "double" proxy
+        options.context = null;
+
+        return options;
+    };
+
+
+    /****************************************************************************************
+    _bsGetSizeClass
+    baseClass: "BASE" useTouchSize: false
+        small: false => sizeClass = ''
+        small: true  => sizeClass = "BASE-sm"
+
+    baseClass: "BASE" useTouchSize: true
+        small: false => sizeClass = 'BASE-sm'
+        small: true  => sizeClass = "BASE-xs"
+    ****************************************************************************************/
+    $._bsGetSizeClass = function( options ){
+        var sizeClassPostfix = '';
+
+        if (options.useTouchSize){
+            if (ns.bsIsTouch)
+                sizeClassPostfix = options.small ? 'sm' : '';
+            else
+                sizeClassPostfix = options.small ? 'xs' : 'sm';
+        }
+        else
+            sizeClassPostfix = options.small ? 'sm' : '';
+
+        return sizeClassPostfix && options.baseClass ? options.baseClass + '-' + sizeClassPostfix : '';
+    };
+
+
+    /****************************************************************************************
+    $._bsCreateElement = internal method to create $-element
+    ****************************************************************************************/
+    $._bsCreateElement = function( tagName, link, title, textStyle, className, data ){
+        var $result;
+        if (link){
+            $result = $('<a/>');
+            if ($.isFunction( link ))
+                $result
+                    .prop('href', 'javascript:undefined')
+                    .on('click', link );
+            else
+                $result
+                    .i18n(link, 'href')
+                    .prop('target', '_blank');
+        }
+        else
+            $result = $('<'+tagName+'/>');
+
+        if (title)
+            $result.i18n(title, 'title');
+
+        $result._bsAddStyleClasses( textStyle || '' );
+
+        if (className)
+            $result.addClass( className );
+
+        if (data)
+            $result.data( data );
+
+        return $result;
+    };
+
+    /****************************************************************************************
+    $._bsCreateIcon = internal method to create $-icon
+    ****************************************************************************************/
+    var iconfontPrefixRegExp = null;
+    $._bsCreateIcon = function( options, $appendTo, title, className/*, insideStack*/ ){
+        if (!iconfontPrefixRegExp){
+            var prefixes = $.isArray($.ICONFONT_PREFIXES) ? $.ICONFONT_PREFIXES : [$.ICONFONT_PREFIXES];
+            iconfontPrefixRegExp = new window.RegExp('(\\s|^)(' + prefixes.join('|') + ')(\\s|$)', 'g');
+        }
+
+        var $icon;
+
+        if ($.type(options) == 'string')
+            options = {class: options};
+
+        if ($.isArray( options)){
+            //Create a stacked icon
+             $icon = $._bsCreateElement( 'div', null, title, null, 'container-stacked-icons ' + (className || '')  );
+
+            $.each( options, function( index, opt ){
+                $._bsCreateIcon( opt, $icon, null, 'stacked-icon' );
+            });
+
+            //If any of the stacked icons have class fa-no-margin => set if on the container
+            if ($icon.find('.fa-no-margin').length)
+                $icon.addClass('fa-no-margin');
+        }
+        else {
+            var allClassNames = options.icon || options.class || '';
+
+            //Append $.FONTAWESOME_PREFIX if icon don't contain fontawesome prefix ("fa?")
+            if (allClassNames.search(iconfontPrefixRegExp) == -1)
+                allClassNames = $.FONTAWESOME_PREFIX + ' ' + allClassNames;
+
+            allClassNames = allClassNames + ' ' + (className || '');
+
+            $icon = $._bsCreateElement( 'i', null, title, null, allClassNames );
+
+        }
+        $icon.appendTo( $appendTo );
+        return $icon;
+    };
+
+    /****************************************************************************************
+    $._isEqual(obj1, obj2 OR array)
+    Check if two objects or arrays are equal
+    (c) 2017 Chris Ferdinandi, MIT License, https://gomakethings.com
+    @param  {Object|Array|String}  value  The first object or array to compare
+    @param  {Object|Array|String}  other  The second object or array to compare
+    @return {Boolean}              Returns true if they're equal
+    ****************************************************************************************/
+    $._isEqual = function (value, other) {
+        // Get the value type
+        var type = Object.prototype.toString.call(value);
+
+        // If the two objects are not the same type, return false
+        if (type !== Object.prototype.toString.call(other)) return false;
+
+        // Compare the length of the length of the two items
+        var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
+        var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
+        if (valueLen !== otherLen) return false;
+
+        // Compare two items
+        var compare = function (item1, item2) {
+            // Get the object type
+            var itemType = Object.prototype.toString.call(item1);
+
+            // If an object or array, compare recursively
+            if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
+                if (!$._isEqual(item1, item2)) return false;
+            }
+            // Otherwise, do a simple comparison
+            else {
+                // If the two items are not the same type, return false
+                if (itemType !== Object.prototype.toString.call(item2)) return false;
+
+                // Else if it's a function, convert to a string and compare
+                // Otherwise, just compare
+                if (itemType === '[object Function]') {
+                    if (item1.toString() !== item2.toString())
+                        return false;
+                }
+                else {
+                    if (item1 !== item2) return false;
+                }
+            }
+        };
+
+        // Compare properties
+          if (type === '[object Array]'){
+               for (var i=0; i<valueLen; i++){
+                if (compare(value[i], other[i]) === false)
+                    return false;
+            }
+        }
+        else
+            if (type === '[object Object]'){
+                for (var key in value){
+                    if ( (value.hasOwnProperty(key)) && (compare(value[key], other[key]) === false))
+                        return false;
+                }
+            }
+            else
+                // If nothing failed, return simple comparison
+                return value == other;
+
+        return true;
+    };
+
+
+    //$.parentOptionsToInherit = []ID = id of options that modal-content can inherit from the modal itself
+    $.parentOptionsToInherit = ['small'];
+
+    $.fn.extend({
+        //_bsAddIdAndName
+        _bsAddIdAndName: function( options ){
+            this.attr('id', options.id || '');
+            this.attr('name', options.name || options.id || '');
+            return this;
+        },
+
+        /****************************************************************************************
+        _bsAddBaseClassAndSize
+
+        Add classes
+
+        options:
+            baseClass           [string]
+            baseClassPostfix    [string]
+            styleClass          [string]
+            class               [string]
+            textStyle           [string] or [object]. see _bsAddStyleClasses
+        ****************************************************************************************/
+        _bsAddBaseClassAndSize: function( options ){
+            var classNames = options.baseClass ? [options.baseClass + (options.baseClassPostfix || '')] : [];
+
+            classNames.push( $._bsGetSizeClass(options) );
+
+            if (options.styleClass)
+                classNames.push( options.styleClass );
+
+            if (options.class)
+                classNames.push( options.class );
+
+            this.addClass( classNames.join(' ') );
+
+            this._bsAddStyleClasses( options.textStyle );
+
+            return this;
+        },
+
+        /****************************************************************************************
+        _bsAddStyleClasses
+        Add classes for text-styel
+
+        options [string] or [object]
+            Style for the contents. String or object with part of the following
+            "left right center lowercase uppercase capitalize normal bold italic" or
+            {left: true, right: true, center: true, lowercase: true, uppercase: true, capitalize: true, normal: true, bold: true, italic: true}
+        ****************************************************************************************/
+        _bsAddStyleClasses: function( options = {}){
+            var _this = this,
+
+                bsStyleClass = {
+                    //Text color
+                    "primary"     : "text-primary",
+                    "secondary"   : "text-secondary",
+                    "success"     : "text-success",
+                    "danger"      : "text-danger",
+                    "warning"     : "text-warning",
+                    "info"        : "text-info",
+                    "light"       : "text-light",
+                    "dark"        : "text-dark",
+
+                    //Align
+                    "left"        : "text-left",
+                    "right"       : "text-right",
+                    "center"      : "text-center",
+
+                    //Case
+                    "lowercase"   : "text-lowercase",
+                    "uppercase"   : "text-uppercase",
+                    "capitalize"  : "text-capitalize",
+
+                    //Weight
+                    "normal"      : "font-weight-normal",
+                    "bold"        : "font-weight-bold",
+                    "italic"      : "font-italic"
+                };
+
+            $.each( bsStyleClass, function( style, className ){
+                if (
+                      ( (typeof options == 'string') && (options.indexOf(style) > -1 )  ) ||
+                      ( (typeof options == 'object') && (options[style]) )
+                    )
+                    _this.addClass( className );
+            });
+            return this;
+        },
+
+        /****************************************************************************************
+        _bsAddHtml
+        Internal methods to add innerHTML to button or other element
+        options: array of textOptions or textOptions
+        textOptions: {
+            icon     : String / {class, data, attr} or array of String / {className, data, attr}
+            text     : String or array of String
+            vfFormat : String or array of String
+            vfValue  : any type or array of any-type
+            vfOptions: JSON-object or array of JSON-object
+            textStyle: String or array of String
+            link     : String or array of String
+            title    : String or array of String
+            iconClass: string or array of String
+            textClass: string or array of String
+            textData : obj or array of obj
+        }
+        checkForContent: [Boolean] If true AND options.content exists => use options.content instead
+        ****************************************************************************************/
+
+        _bsAddHtml:  function( options, htmlInDiv, ignoreLink, checkForContent ){
+            //**************************************************
+            function getArray( input ){
+                return input ? $.isArray( input ) ? input : [input] : [];
+            }
+            //**************************************************
+            function isHtmlString( str ){
+                if (!htmlInDiv || ($.type(str) != 'string')) return false;
+
+                var isHtml = false,
+                    $str = null;
+                try       { $str = $(str); }
+                catch (e) { $str = null;   }
+
+                if ($str && $str.length){
+                    isHtml = true;
+                    $str.each( function( index, elem ){
+                        if (!elem.nodeType || (elem.nodeType != 1)){
+                            isHtml = false;
+                            return false;
+                        }
+                    });
+                }
+                return isHtml;
+            }
+
+            //**************************************************
+            options = options || '';
+
+            if (options.content && checkForContent)
+                return this._bsAddHtml(options.content, htmlInDiv, ignoreLink);
+
+
+            var _this = this;
+
+            //options = array => add each
+            if ($.isArray( options )){
+                $.each( options, function( index, textOptions ){
+                    _this._bsAddHtml( textOptions, htmlInDiv, ignoreLink );
+                });
+                return this;
+            }
+
+            this.addClass('container-icon-and-text');
+
+            //If the options is a jQuery-object: append it and return
+            if (options.jquery){
+                this.append( options );
+                return this;
+            }
+
+            //If the content is a string containing html-code => append it and return
+            if (isHtmlString(options)){
+                this.append( $(options) );
+                return this;
+            }
+
+            //Adjust icon and/or text if it is not at format-options
+            if (!options.vfFormat)
+                options = $._bsAdjustIconAndText( options );
+
+            //options = simple textOptions
+            var iconArray       = getArray( options.icon ),
+                textArray       = getArray( options.text ),
+                vfFormatArray   = getArray( options.vfFormat ),
+                vfValueArray    = getArray( options.vfValue ),
+                i18nextArray    = getArray( options.i18next ),
+                vfOptionsArray  = getArray( options.vfOptions ),
+                textStyleArray  = getArray( options.textStyle ),
+                linkArray       = getArray( ignoreLink ? [] : options.link || options.onClick ),
+                titleArray      = getArray( options.title ),
+                iconClassArray  = getArray( options.iconClass ),
+                textClassArray  = getArray( options.textClass ),
+                textDataArray   = getArray( options.textData );
+
+            //Add icons (optional)
+            $.each( iconArray, function( index, icon ){
+                $._bsCreateIcon( icon, _this, titleArray[ index ], iconClassArray[index] );
+            });
+
+            //Add color (optional)
+            if (options.color)
+                _this.addClass('text-'+ options.color);
+
+            //Add text
+
+            $.each( textArray, function( index, text ){
+                //If text ={da,en} and both da and is html-stirng => build inside div
+                var tagName = 'span';
+                if ( (text.hasOwnProperty('da') && isHtmlString(text.da)) || (text.hasOwnProperty('en') && isHtmlString(text.en)) )
+                    tagName = 'div';
+
+                var $text = $._bsCreateElement( tagName, linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index], textDataArray[index] );
+                if ($.isFunction( text ))
+                    text( $text );
+                else
+                    if (text == $.EMPTY_TEXT)
+                        $text.html( '&nbsp;');
+                    else
+                        if (text != ""){
+                            //If text is a string and not a key to i18next => just add the text
+                            if ( ($.type( text ) == "string") && !i18next.exists(text) )
+                                $text.html( text );
+                            else
+                                $text.i18n( text, 'html', i18nextArray[ index ] );
+                        }
+
+                if (index < textClassArray.length)
+                    $text.addClass( textClassArray[index] );
+
+                $text.appendTo( _this );
+            });
+
+            //Add value-format content
+            $.each( vfFormatArray, function( index ){
+                $._bsCreateElement( 'span', linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index] )
+                    .vfValueFormat(
+                        vfValueArray[index] || '',
+                        vfFormatArray[index],
+                        vfOptionsArray[index]
+                    )
+                    .appendTo( _this );
+            });
+
+            return this;
+        },
+
+        //_bsButtonOnClick
+        _bsButtonOnClick: function(){
+            var options = this.data('bsButton_options');
+            $.proxy( options.onClick, options.context )( options.id, null, this );
+            return options.returnFromClick || false;
+        },
+
+        /****************************************************************************************
+        _bsAppendContent( options, context, arg, parentOptions )
+        Create and append any content to this.
+        options can be $-element, function, json-object or array of same
+
+        If parentOptions is given => some options from parentOptions is used if they are not given in options
+
+
+        The default bootstrap structure used for elements in a form is
+        <div class="form-group">
+            <div class="input-group">
+                <div class="input-group-prepend">               //optional
+                    <button class="btn btn-standard">..</buton> //optional 1-N times
+                </div>                                          //optional
+
+                <label class="has-float-label">
+                    <input class="form-control form-control-with-label" type="text" placeholder="The placeholder...">
+                    <span>The label</span>
+                </label>
+
+                <div class="input-group-append">                //optional
+                    <button class="btn btn-standard">..</buton> //optional 1-N times
+                </div>                                          //optional
+            </div>
+        </div>
+        ****************************************************************************************/
+        _bsAppendContent: function( options, context, arg, parentOptions = {} ){
+
+            //Internal functions to create baseSlider and timeSlider
+            function buildSlider(options, constructorName, $parent){
+                var $sliderInput = $('<input/>').appendTo( $parent ),
+                    slider = $sliderInput[constructorName]( options ).data(constructorName),
+                    $element = slider.cache.$outerContainer || slider.cache.$container;
+
+                $element
+                    .attr('id', options.id)
+                    .data('slider', slider );
+            }
+            function buildBaseSlider(options, $parent){ buildSlider(options, 'baseSlider', $parent); }
+            function buildTimeSlider(options, $parent){ buildSlider(options, 'timeSlider', $parent); }
+
+            function buildTextBox( options ){
+                return $('<div/>')
+                        ._bsAddHtml( options );
+            }
+
+            function buildHidden( options ){
+                return $.bsInput( options ).css('display', 'none');
+            }
+
+            function buildInputGroup( options, $parent ){
+                return $parent
+                           .attr('id', options.id)
+                           .addClass('flex-column')
+                           ._bsAppendContent(options.content, null, null, options);
+            }
+
+
+            if (!options)
+                return this;
+
+            //Array of $-element, function etc
+            if ($.isArray( options )){
+                var _this = this;
+                $.each(options, function( index, opt){
+                    _this._bsAppendContent(opt, context, null, parentOptions );
+                });
+                return this;
+            }
+
+            //Function: Include arg (if any) in call to method (=options)
+            if ($.isFunction( options )){
+                arg = arg ? $.isArray(arg) ? arg : [arg] : [];
+                arg.unshift(this);
+                options.apply( context, arg );
+                return this;
+            }
+
+            if (!$.isPlainObject(options)){
+                //Assume it is a $-element or other object that can be appended directly
+                this.append( options );
+                return this;
+            }
+
+            //json-object with options to create bs-elements
+            var buildFunc = $.fn._bsAddHtml,
+                insideFormGroup   = false,
+                addBorder         = false,
+                buildInsideParent = false,
+                noValidation      = false;
+
+
+            //Set values fro parentOptions into options
+            $.each($.parentOptionsToInherit, function(index, id){
+                if (parentOptions.hasOwnProperty(id) && !options.hasOwnProperty(id))
+                    options[id] = parentOptions[id];
+            });
+
+
+            if (options.type){
+                var type = options.type.toLowerCase();
+                switch (type){
+                    case 'input'            :   buildFunc = $.bsInput;              insideFormGroup = true; break;
+                    case 'button'           :   buildFunc = $.bsButton;             break;
+                    case 'buttongroup'      :   buildFunc = $.bsButtonGroup;        break;
+                    case 'menu'             :   buildFunc = $.bsMenu;               break;
+                    case 'select'           :   buildFunc = $.bsSelectBox;          insideFormGroup = true; break;
+                    case 'selectlist'       :   buildFunc = $.bsSelectList;         break;
+                    case 'radiobuttongroup' :   buildFunc = $.bsRadioButtonGroup;   addBorder = true; insideFormGroup = true; break;
+                    case 'checkbox'         :   buildFunc = $.bsCheckbox;           insideFormGroup = true; break;
+                    case 'tabs'             :   buildFunc = $.bsTabs;               break;
+                    case 'table'            :   buildFunc = $.bsTable;              break;
+                    case 'list'             :   buildFunc = $.bsList;               break;
+                    case 'accordion'        :   buildFunc = $.bsAccordion;          break;
+                    case 'slider'           :   buildFunc = buildBaseSlider;        insideFormGroup = true; addBorder = true; buildInsideParent = true; break;
+                    case 'timeslider'       :   buildFunc = buildTimeSlider;        insideFormGroup = true; addBorder = true; buildInsideParent = true; break;
+                    case 'text'             :   buildFunc = $.bsText;               insideFormGroup = true; break;
+                    case 'textarea'         :   buildFunc = $.bsTextArea;           insideFormGroup = true; break;
+                    case 'textbox'          :   buildFunc = buildTextBox;           insideFormGroup = true; addBorder = true; noValidation = true; break;
+                    case 'fileview'         :   buildFunc = $.bsFileView;           break;
+                    case 'hidden'           :   buildFunc = buildHidden;            noValidation = true; break;
+                    case 'inputgroup'       :   buildFunc = buildInputGroup;        addBorder = true; insideFormGroup = true; buildInsideParent = true; break;
+//                    case 'xx'               :   buildFunc = $.bsXx;               break;
+
+                    default                 :   buildFunc = $.fn._bsAddHtml;        buildInsideParent = true;
+                }
+            }
+
+            //Overwrite insideFormGroup if value given in options
+            if ( $.type( options.insideFormGroup ) == "boolean")
+                insideFormGroup = options.insideFormGroup;
+
+            //Set the parent-element where to append to created element(s)
+            var $parent = this,
+                insideInputGroup = false;
+
+            if (insideFormGroup){
+                //Create outer form-group
+                insideInputGroup = true;
+                $parent = $divXXGroup('form-group', options).appendTo( $parent );
+                if (options.smallBottomPadding)
+                    $parent.addClass('small-bottom-padding');
+
+                if (options.lineBefore)
+                    $('<hr/>')
+                        .addClass('before')
+                        .toggleClass('above-label', !!options.label)
+                        .appendTo( $parent );
+
+                if (noValidation || options.noValidation)
+                    $parent.addClass('no-validation');
+            }
+            var $originalParent = $parent;
+            if (insideInputGroup || options.prepend || options.before || options.append || options.after){
+                //Create element inside input-group
+                var $inputGroup = $divXXGroup('input-group', options);
+                if (addBorder && !options.noBorder){
+                    //Add border and label (if any)
+                    $inputGroup.addClass('input-group-border');
+
+                    if (options.darkBorderlabel)
+                        $inputGroup.addClass('input-group-border-dark');
+
+                    if (options.label){
+                        $inputGroup.addClass('input-group-border-with-label');
+                        $('<span/>')
+                            .addClass('has-fixed-label')
+                            ._bsAddHtml( options.label )
+                            .appendTo( $inputGroup );
+                    }
+                }
+                $parent = $inputGroup.appendTo( $parent );
+            }
+
+            //Build the element. Build inside $parent or add to $parent after
+            if (buildInsideParent)
+                buildFunc.call( this, options, $parent );
+            else
+                buildFunc.call( this, options ).appendTo( $parent );
+
+            if (options.center)
+                $parent.addClass('justify-content-center text-center');
+
+            var prepend = options.prepend || options.before;
+            if (prepend)
+                $('<div/>')
+                    .addClass('input-group-prepend')
+                    ._bsAppendContent( prepend, options.contentContext, null, options  )
+                    .prependTo( $parent );
+            var append = options.append || options.after;
+            if (append)
+                $('<div/>')
+                    .addClass('input-group-append')
+                    ._bsAppendContent( append, options.contentContext, null, options  )
+                    .appendTo( $parent );
+
+            if (options.lineAfter)
+                $('<hr/>')
+                    .addClass('after')
+                    .appendTo( $originalParent );
+
+            return this;
+        }   //end of _bsAppendContent
+    }); //$.fn.extend
+
+
+}(jQuery, this.i18next, this, document));
+;
+/****************************************************************************
 	jquery-bootstrap-accordion.js,
 
 	(c) 2017, FCOO
@@ -55648,14 +56437,14 @@ module.exports = g;
                     //Radio-button icons
                     [[
                         'fas fa-circle text-checked   icon-show-for-checked', //"Blue" background
-                        $.FONTAWESOME_PREFIX_BUTTON + ' fa-dot-circle text-white icon-show-for-checked', //Dot marker
-                        $.FONTAWESOME_PREFIX_BUTTON + ' fa-circle'                                       //Border
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-dot-circle text-white icon-show-for-checked', //Dot marker
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'                                       //Border
                     ]] :
                     //Checkbox-button icons
                     [[
                         'fas fa-square text-checked      icon-show-for-checked', //"Blue" background
-                        $.FONTAWESOME_PREFIX_BUTTON + ' fa-check-square text-white  icon-show-for-checked', //Check marker
-                        $.FONTAWESOME_PREFIX_BUTTON + ' fa-square'                                          //Border
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-check-square text-white  icon-show-for-checked', //Check marker
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-square'                                          //Border
                     ]];
 
 
@@ -56050,7 +56839,7 @@ module.exports = g;
             .addClass('modal-footer')
             .css('justify-content',  'center')
             ._bsAppendContent([
-                $.bsButton( {icon: $.FONTAWESOME_PREFIX_BUTTON + ' fa-window-maximize',  text: {da:'Vis',  en:'Show'},   onClick: function(){ showFileInModal( fileName, options.header ); } } ),
+                $.bsButton( {icon: $.FONTAWESOME_PREFIX + ' fa-window-maximize',  text: {da:'Vis',  en:'Show'},   onClick: function(){ showFileInModal( fileName, options.header ); } } ),
                 $.bsButton( {icon: $.bsExternalLinkIcon, text: {da: 'Åbne', en: 'Open'}, link: fileName } )
             ])
             .appendTo($result);
@@ -56099,7 +56888,7 @@ module.exports = g;
                 ' ';
         var result = [
             'fas ' + className + colorClassName,
-            $.FONTAWESOME_PREFIX_BUTTON + ' ' + className + borderColorClassName
+            $.FONTAWESOME_PREFIX + ' ' + className + borderColorClassName
         ];
 
         return options.partOfList ? result : [result];
@@ -56747,28 +57536,32 @@ module.exports = g;
 
     */
 
-    //$.bsHeaderIcons = class-names for the different icons on the header
-    $.bsHeaderIcons = {
-        back    : 'fa-chevron-left',
-        forward : 'fa-chevron-right',
+    //$.bsHeaderIcons = class-names for the different icons on the header. Set by function to allow updating $.FONTAWESOME_PREFIX_??
+    $.bsHeaderIcons = {};
+    $._set_bsHeaderIcons = function( forceOptions = {}){
 
-        pin     : ['fas fa-thumbtack fa-inside-circle', $.FONTAWESOME_PREFIX_BUTTON + ' fa-circle'],
-        unpin   : 'fa-thumbtack',
+        $.bsHeaderIcons = $.extend( $.bsHeaderIcons, {
+            back    : 'fa-chevron-left',
+            forward : 'fa-chevron-right',
 
-        extend  : 'fa-chevron-up',
-        diminish: 'fa-chevron-down',
+            pin     : ['fas fa-thumbtack fa-inside-circle', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
+            unpin   : 'fa-thumbtack',
 
-        new     : [$.FONTAWESOME_PREFIX_BUTTON + ' fa-window-maximize fa-inside-circle2', $.FONTAWESOME_PREFIX_BUTTON + ' fa-circle'],
+            extend  : 'fa-chevron-up',
+            diminish: 'fa-chevron-down',
 
-        warning : [['fas fa-circle back text-warning', $.FONTAWESOME_PREFIX_BUTTON + ' fa-circle front'], 'fas fa-exclamation middle'],
+            new     : [$.FONTAWESOME_PREFIX_STANDARD + ' fa-window-maximize fa-inside-circle2', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
 
-        info    : $.FONTAWESOME_PREFIX_BUTTON + ' fa-info-circle',
+            warning : [['fas fa-circle back text-warning', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle front'], 'fas fa-exclamation middle'],
 
+            info    : /*$.FONTAWESOME_PREFIX_STANDARD + */'fas fa-info-circle', //fas-info-circle is not part of FA v5 free regulare
 
-        help    : $.FONTAWESOME_PREFIX_BUTTON + ' fa-question-circle',
+            help    : $.FONTAWESOME_PREFIX_STANDARD + ' fa-question-circle',
 
-        close   : ['fas fa-circle back', $.FONTAWESOME_PREFIX_BUTTON + ' fa-times-circle middle', $.FONTAWESOME_PREFIX_BUTTON + ' fa-circle front']
+            close   : ['fas fa-circle back', $.FONTAWESOME_PREFIX_STANDARD + ' fa-times-circle middle', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle front']
+        }, forceOptions );
     };
+    $._set_bsHeaderIcons();
 
     //mandatoryHeaderIconClass = mandatory class-names and title for the different icons on the header
     var mandatoryHeaderIconClassAndTitle = {
@@ -60811,796 +61604,6 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
     };
 
 }(jQuery, this, document));
-;
-/****************************************************************************
-    jquery-bootstrap.js,
-
-    (c) 2017, FCOO
-
-    https://github.com/fcoo/jquery-bootstrap
-    https://github.com/fcoo
-
-****************************************************************************/
-
-(function ($, i18next, window, document, undefined) {
-    "use strict";
-
-    /*
-
-    Almost all elements comes in two sizes: normal and small set by options.small: false/true
-
-    In jquery-bootstrap.scss sizing class-postfix -xs is added (from Bootstrap 3)
-
-    Elements to click or touch has a special implementation:
-    For device with 'touch' the Bootstrap size 'normal' and 'small' are used
-    For desktop (only mouse) we using smaller version (large = Bootstrap normal, normal = Bootstrap small, small = Bootstrap x-small)
-
-    The variable window.bsIsTouch must be overwriten with the correct value in the application
-
-    */
-
-    //Create namespace
-    var ns = window;
-
-    /*
-    Create $.BSASMODAL = record with {className: asModal-function} where className is added to any $element that have a asModal-function
-    Ex.:
-    $.BSASMODAL['BSTABLE'] = function(){ //Create bsModal for this }
-    var myTable = $.bsTable({...}); //Add 'BSTABLE' to class-name for  result
-    myTable.asModal({...});
-    */
-    $.BSASMODAL = $.BSASMODAL || {};
-    $.fn.asModal = function(options){
-        var _this   = this,
-            asModal = null;
-
-        $.each($.BSASMODAL, function(id, asModalFunc){
-            if (_this.hasClass(id)){
-                asModal = asModalFunc;
-                return false;
-            }
-        });
-        return asModal ? $.proxy(asModal, this)( options ) : null;
-    };
-
-    //Allow test-pages to set bsIsTouch to fixed value
-    ns.bsIsTouch = typeof ns.bsIsTouch == "boolean" ? ns.bsIsTouch : true;
-
-    $.EMPTY_TEXT = '___***EMPTY***___';
-
-    //FONTAWESOME_PREFIX = the classname-prefix used when non is given. Fontawesome 4.X: 'fa', Fontawesome 5: Free: 'fas' Pro: 'far' or 'fal'
-    $.FONTAWESOME_PREFIX = $.FONTAWESOME_PREFIX || 'fa';
-
-
-    //FONTAWESOME_PREFIX_BUTTON = the classname-prefix used for buttons in jquery-bootstrap-buttons. Fontawesome 5: Free: 'far'
-    $.FONTAWESOME_PREFIX_BUTTON = $.FONTAWESOME_PREFIX_BUTTON || 'far';
-
-
-
-    //ICONFONT_PREFIXES = STRING or []STRING with regexp to match class-name setting font-icon class-name. Fontawesome 5: 'fa.?' accepts 'fas', 'far', etc. as class-names => will not add $.FONTAWESOME_PREFIX
-    $.ICONFONT_PREFIXES = 'fa.?';
-
-    /******************************************************
-    $divXXGroup
-    ******************************************************/
-    function $divXXGroup( groupTypeClass, options ){
-        return $('<div/>')
-                   ._bsAddBaseClassAndSize( $.extend({}, options, {
-                       baseClass   : groupTypeClass,
-                       useTouchSize: true
-                   }));
-    }
-
-    //$._bsAdjustIconAndText: Adjust options to fit with {icon"...", text:{da:"", en:".."}
-    // options == {da:"..", en:".."} => return {text: options}
-    // options == array of ??        => array of $._bsAdjustIconAndText( ??? )
-    // options == STRING             => return {text: options}
-
-    $._bsAdjustIconAndText = function( options ){
-        if (!options)
-            return options;
-        if ($.isArray( options )){
-            var result = [];
-            $.each( options, function(index, content){
-                result.push( $._bsAdjustIconAndText(content) );
-            });
-            return result;
-        }
-
-        if ($.type( options ) == "object"){
-            if (!options.icon && !options.text)
-                return {text: options };
-            else
-                return options;
-        }
-        else
-            //options == simple type (string, number etc.)
-            return {text: options };
-
-    };
-
-    //$._bsAdjustText: Adjust options to fit with {da:"...", en:"..."}
-    // options == {da:"..", en:".."} => return options
-    // options == STRING             => return {da: options}
-    $._bsAdjustText = function( options ){
-        if (!options)
-            return options;
-        if ($.type( options ) == "string")
-            return {da: options, en:options};
-        return options;
-    };
-
-    //$._bsAdjustOptions: Adjust options to allow text/name/header etc.
-    $._bsAdjustOptions = function( options, defaultOptions, forceOptions ){
-        //*********************************************************************
-        //adjustContentOptions: Adjust options for the content of elements
-        function adjustContentAndContextOptions( options, context ){
-            options.iconClass = options.iconClass || options.iconClassName;
-            options.textClass = options.textClass || options.textClassName;
-
-            //If context is given => convert all function to proxy
-            if (context)
-                $.each( options, function( id, value ){
-                    if ($.isFunction( value ))
-                        options[id] = $.proxy( value, context );
-                });
-
-            return options;
-        }
-        //*********************************************************************
-
-        options = $.extend( true, {}, defaultOptions || {}, options, forceOptions || {} );
-
-        $.each(['selected', 'checked', 'active', 'open', 'isOpen'], function(index, id){
-            if (options[id] !== undefined){
-                options.selected = !!options[id];
-                return false;
-            }
-        });
-
-        options.list = options.list || options.buttons || options.items || options.children;
-
-        options = adjustContentAndContextOptions( options, options.context );
-
-        //Adjust options.content
-        if (options.content){
-            if ($.isArray( options.content ) )
-                //Adjust each record in options.content
-                for (var i=0; i<options.content.length; i++ )
-                    options.content[i] = adjustContentAndContextOptions( options.content[i], options.context );
-            else
-                if ($.type( options.content ) == "object")
-                    options.content = adjustContentAndContextOptions( options.content, options.context );
-        }
-
-        //Sert context = null to avoid "double" proxy
-        options.context = null;
-
-        return options;
-    };
-
-
-    /****************************************************************************************
-    _bsGetSizeClass
-    baseClass: "BASE" useTouchSize: false
-        small: false => sizeClass = ''
-        small: true  => sizeClass = "BASE-sm"
-
-    baseClass: "BASE" useTouchSize: true
-        small: false => sizeClass = 'BASE-sm'
-        small: true  => sizeClass = "BASE-xs"
-    ****************************************************************************************/
-    $._bsGetSizeClass = function( options ){
-        var sizeClassPostfix = '';
-
-        if (options.useTouchSize){
-            if (ns.bsIsTouch)
-                sizeClassPostfix = options.small ? 'sm' : '';
-            else
-                sizeClassPostfix = options.small ? 'xs' : 'sm';
-        }
-        else
-            sizeClassPostfix = options.small ? 'sm' : '';
-
-        return sizeClassPostfix && options.baseClass ? options.baseClass + '-' + sizeClassPostfix : '';
-    };
-
-
-    /****************************************************************************************
-    $._bsCreateElement = internal method to create $-element
-    ****************************************************************************************/
-    $._bsCreateElement = function( tagName, link, title, textStyle, className, data ){
-        var $result;
-        if (link){
-            $result = $('<a/>');
-            if ($.isFunction( link ))
-                $result
-                    .prop('href', 'javascript:undefined')
-                    .on('click', link );
-            else
-                $result
-                    .i18n(link, 'href')
-                    .prop('target', '_blank');
-        }
-        else
-            $result = $('<'+tagName+'/>');
-
-        if (title)
-            $result.i18n(title, 'title');
-
-        $result._bsAddStyleClasses( textStyle || '' );
-
-        if (className)
-            $result.addClass( className );
-
-        if (data)
-            $result.data( data );
-
-        return $result;
-    };
-
-    /****************************************************************************************
-    $._bsCreateIcon = internal method to create $-icon
-    ****************************************************************************************/
-    var iconfontPrefixRegExp = null;
-    $._bsCreateIcon = function( options, $appendTo, title, className/*, insideStack*/ ){
-        if (!iconfontPrefixRegExp){
-            var prefixes = $.isArray($.ICONFONT_PREFIXES) ? $.ICONFONT_PREFIXES : [$.ICONFONT_PREFIXES];
-            iconfontPrefixRegExp = new window.RegExp('(\\s|^)(' + prefixes.join('|') + ')(\\s|$)', 'g');
-        }
-
-        var $icon;
-
-        if ($.type(options) == 'string')
-            options = {class: options};
-
-        if ($.isArray( options)){
-            //Create a stacked icon
-             $icon = $._bsCreateElement( 'div', null, title, null, 'container-stacked-icons ' + (className || '')  );
-
-            $.each( options, function( index, opt ){
-                $._bsCreateIcon( opt, $icon, null, 'stacked-icon' );
-            });
-
-            //If any of the stacked icons have class fa-no-margin => set if on the container
-            if ($icon.find('.fa-no-margin').length)
-                $icon.addClass('fa-no-margin');
-        }
-        else {
-            var allClassNames = options.icon || options.class || '';
-
-            //Append $.FONTAWESOME_PREFIX if icon don't contain fontawesome prefix ("fa?")
-            if (allClassNames.search(iconfontPrefixRegExp) == -1)
-                allClassNames = $.FONTAWESOME_PREFIX + ' ' + allClassNames;
-
-            allClassNames = allClassNames + ' ' + (className || '');
-
-            $icon = $._bsCreateElement( 'i', null, title, null, allClassNames );
-
-        }
-        $icon.appendTo( $appendTo );
-        return $icon;
-    };
-
-    /****************************************************************************************
-    $._isEqual(obj1, obj2 OR array)
-    Check if two objects or arrays are equal
-    (c) 2017 Chris Ferdinandi, MIT License, https://gomakethings.com
-    @param  {Object|Array|String}  value  The first object or array to compare
-    @param  {Object|Array|String}  other  The second object or array to compare
-    @return {Boolean}              Returns true if they're equal
-    ****************************************************************************************/
-    $._isEqual = function (value, other) {
-        // Get the value type
-        var type = Object.prototype.toString.call(value);
-
-        // If the two objects are not the same type, return false
-        if (type !== Object.prototype.toString.call(other)) return false;
-
-        // Compare the length of the length of the two items
-        var valueLen = type === '[object Array]' ? value.length : Object.keys(value).length;
-        var otherLen = type === '[object Array]' ? other.length : Object.keys(other).length;
-        if (valueLen !== otherLen) return false;
-
-        // Compare two items
-        var compare = function (item1, item2) {
-            // Get the object type
-            var itemType = Object.prototype.toString.call(item1);
-
-            // If an object or array, compare recursively
-            if (['[object Array]', '[object Object]'].indexOf(itemType) >= 0) {
-                if (!$._isEqual(item1, item2)) return false;
-            }
-            // Otherwise, do a simple comparison
-            else {
-                // If the two items are not the same type, return false
-                if (itemType !== Object.prototype.toString.call(item2)) return false;
-
-                // Else if it's a function, convert to a string and compare
-                // Otherwise, just compare
-                if (itemType === '[object Function]') {
-                    if (item1.toString() !== item2.toString())
-                        return false;
-                }
-                else {
-                    if (item1 !== item2) return false;
-                }
-            }
-        };
-
-        // Compare properties
-          if (type === '[object Array]'){
-               for (var i=0; i<valueLen; i++){
-                if (compare(value[i], other[i]) === false)
-                    return false;
-            }
-        }
-        else
-            if (type === '[object Object]'){
-                for (var key in value){
-                    if ( (value.hasOwnProperty(key)) && (compare(value[key], other[key]) === false))
-                        return false;
-                }
-            }
-            else
-                // If nothing failed, return simple comparison
-                return value == other;
-
-        return true;
-    };
-
-
-    //$.parentOptionsToInherit = []ID = id of options that modal-content can inherit from the modal itself
-    $.parentOptionsToInherit = ['small'];
-
-    $.fn.extend({
-        //_bsAddIdAndName
-        _bsAddIdAndName: function( options ){
-            this.attr('id', options.id || '');
-            this.attr('name', options.name || options.id || '');
-            return this;
-        },
-
-        /****************************************************************************************
-        _bsAddBaseClassAndSize
-
-        Add classes
-
-        options:
-            baseClass           [string]
-            baseClassPostfix    [string]
-            styleClass          [string]
-            class               [string]
-            textStyle           [string] or [object]. see _bsAddStyleClasses
-        ****************************************************************************************/
-        _bsAddBaseClassAndSize: function( options ){
-            var classNames = options.baseClass ? [options.baseClass + (options.baseClassPostfix || '')] : [];
-
-            classNames.push( $._bsGetSizeClass(options) );
-
-            if (options.styleClass)
-                classNames.push( options.styleClass );
-
-            if (options.class)
-                classNames.push( options.class );
-
-            this.addClass( classNames.join(' ') );
-
-            this._bsAddStyleClasses( options.textStyle );
-
-            return this;
-        },
-
-        /****************************************************************************************
-        _bsAddStyleClasses
-        Add classes for text-styel
-
-        options [string] or [object]
-            Style for the contents. String or object with part of the following
-            "left right center lowercase uppercase capitalize normal bold italic" or
-            {left: true, right: true, center: true, lowercase: true, uppercase: true, capitalize: true, normal: true, bold: true, italic: true}
-        ****************************************************************************************/
-        _bsAddStyleClasses: function( options = {}){
-            var _this = this,
-
-                bsStyleClass = {
-                    //Text color
-                    "primary"     : "text-primary",
-                    "secondary"   : "text-secondary",
-                    "success"     : "text-success",
-                    "danger"      : "text-danger",
-                    "warning"     : "text-warning",
-                    "info"        : "text-info",
-                    "light"       : "text-light",
-                    "dark"        : "text-dark",
-
-                    //Align
-                    "left"        : "text-left",
-                    "right"       : "text-right",
-                    "center"      : "text-center",
-
-                    //Case
-                    "lowercase"   : "text-lowercase",
-                    "uppercase"   : "text-uppercase",
-                    "capitalize"  : "text-capitalize",
-
-                    //Weight
-                    "normal"      : "font-weight-normal",
-                    "bold"        : "font-weight-bold",
-                    "italic"      : "font-italic"
-                };
-
-            $.each( bsStyleClass, function( style, className ){
-                if (
-                      ( (typeof options == 'string') && (options.indexOf(style) > -1 )  ) ||
-                      ( (typeof options == 'object') && (options[style]) )
-                    )
-                    _this.addClass( className );
-            });
-            return this;
-        },
-
-        /****************************************************************************************
-        _bsAddHtml
-        Internal methods to add innerHTML to button or other element
-        options: array of textOptions or textOptions
-        textOptions: {
-            icon     : String / {class, data, attr} or array of String / {className, data, attr}
-            text     : String or array of String
-            vfFormat : String or array of String
-            vfValue  : any type or array of any-type
-            vfOptions: JSON-object or array of JSON-object
-            textStyle: String or array of String
-            link     : String or array of String
-            title    : String or array of String
-            iconClass: string or array of String
-            textClass: string or array of String
-            textData : obj or array of obj
-        }
-        checkForContent: [Boolean] If true AND options.content exists => use options.content instead
-        ****************************************************************************************/
-
-        _bsAddHtml:  function( options, htmlInDiv, ignoreLink, checkForContent ){
-            //**************************************************
-            function getArray( input ){
-                return input ? $.isArray( input ) ? input : [input] : [];
-            }
-            //**************************************************
-            function isHtmlString( str ){
-                if (!htmlInDiv || ($.type(str) != 'string')) return false;
-
-                var isHtml = false,
-                    $str = null;
-                try       { $str = $(str); }
-                catch (e) { $str = null;   }
-
-                if ($str && $str.length){
-                    isHtml = true;
-                    $str.each( function( index, elem ){
-                        if (!elem.nodeType || (elem.nodeType != 1)){
-                            isHtml = false;
-                            return false;
-                        }
-                    });
-                }
-                return isHtml;
-            }
-
-            //**************************************************
-            options = options || '';
-
-            if (options.content && checkForContent)
-                return this._bsAddHtml(options.content, htmlInDiv, ignoreLink);
-
-
-            var _this = this;
-
-            //options = array => add each
-            if ($.isArray( options )){
-                $.each( options, function( index, textOptions ){
-                    _this._bsAddHtml( textOptions, htmlInDiv, ignoreLink );
-                });
-                return this;
-            }
-
-            this.addClass('container-icon-and-text');
-
-            //If the options is a jQuery-object: append it and return
-            if (options.jquery){
-                this.append( options );
-                return this;
-            }
-
-            //If the content is a string containing html-code => append it and return
-            if (isHtmlString(options)){
-                this.append( $(options) );
-                return this;
-            }
-
-            //Adjust icon and/or text if it is not at format-options
-            if (!options.vfFormat)
-                options = $._bsAdjustIconAndText( options );
-
-            //options = simple textOptions
-            var iconArray       = getArray( options.icon ),
-                textArray       = getArray( options.text ),
-                vfFormatArray   = getArray( options.vfFormat ),
-                vfValueArray    = getArray( options.vfValue ),
-                i18nextArray    = getArray( options.i18next ),
-                vfOptionsArray  = getArray( options.vfOptions ),
-                textStyleArray  = getArray( options.textStyle ),
-                linkArray       = getArray( ignoreLink ? [] : options.link || options.onClick ),
-                titleArray      = getArray( options.title ),
-                iconClassArray  = getArray( options.iconClass ),
-                textClassArray  = getArray( options.textClass ),
-                textDataArray   = getArray( options.textData );
-
-            //Add icons (optional)
-            $.each( iconArray, function( index, icon ){
-                $._bsCreateIcon( icon, _this, titleArray[ index ], iconClassArray[index] );
-            });
-
-            //Add color (optional)
-            if (options.color)
-                _this.addClass('text-'+ options.color);
-
-            //Add text
-
-            $.each( textArray, function( index, text ){
-                //If text ={da,en} and both da and is html-stirng => build inside div
-                var tagName = 'span';
-                if ( (text.hasOwnProperty('da') && isHtmlString(text.da)) || (text.hasOwnProperty('en') && isHtmlString(text.en)) )
-                    tagName = 'div';
-
-                var $text = $._bsCreateElement( tagName, linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index], textDataArray[index] );
-                if ($.isFunction( text ))
-                    text( $text );
-                else
-                    if (text == $.EMPTY_TEXT)
-                        $text.html( '&nbsp;');
-                    else
-                        if (text != ""){
-                            //If text is a string and not a key to i18next => just add the text
-                            if ( ($.type( text ) == "string") && !i18next.exists(text) )
-                                $text.html( text );
-                            else
-                                $text.i18n( text, 'html', i18nextArray[ index ] );
-                        }
-
-                if (index < textClassArray.length)
-                    $text.addClass( textClassArray[index] );
-
-                $text.appendTo( _this );
-            });
-
-            //Add value-format content
-            $.each( vfFormatArray, function( index ){
-                $._bsCreateElement( 'span', linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index] )
-                    .vfValueFormat(
-                        vfValueArray[index] || '',
-                        vfFormatArray[index],
-                        vfOptionsArray[index]
-                    )
-                    .appendTo( _this );
-            });
-
-            return this;
-        },
-
-        //_bsButtonOnClick
-        _bsButtonOnClick: function(){
-            var options = this.data('bsButton_options');
-            $.proxy( options.onClick, options.context )( options.id, null, this );
-            return options.returnFromClick || false;
-        },
-
-        /****************************************************************************************
-        _bsAppendContent( options, context, arg, parentOptions )
-        Create and append any content to this.
-        options can be $-element, function, json-object or array of same
-
-        If parentOptions is given => some options from parentOptions is used if they are not given in options
-
-
-        The default bootstrap structure used for elements in a form is
-        <div class="form-group">
-            <div class="input-group">
-                <div class="input-group-prepend">               //optional
-                    <button class="btn btn-standard">..</buton> //optional 1-N times
-                </div>                                          //optional
-
-                <label class="has-float-label">
-                    <input class="form-control form-control-with-label" type="text" placeholder="The placeholder...">
-                    <span>The label</span>
-                </label>
-
-                <div class="input-group-append">                //optional
-                    <button class="btn btn-standard">..</buton> //optional 1-N times
-                </div>                                          //optional
-            </div>
-        </div>
-        ****************************************************************************************/
-        _bsAppendContent: function( options, context, arg, parentOptions = {} ){
-
-            //Internal functions to create baseSlider and timeSlider
-            function buildSlider(options, constructorName, $parent){
-                var $sliderInput = $('<input/>').appendTo( $parent ),
-                    slider = $sliderInput[constructorName]( options ).data(constructorName),
-                    $element = slider.cache.$outerContainer || slider.cache.$container;
-
-                $element
-                    .attr('id', options.id)
-                    .data('slider', slider );
-            }
-            function buildBaseSlider(options, $parent){ buildSlider(options, 'baseSlider', $parent); }
-            function buildTimeSlider(options, $parent){ buildSlider(options, 'timeSlider', $parent); }
-
-            function buildTextBox( options ){
-                return $('<div/>')
-                        ._bsAddHtml( options );
-            }
-
-            function buildHidden( options ){
-                return $.bsInput( options ).css('display', 'none');
-            }
-
-            function buildInputGroup( options, $parent ){
-                return $parent
-                           .attr('id', options.id)
-                           .addClass('flex-column')
-                           ._bsAppendContent(options.content, null, null, options);
-            }
-
-
-            if (!options)
-                return this;
-
-            //Array of $-element, function etc
-            if ($.isArray( options )){
-                var _this = this;
-                $.each(options, function( index, opt){
-                    _this._bsAppendContent(opt, context, null, parentOptions );
-                });
-                return this;
-            }
-
-            //Function: Include arg (if any) in call to method (=options)
-            if ($.isFunction( options )){
-                arg = arg ? $.isArray(arg) ? arg : [arg] : [];
-                arg.unshift(this);
-                options.apply( context, arg );
-                return this;
-            }
-
-            if (!$.isPlainObject(options)){
-                //Assume it is a $-element or other object that can be appended directly
-                this.append( options );
-                return this;
-            }
-
-            //json-object with options to create bs-elements
-            var buildFunc = $.fn._bsAddHtml,
-                insideFormGroup   = false,
-                addBorder         = false,
-                buildInsideParent = false,
-                noValidation      = false;
-
-
-            //Set values fro parentOptions into options
-            $.each($.parentOptionsToInherit, function(index, id){
-                if (parentOptions.hasOwnProperty(id) && !options.hasOwnProperty(id))
-                    options[id] = parentOptions[id];
-            });
-
-
-            if (options.type){
-                var type = options.type.toLowerCase();
-                switch (type){
-                    case 'input'            :   buildFunc = $.bsInput;              insideFormGroup = true; break;
-                    case 'button'           :   buildFunc = $.bsButton;             break;
-                    case 'buttongroup'      :   buildFunc = $.bsButtonGroup;        break;
-                    case 'menu'             :   buildFunc = $.bsMenu;               break;
-                    case 'select'           :   buildFunc = $.bsSelectBox;          insideFormGroup = true; break;
-                    case 'selectlist'       :   buildFunc = $.bsSelectList;         break;
-                    case 'radiobuttongroup' :   buildFunc = $.bsRadioButtonGroup;   addBorder = true; insideFormGroup = true; break;
-                    case 'checkbox'         :   buildFunc = $.bsCheckbox;           insideFormGroup = true; break;
-                    case 'tabs'             :   buildFunc = $.bsTabs;               break;
-                    case 'table'            :   buildFunc = $.bsTable;              break;
-                    case 'list'             :   buildFunc = $.bsList;               break;
-                    case 'accordion'        :   buildFunc = $.bsAccordion;          break;
-                    case 'slider'           :   buildFunc = buildBaseSlider;        insideFormGroup = true; addBorder = true; buildInsideParent = true; break;
-                    case 'timeslider'       :   buildFunc = buildTimeSlider;        insideFormGroup = true; addBorder = true; buildInsideParent = true; break;
-                    case 'text'             :   buildFunc = $.bsText;               insideFormGroup = true; break;
-                    case 'textarea'         :   buildFunc = $.bsTextArea;           insideFormGroup = true; break;
-                    case 'textbox'          :   buildFunc = buildTextBox;           insideFormGroup = true; addBorder = true; noValidation = true; break;
-                    case 'fileview'         :   buildFunc = $.bsFileView;           break;
-                    case 'hidden'           :   buildFunc = buildHidden;            noValidation = true; break;
-                    case 'inputgroup'       :   buildFunc = buildInputGroup;        addBorder = true; insideFormGroup = true; buildInsideParent = true; break;
-//                    case 'xx'               :   buildFunc = $.bsXx;               break;
-
-                    default                 :   buildFunc = $.fn._bsAddHtml;        buildInsideParent = true;
-                }
-            }
-
-            //Overwrite insideFormGroup if value given in options
-            if ( $.type( options.insideFormGroup ) == "boolean")
-                insideFormGroup = options.insideFormGroup;
-
-            //Set the parent-element where to append to created element(s)
-            var $parent = this,
-                insideInputGroup = false;
-
-            if (insideFormGroup){
-                //Create outer form-group
-                insideInputGroup = true;
-                $parent = $divXXGroup('form-group', options).appendTo( $parent );
-                if (options.smallBottomPadding)
-                    $parent.addClass('small-bottom-padding');
-
-                if (options.lineBefore)
-                    $('<hr/>')
-                        .addClass('before')
-                        .toggleClass('above-label', !!options.label)
-                        .appendTo( $parent );
-
-                if (noValidation || options.noValidation)
-                    $parent.addClass('no-validation');
-            }
-            var $originalParent = $parent;
-            if (insideInputGroup || options.prepend || options.before || options.append || options.after){
-                //Create element inside input-group
-                var $inputGroup = $divXXGroup('input-group', options);
-                if (addBorder && !options.noBorder){
-                    //Add border and label (if any)
-                    $inputGroup.addClass('input-group-border');
-
-                    if (options.darkBorderlabel)
-                        $inputGroup.addClass('input-group-border-dark');
-
-                    if (options.label){
-                        $inputGroup.addClass('input-group-border-with-label');
-                        $('<span/>')
-                            .addClass('has-fixed-label')
-                            ._bsAddHtml( options.label )
-                            .appendTo( $inputGroup );
-                    }
-                }
-                $parent = $inputGroup.appendTo( $parent );
-            }
-
-            //Build the element. Build inside $parent or add to $parent after
-            if (buildInsideParent)
-                buildFunc.call( this, options, $parent );
-            else
-                buildFunc.call( this, options ).appendTo( $parent );
-
-            if (options.center)
-                $parent.addClass('justify-content-center text-center');
-
-            var prepend = options.prepend || options.before;
-            if (prepend)
-                $('<div/>')
-                    .addClass('input-group-prepend')
-                    ._bsAppendContent( prepend, options.contentContext, null, options  )
-                    .prependTo( $parent );
-            var append = options.append || options.after;
-            if (append)
-                $('<div/>')
-                    .addClass('input-group-append')
-                    ._bsAppendContent( append, options.contentContext, null, options  )
-                    .appendTo( $parent );
-
-            if (options.lineAfter)
-                $('<hr/>')
-                    .addClass('after')
-                    .appendTo( $originalParent );
-
-            return this;
-        }   //end of _bsAppendContent
-    }); //$.fn.extend
-
-
-}(jQuery, this.i18next, this, document));
 ;
 !function(e){var t={};function n(i){if(t[i])return t[i].exports;var s=t[i]={i:i,l:!1,exports:{}};return e[i].call(s.exports,s,s.exports,n),s.l=!0,s.exports}n.m=e,n.c=t,n.d=function(e,t,i){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:i})},n.r=function(e){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&"object"==typeof e&&e&&e.__esModule)return e;var i=Object.create(null);if(n.r(i),Object.defineProperty(i,"default",{enumerable:!0,value:e}),2&t&&"string"!=typeof e)for(var s in e)n.d(i,s,function(t){return e[t]}.bind(null,s));return i},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=0)}([function(e,t,n){"use strict";n.r(t);var i={hooks:{},extensions:[],wrappers:[],navbar:{add:!0,sticky:!0,title:"Menu",titleLink:"parent"},onClick:{close:null,preventDefault:null,setSelected:!0},slidingSubmenus:!0},s={classNames:{inset:"Inset",nolistview:"NoListview",nopanel:"NoPanel",panel:"Panel",selected:"Selected",vertical:"Vertical"},language:null,openingInterval:25,panelNodetype:["ul","ol","div"],transitionDuration:400};function a(e,t){for(var n in"object"!=o(e)&&(e={}),"object"!=o(t)&&(t={}),t)t.hasOwnProperty(n)&&(void 0===e[n]?e[n]=t[n]:"object"==o(e[n])&&a(e[n],t[n]));return e}function o(e){return{}.toString.call(e).match(/\s([a-zA-Z]+)/)[1].toLowerCase()}function r(e,t,n){if("function"==typeof t){var i=t.call(e);if(void 0!==i)return i}return null!==t&&"function"!=typeof t&&void 0!==t||void 0===n?t:n}function c(e,t,n){var i=!1,s=function(n){void 0!==n&&n.target!==e||(i||(e.removeEventListener("transitionend",s),e.removeEventListener("webkitTransitionEnd",s),t.call(e)),i=!0)};e.addEventListener("transitionend",s),e.addEventListener("webkitTransitionEnd",s),setTimeout(s,1.1*n)}function m(){return"mm-"+l++}var l=0;function d(e){return"mm-"==e.slice(0,3)?e.slice(3):e}var p={};function u(e,t){void 0===p[t]&&(p[t]={}),a(p[t],e)}var f={Menu:"منو"},h={Menu:"Menü"},v={Menu:"Меню"};function b(e){var t=e.split("."),n=document.createElement(t.shift());return t.forEach((function(e){n.classList.add(e)})),n}function g(e,t){return Array.prototype.slice.call(e.querySelectorAll(t))}function _(e,t){var n=Array.prototype.slice.call(e.children);return t?n.filter((function(e){return e.matches(t)})):n}function y(e,t){for(var n=[],i=e.parentElement;i;)n.push(i),i=i.parentElement;return t?n.filter((function(e){return e.matches(t)})):n}function L(e){return e.filter((function(e){return!e.matches(".mm-hidden")}))}function w(e){var t=[];return L(e).forEach((function(e){t.push.apply(t,_(e,"a.mm-listitem__text"))})),t.filter((function(e){return!e.matches(".mm-btn_next")}))}function E(e,t,n){e.matches("."+t)&&(e.classList.remove(t),e.classList.add(n))}var x={};function P(e,t,n){"number"==typeof e&&(e="(min-width: "+e+"px)"),x[e]=x[e]||[],x[e].push({yes:t,no:n})}function k(e,t){for(var n=t.matches?"yes":"no",i=0;i<x[e].length;i++)x[e][i][n]()}u({Menu:"Menu"},"nl"),u(f,"fa"),u(h,"de"),u(v,"ru");var S=function(){function e(t,n,i){return this.opts=a(n,e.options),this.conf=a(i,e.configs),this._api=["bind","initPanel","initListview","openPanel","closePanel","closeAllPanels","setSelected"],this.node={},this.vars={},this.hook={},this.clck=[],this.node.menu="string"==typeof t?document.querySelector(t):t,"function"==typeof this._deprecatedWarnings&&this._deprecatedWarnings(),this._initWrappers(),this._initAddons(),this._initExtensions(),this._initHooks(),this._initAPI(),this._initMenu(),this._initPanels(),this._initOpened(),this._initAnchors(),function(){var e=function(e){var t=window.matchMedia(e);k(e,t),t.onchange=function(n){k(e,t)}};for(var t in x)e(t)}(),this}return e.prototype.openPanel=function(e,t){var n=this;if(this.trigger("openPanel:before",[e]),e&&(e.matches(".mm-panel")||(e=e.closest(".mm-panel")),e)){if("boolean"!=typeof t&&(t=!0),e.parentElement.matches(".mm-listitem_vertical")){y(e,".mm-listitem_vertical").forEach((function(e){e.classList.add("mm-listitem_opened"),_(e,".mm-panel").forEach((function(e){e.classList.remove("mm-hidden")}))}));var i=y(e,".mm-panel").filter((function(e){return!e.parentElement.matches(".mm-listitem_vertical")}));this.trigger("openPanel:start",[e]),i.length&&this.openPanel(i[0]),this.trigger("openPanel:finish",[e])}else{if(e.matches(".mm-panel_opened"))return;var s=_(this.node.pnls,".mm-panel"),a=_(this.node.pnls,".mm-panel_opened")[0];s.filter((function(t){return t!==e})).forEach((function(e){e.classList.remove("mm-panel_opened-parent")}));for(var o=e.mmParent;o;)(o=o.closest(".mm-panel"))&&(o.parentElement.matches(".mm-listitem_vertical")||o.classList.add("mm-panel_opened-parent"),o=o.mmParent);s.forEach((function(e){e.classList.remove("mm-panel_highest")})),s.filter((function(e){return e!==a})).filter((function(t){return t!==e})).forEach((function(e){e.classList.add("mm-hidden")})),e.classList.remove("mm-hidden");var r=function(){a&&a.classList.remove("mm-panel_opened"),e.classList.add("mm-panel_opened"),e.matches(".mm-panel_opened-parent")?(a&&a.classList.add("mm-panel_highest"),e.classList.remove("mm-panel_opened-parent")):(a&&a.classList.add("mm-panel_opened-parent"),e.classList.add("mm-panel_highest")),n.trigger("openPanel:start",[e])},m=function(){a&&(a.classList.remove("mm-panel_highest"),a.classList.add("mm-hidden")),e.classList.remove("mm-panel_highest"),n.trigger("openPanel:finish",[e])};t&&!e.matches(".mm-panel_noanimation")?setTimeout((function(){c(e,(function(){m()}),n.conf.transitionDuration),r()}),this.conf.openingInterval):(r(),m())}this.trigger("openPanel:after",[e])}},e.prototype.closePanel=function(e){this.trigger("closePanel:before",[e]);var t=e.parentElement;t.matches(".mm-listitem_vertical")&&(t.classList.remove("mm-listitem_opened"),e.classList.add("mm-hidden"),this.trigger("closePanel",[e])),this.trigger("closePanel:after",[e])},e.prototype.closeAllPanels=function(e){this.trigger("closeAllPanels:before"),this.node.pnls.querySelectorAll(".mm-listitem").forEach((function(e){e.classList.remove("mm-listitem_selected"),e.classList.remove("mm-listitem_opened")}));var t=_(this.node.pnls,".mm-panel"),n=e||t[0];_(this.node.pnls,".mm-panel").forEach((function(e){e!==n&&(e.classList.remove("mm-panel_opened"),e.classList.remove("mm-panel_opened-parent"),e.classList.remove("mm-panel_highest"),e.classList.add("mm-hidden"))})),this.openPanel(n,!1),this.trigger("closeAllPanels:after")},e.prototype.togglePanel=function(e){var t=e.parentElement;t.matches(".mm-listitem_vertical")&&this[t.matches(".mm-listitem_opened")?"closePanel":"openPanel"](e)},e.prototype.setSelected=function(e){this.trigger("setSelected:before",[e]),g(this.node.menu,".mm-listitem_selected").forEach((function(e){e.classList.remove("mm-listitem_selected")})),e.classList.add("mm-listitem_selected"),this.trigger("setSelected:after",[e])},e.prototype.bind=function(e,t){this.hook[e]=this.hook[e]||[],this.hook[e].push(t)},e.prototype.trigger=function(e,t){if(this.hook[e])for(var n=0,i=this.hook[e].length;n<i;n++)this.hook[e][n].apply(this,t)},e.prototype._initAPI=function(){var e=this,t=this;this.API={},this._api.forEach((function(n){e.API[n]=function(){var e=t[n].apply(t,arguments);return void 0===e?t.API:e}})),this.node.menu.mmApi=this.API},e.prototype._initHooks=function(){for(var e in this.opts.hooks)this.bind(e,this.opts.hooks[e])},e.prototype._initWrappers=function(){this.trigger("initWrappers:before");for(var t=0;t<this.opts.wrappers.length;t++){var n=e.wrappers[this.opts.wrappers[t]];"function"==typeof n&&n.call(this)}this.trigger("initWrappers:after")},e.prototype._initAddons=function(){for(var t in this.trigger("initAddons:before"),e.addons)e.addons[t].call(this);this.trigger("initAddons:after")},e.prototype._initExtensions=function(){var e=this;this.trigger("initExtensions:before"),"array"==o(this.opts.extensions)&&(this.opts.extensions={all:this.opts.extensions}),Object.keys(this.opts.extensions).forEach((function(t){var n=e.opts.extensions[t].map((function(e){return"mm-menu_"+e}));n.length&&P(t,(function(){n.forEach((function(t){e.node.menu.classList.add(t)}))}),(function(){n.forEach((function(t){e.node.menu.classList.remove(t)}))}))})),this.trigger("initExtensions:after")},e.prototype._initMenu=function(){var e=this;this.trigger("initMenu:before"),this.node.wrpr=this.node.wrpr||this.node.menu.parentElement,this.node.wrpr.classList.add("mm-wrapper"),this.node.menu.id=this.node.menu.id||m();var t=b("div.mm-panels");_(this.node.menu).forEach((function(n){e.conf.panelNodetype.indexOf(n.nodeName.toLowerCase())>-1&&t.append(n)})),this.node.menu.append(t),this.node.pnls=t,this.node.menu.classList.add("mm-menu"),this.trigger("initMenu:after")},e.prototype._initPanels=function(){var e=this;this.trigger("initPanels:before"),this.clck.push((function(t,n){if(n.inMenu){var i=t.getAttribute("href");if(i&&i.length>1&&"#"==i.slice(0,1))try{var s=g(e.node.menu,i)[0];if(s&&s.matches(".mm-panel"))return t.parentElement.matches(".mm-listitem_vertical")?e.togglePanel(s):e.openPanel(s),!0}catch(e){}}})),_(this.node.pnls).forEach((function(t){e.initPanel(t)})),this.trigger("initPanels:after")},e.prototype.initPanel=function(e){var t=this,n=this.conf.panelNodetype.join(", ");if(e.matches(n)&&(e.matches(".mm-panel")||(e=this._initPanel(e)),e)){var i=[];i.push.apply(i,_(e,"."+this.conf.classNames.panel)),_(e,".mm-listview").forEach((function(e){_(e,".mm-listitem").forEach((function(e){i.push.apply(i,_(e,n))}))})),i.forEach((function(e){t.initPanel(e)}))}},e.prototype._initPanel=function(e){var t=this;if(this.trigger("initPanel:before",[e]),E(e,this.conf.classNames.panel,"mm-panel"),E(e,this.conf.classNames.nopanel,"mm-nopanel"),E(e,this.conf.classNames.inset,"mm-listview_inset"),e.matches(".mm-listview_inset")&&e.classList.add("mm-nopanel"),e.matches(".mm-nopanel"))return null;var n=e.id||m(),i=e.matches("."+this.conf.classNames.vertical)||!this.opts.slidingSubmenus;if(e.classList.remove(this.conf.classNames.vertical),e.matches("ul, ol")){e.removeAttribute("id");var s=b("div");e.before(s),s.append(e),e=s}e.id=n,e.classList.add("mm-panel"),e.classList.add("mm-hidden");var a=[e.parentElement].filter((function(e){return e.matches("li")}))[0];if(i?a&&a.classList.add("mm-listitem_vertical"):this.node.pnls.append(e),a&&(a.mmChild=e,e.mmParent=a,a&&a.matches(".mm-listitem")&&!_(a,".mm-btn").length)){var o=_(a,".mm-listitem__text")[0];if(o){var r=b("a.mm-btn.mm-btn_next.mm-listitem__btn");r.setAttribute("href","#"+e.id),o.matches("span")?(r.classList.add("mm-listitem__text"),r.innerHTML=o.innerHTML,a.insertBefore(r,o.nextElementSibling),o.remove()):a.insertBefore(r,_(a,".mm-panel")[0])}}return this._initNavbar(e),_(e,"ul, ol").forEach((function(e){t.initListview(e)})),this.trigger("initPanel:after",[e]),e},e.prototype._initNavbar=function(e){if(this.trigger("initNavbar:before",[e]),!_(e,".mm-navbar").length){var t=null,n=null;if(e.getAttribute("data-mm-parent")?n=g(this.node.pnls,e.getAttribute("data-mm-parent"))[0]:(t=e.mmParent)&&(n=t.closest(".mm-panel")),!t||!t.matches(".mm-listitem_vertical")){var i=b("div.mm-navbar");if(this.opts.navbar.add?this.opts.navbar.sticky&&i.classList.add("mm-navbar_sticky"):i.classList.add("mm-hidden"),n){var s=b("a.mm-btn.mm-btn_prev.mm-navbar__btn");s.setAttribute("href","#"+n.id),i.append(s)}var a=null;t?a=_(t,".mm-listitem__text")[0]:n&&(a=g(n,'a[href="#'+e.id+'"]')[0]);var o=b("a.mm-navbar__title"),r=b("span");switch(o.append(r),r.innerHTML=e.getAttribute("data-mm-title")||(a?a.textContent:"")||this.i18n(this.opts.navbar.title)||this.i18n("Menu"),this.opts.navbar.titleLink){case"anchor":a&&o.setAttribute("href",a.getAttribute("href"));break;case"parent":n&&o.setAttribute("href","#"+n.id)}i.append(o),e.prepend(i),this.trigger("initNavbar:after",[e])}}},e.prototype.initListview=function(e){var t=this;this.trigger("initListview:before",[e]),E(e,this.conf.classNames.nolistview,"mm-nolistview"),e.matches(".mm-nolistview")||(e.classList.add("mm-listview"),_(e).forEach((function(e){e.classList.add("mm-listitem"),E(e,t.conf.classNames.selected,"mm-listitem_selected"),_(e,"a, span").forEach((function(e){e.matches(".mm-btn")||e.classList.add("mm-listitem__text")}))}))),this.trigger("initListview:after",[e])},e.prototype._initOpened=function(){this.trigger("initOpened:before");var e=this.node.pnls.querySelectorAll(".mm-listitem_selected"),t=null;e.forEach((function(e){t=e,e.classList.remove("mm-listitem_selected")})),t&&t.classList.add("mm-listitem_selected");var n=t?t.closest(".mm-panel"):_(this.node.pnls,".mm-panel")[0];this.openPanel(n,!1),this.trigger("initOpened:after")},e.prototype._initAnchors=function(){var e=this;this.trigger("initAnchors:before"),document.addEventListener("click",(function(t){var n=t.target.closest("a[href]");if(n){for(var i={inMenu:n.closest(".mm-menu")===e.node.menu,inListview:n.matches(".mm-listitem > a"),toExternal:n.matches('[rel="external"]')||n.matches('[target="_blank"]')},s={close:null,setSelected:null,preventDefault:"#"==n.getAttribute("href").slice(0,1)},c=0;c<e.clck.length;c++){var m=e.clck[c].call(e,n,i);if(m){if("boolean"==typeof m)return void t.preventDefault();"object"==o(m)&&(s=a(m,s))}}i.inMenu&&i.inListview&&!i.toExternal&&(r(n,e.opts.onClick.setSelected,s.setSelected)&&e.setSelected(n.parentElement),r(n,e.opts.onClick.preventDefault,s.preventDefault)&&t.preventDefault(),r(n,e.opts.onClick.close,s.close)&&e.opts.offCanvas&&"function"==typeof e.close&&e.close())}}),!0),this.trigger("initAnchors:after")},e.prototype.i18n=function(e){return function(e,t){return"string"==typeof t&&void 0!==p[t]&&p[t][e]||e}(e,this.conf.language)},e.options=i,e.configs=s,e.addons={},e.wrappers={},e.node={},e.vars={},e}(),M={blockUI:!0,moveBackground:!0};var A={clone:!1,menu:{insertMethod:"prepend",insertSelector:"body"},page:{nodetype:"div",selector:null,noSelector:[]}};function T(e){return e?e.charAt(0).toUpperCase()+e.slice(1):""}function C(e,t,n){var i=t.split(".");e[t="mmEvent"+T(i[0])+T(i[1])]=e[t]||[],e[t].push(n),e.addEventListener(i[0],n)}function N(e,t){var n=t.split(".");t="mmEvent"+T(n[0])+T(n[1]),(e[t]||[]).forEach((function(t){e.removeEventListener(n[0],t)}))}S.options.offCanvas=M,S.configs.offCanvas=A;S.prototype.open=function(){var e=this;this.trigger("open:before"),this.vars.opened||(this._openSetup(),setTimeout((function(){e._openStart()}),this.conf.openingInterval),this.trigger("open:after"))},S.prototype._openSetup=function(){var e=this,t=this.opts.offCanvas;this.closeAllOthers(),function(e,t,n){var i=t.split(".");(e[t="mmEvent"+T(i[0])+T(i[1])]||[]).forEach((function(e){e(n||{})}))}(window,"resize.page",{force:!0});var n=["mm-wrapper_opened"];t.blockUI&&n.push("mm-wrapper_blocking"),"modal"==t.blockUI&&n.push("mm-wrapper_modal"),t.moveBackground&&n.push("mm-wrapper_background"),n.forEach((function(t){e.node.wrpr.classList.add(t)})),setTimeout((function(){e.vars.opened=!0}),this.conf.openingInterval),this.node.menu.classList.add("mm-menu_opened")},S.prototype._openStart=function(){var e=this;c(S.node.page,(function(){e.trigger("open:finish")}),this.conf.transitionDuration),this.trigger("open:start"),this.node.wrpr.classList.add("mm-wrapper_opening")},S.prototype.close=function(){var e=this;this.trigger("close:before"),this.vars.opened&&(c(S.node.page,(function(){e.node.menu.classList.remove("mm-menu_opened");["mm-wrapper_opened","mm-wrapper_blocking","mm-wrapper_modal","mm-wrapper_background"].forEach((function(t){e.node.wrpr.classList.remove(t)})),e.vars.opened=!1,e.trigger("close:finish")}),this.conf.transitionDuration),this.trigger("close:start"),this.node.wrpr.classList.remove("mm-wrapper_opening"),this.trigger("close:after"))},S.prototype.closeAllOthers=function(){var e=this;g(document.body,".mm-menu_offcanvas").forEach((function(t){if(t!==e.node.menu){var n=t.mmApi;n&&n.close&&n.close()}}))},S.prototype.setPage=function(e){this.trigger("setPage:before",[e]);var t=this.conf.offCanvas;if(!e){var n="string"==typeof t.page.selector?g(document.body,t.page.selector):_(document.body,t.page.nodetype);if(n=n.filter((function(e){return!e.matches(".mm-menu, .mm-wrapper__blocker")})),t.page.noSelector.length&&(n=n.filter((function(e){return!e.matches(t.page.noSelector.join(", "))}))),n.length>1){var i=b("div");n[0].before(i),n.forEach((function(e){i.append(e)})),n=[i]}e=n[0]}e.classList.add("mm-page"),e.classList.add("mm-slideout"),e.id=e.id||m(),S.node.page=e,this.trigger("setPage:after",[e])};var H=function(){var e=this;N(document.body,"keydown.tabguard"),C(document.body,"keydown.tabguard",(function(t){9==t.keyCode&&e.node.wrpr.matches(".mm-wrapper_opened")&&t.preventDefault()}))},j=function(){var e=this;this.trigger("initBlocker:before");var t=this.opts.offCanvas,n=this.conf.offCanvas;if(t.blockUI){if(!S.node.blck){var i=b("div.mm-wrapper__blocker.mm-slideout");i.innerHTML="<a></a>",document.querySelector(n.menu.insertSelector).append(i),S.node.blck=i}var s=function(t){t.preventDefault(),t.stopPropagation(),e.node.wrpr.matches(".mm-wrapper_modal")||e.close()};S.node.blck.addEventListener("mousedown",s),S.node.blck.addEventListener("touchstart",s),S.node.blck.addEventListener("touchmove",s),this.trigger("initBlocker:after")}},D={aria:!0,text:!0};var I={text:{closeMenu:"Close menu",closeSubmenu:"Close submenu",openSubmenu:"Open submenu",toggleSubmenu:"Toggle submenu"}},O={"Close menu":"بستن منو","Close submenu":"بستن زیرمنو","Open submenu":"بازکردن زیرمنو","Toggle submenu":"سوییچ زیرمنو"},q={"Close menu":"Menü schließen","Close submenu":"Untermenü schließen","Open submenu":"Untermenü öffnen","Toggle submenu":"Untermenü wechseln"},B={"Close menu":"Закрыть меню","Close submenu":"Закрыть подменю","Open submenu":"Открыть подменю","Toggle submenu":"Переключить подменю"};u({"Close menu":"Menu sluiten","Close submenu":"Submenu sluiten","Open submenu":"Submenu openen","Toggle submenu":"Submenu wisselen"},"nl"),u(O,"fa"),u(q,"de"),u(B,"ru"),S.options.screenReader=D,S.configs.screenReader=I;var z;z=function(e,t,n){e[t]=n,n?e.setAttribute(t,n.toString()):e.removeAttribute(t)},S.sr_aria=function(e,t,n){z(e,"aria-"+t,n)},S.sr_role=function(e,t){z(e,"role",t)},S.sr_text=function(e){return'<span class="mm-sronly">'+e+"</span>"};var R={fix:!0};var U="ontouchstart"in window||!!navigator.msMaxTouchPoints||!1;S.options.scrollBugFix=R;var W={height:"default"};S.options.autoHeight=W;var Y={close:!1,open:!1};S.options.backButton=Y;var F={add:!1,visible:{min:1,max:3}};S.options.columns=F;var X={add:!1,addTo:"panels",count:!1};S.options.counters=X,S.configs.classNames.counters={counter:"Counter"};var V={add:!1,addTo:"panels"};S.options.dividers=V,S.configs.classNames.divider="Divider";var Z={open:!1,node:null};var G="ontouchstart"in window||!!navigator.msMaxTouchPoints||!1,K={top:0,right:0,bottom:0,left:0},Q={start:15,swipe:15},J={x:["Right","Left"],y:["Down","Up"]},$=0,ee=1,te=2,ne=function(e,t){return"string"==typeof e&&"%"==e.slice(-1)&&(e=t*((e=parseInt(e.slice(0,-1),10))/100)),e},ie=function(){function e(e,t,n){this.surface=e,this.area=a(t,K),this.treshold=a(n,Q),this.surface.mmHasDragEvents||(this.surface.addEventListener(G?"touchstart":"mousedown",this.start.bind(this)),this.surface.addEventListener(G?"touchend":"mouseup",this.stop.bind(this)),this.surface.addEventListener(G?"touchleave":"mouseleave",this.stop.bind(this)),this.surface.addEventListener(G?"touchmove":"mousemove",this.move.bind(this))),this.surface.mmHasDragEvents=!0}return e.prototype.start=function(e){this.currentPosition={x:e.touches?e.touches[0].pageX:e.pageX||0,y:e.touches?e.touches[0].pageY:e.pageY||0};var t=this.surface.clientWidth,n=this.surface.clientHeight,i=ne(this.area.top,n);if(!("number"==typeof i&&this.currentPosition.y<i)){var s=ne(this.area.right,t);if(!("number"==typeof s&&(s=t-s,this.currentPosition.x>s))){var a=ne(this.area.bottom,n);if(!("number"==typeof a&&(a=n-a,this.currentPosition.y>a))){var o=ne(this.area.left,t);"number"==typeof o&&this.currentPosition.x<o||(this.startPosition={x:this.currentPosition.x,y:this.currentPosition.y},this.state=ee)}}}},e.prototype.stop=function(e){if(this.state==te){var t=this._dragDirection(),n=this._eventDetail(t);if(this._dispatchEvents("drag*End",n),Math.abs(this.movement[this.axis])>this.treshold.swipe){var i=this._swipeDirection();n.direction=i,this._dispatchEvents("swipe*",n)}}this.state=$},e.prototype.move=function(e){switch(this.state){case ee:case te:var t={x:e.changedTouches?e.touches[0].pageX:e.pageX||0,y:e.changedTouches?e.touches[0].pageY:e.pageY||0};this.movement={x:t.x-this.currentPosition.x,y:t.y-this.currentPosition.y},this.distance={x:t.x-this.startPosition.x,y:t.y-this.startPosition.y},this.currentPosition={x:t.x,y:t.y},this.axis=Math.abs(this.distance.x)>Math.abs(this.distance.y)?"x":"y";var n=this._dragDirection(),i=this._eventDetail(n);this.state==ee&&Math.abs(this.distance[this.axis])>this.treshold.start&&(this._dispatchEvents("drag*Start",i),this.state=te),this.state==te&&this._dispatchEvents("drag*Move",i)}},e.prototype._eventDetail=function(e){var t=this.distance.x,n=this.distance.y;return"x"==this.axis&&(t-=t>0?this.treshold.start:0-this.treshold.start),"y"==this.axis&&(n-=n>0?this.treshold.start:0-this.treshold.start),{axis:this.axis,direction:e,movementX:this.movement.x,movementY:this.movement.y,distanceX:t,distanceY:n}},e.prototype._dispatchEvents=function(e,t){var n=new CustomEvent(e.replace("*",""),{detail:t});this.surface.dispatchEvent(n);var i=new CustomEvent(e.replace("*",this.axis.toUpperCase()),{detail:t});this.surface.dispatchEvent(i);var s=new CustomEvent(e.replace("*",t.direction),{detail:t});this.surface.dispatchEvent(s)},e.prototype._dragDirection=function(){return J[this.axis][this.distance[this.axis]>0?0:1]},e.prototype._swipeDirection=function(){return J[this.axis][this.movement[this.axis]>0?0:1]},e}(),se=null,ae=null,oe=0,re=function(e){var t=this,n={},i=!1,s=function(){var e=Object.keys(t.opts.extensions);e.length?(P(e.join(", "),(function(){}),(function(){n=ce(n,[],t.node.menu)})),e.forEach((function(e){P(e,(function(){n=ce(n,t.opts.extensions[e],t.node.menu)}),(function(){}))}))):n=ce(n,[],t.node.menu)};ae&&(N(ae,"dragStart"),N(ae,"dragMove"),N(ae,"dragEnd")),se=new ie(ae=e),s(),s=function(){},ae&&(C(ae,"dragStart",(function(e){e.detail.direction==n.direction&&(i=!0,t.node.wrpr.classList.add("mm-wrapper_dragging"),t._openSetup(),t.trigger("open:start"),oe=t.node.menu["x"==n.axis?"clientWidth":"clientHeight"])})),C(ae,"dragMove",(function(e){if(e.detail.axis==n.axis&&i){var t=e.detail["distance"+n.axis.toUpperCase()];switch(n.position){case"right":case"bottom":t=Math.min(Math.max(t,-oe),0);break;default:t=Math.max(Math.min(t,oe),0)}if("front"==n.zposition)switch(n.position){case"right":case"bottom":t+=oe;break;default:t-=oe}n.slideOutNodes.forEach((function(e){e.style.transform="translate"+n.axis.toUpperCase()+"("+t+"px)"}))}})),C(ae,"dragEnd",(function(e){if(e.detail.axis==n.axis&&i){i=!1,t.node.wrpr.classList.remove("mm-wrapper_dragging"),n.slideOutNodes.forEach((function(e){e.style.transform=""}));var s=Math.abs(e.detail["distance"+n.axis.toUpperCase()])>=.75*oe;if(!s){var a=e.detail["movement"+n.axis.toUpperCase()];switch(n.position){case"right":case"bottom":s=a<=0;break;default:s=a>=0}}s?t._openStart():t.close()}})))},ce=function(e,t,n){switch(e.position="left",e.zposition="back",["right","top","bottom"].forEach((function(n){t.indexOf("position-"+n)>-1&&(e.position=n)})),["front","top","bottom"].forEach((function(n){t.indexOf("position-"+n)>-1&&(e.zposition="front")})),se.area={top:"bottom"==e.position?"75%":0,right:"left"==e.position?"75%":0,bottom:"top"==e.position?"75%":0,left:"right"==e.position?"75%":0},e.position){case"top":case"bottom":e.axis="y";break;default:e.axis="x"}switch(e.position){case"top":e.direction="Down";break;case"right":e.direction="Left";break;case"bottom":e.direction="Up";break;default:e.direction="Right"}switch(e.zposition){case"front":e.slideOutNodes=[n];break;default:e.slideOutNodes=g(document.body,".mm-slideout")}return e};S.options.drag=Z;var me={drop:!1,fitViewport:!0,event:"click",position:{},tip:!0};var le={offset:{button:{x:-5,y:5},viewport:{x:20,y:20}},height:{max:880},width:{max:440}};S.options.dropdown=me,S.configs.dropdown=le;var de={insertMethod:"append",insertSelector:"body"};S.configs.fixedElements=de,S.configs.classNames.fixedElements={fixed:"Fixed"};var pe={use:!1,top:[],bottom:[],position:"left",type:"default"};S.options.iconbar=pe;var ue={add:!1,blockPanel:!0,hideDivider:!1,hideNavbar:!0,visible:3};S.options.iconPanels=ue;var fe={enable:!1,enhance:!1};S.options.keyboardNavigation=fe;var he=function(e){var t=this;N(document.body,"keydown.tabguard"),N(document.body,"focusin.tabguard"),C(document.body,"focusin.tabguard",(function(e){if(t.node.wrpr.matches(".mm-wrapper_opened")){var n=e.target;if(n.matches(".mm-tabend")){var i=void 0;n.parentElement.matches(".mm-menu")&&S.node.blck&&(i=S.node.blck),n.parentElement.matches(".mm-wrapper__blocker")&&(i=g(document.body,".mm-menu_offcanvas.mm-menu_opened")[0]),i||(i=n.parentElement),i&&_(i,".mm-tabstart")[0].focus()}}})),N(document.body,"keydown.navigate"),C(document.body,"keydown.navigate",(function(t){var n=t.target,i=n.closest(".mm-menu");if(i){i.mmApi;if(!n.matches("input, textarea"))switch(t.keyCode){case 13:(n.matches(".mm-toggle")||n.matches(".mm-check"))&&n.dispatchEvent(new Event("click"));break;case 32:case 37:case 38:case 39:case 40:t.preventDefault()}if(e)if(n.matches("input"))switch(t.keyCode){case 27:n.value=""}else{var s=i.mmApi;switch(t.keyCode){case 8:var a=g(i,".mm-panel_opened")[0].mmParent;a&&s.openPanel(a.closest(".mm-panel"));break;case 27:i.matches(".mm-menu_offcanvas")&&s.close()}}}}))},ve={load:!1};S.options.lazySubmenus=ve;var be=[];var ge={breadcrumbs:{separator:"/",removeFirst:!1}};function _e(){var e=this,t=this.opts.navbars;if(void 0!==t){t instanceof Array||(t=[t]);var n={};t.length&&(t.forEach((function(t){if(!(t=function(e){return"boolean"==typeof e&&e&&(e={}),"object"!=typeof e&&(e={}),void 0===e.content&&(e.content=["prev","title"]),e.content instanceof Array||(e.content=[e.content]),void 0===e.use&&(e.use=!0),"boolean"==typeof e.use&&e.use&&(e.use=!0),e}(t)).use)return!1;var i=b("div.mm-navbar"),s=t.position;"bottom"!==s&&(s="top"),n[s]||(n[s]=b("div.mm-navbars_"+s)),n[s].append(i);for(var a=0,o=t.content.length;a<o;a++){var r,c=t.content[a];if("string"==typeof c)if("function"==typeof(r=_e.navbarContents[c]))r.call(e,i);else{var m=b("span");m.innerHTML=c;var l=_(m);1==l.length&&(m=l[0]),i.append(m)}else i.append(c)}"string"==typeof t.type&&("function"==typeof(r=_e.navbarTypes[t.type])&&r.call(e,i));"boolean"!=typeof t.use&&P(t.use,(function(){i.classList.remove("mm-hidden"),S.sr_aria(i,"hidden",!1)}),(function(){i.classList.add("mm-hidden"),S.sr_aria(i,"hidden",!0)}))})),this.bind("initMenu:after",(function(){for(var t in n)e.node.menu["bottom"==t?"append":"prepend"](n[t])})))}}S.options.navbars=be,S.configs.navbars=ge,S.configs.classNames.navbars={panelPrev:"Prev",panelTitle:"Title"},_e.navbarContents={breadcrumbs:function(e){var t=this,n=b("div.mm-navbar__breadcrumbs");e.append(n),this.bind("initNavbar:after",(function(e){if(!e.querySelector(".mm-navbar__breadcrumbs")){_(e,".mm-navbar")[0].classList.add("mm-hidden");for(var n=[],i=b("span.mm-navbar__breadcrumbs"),s=e,a=!0;s;){if(!(s=s.closest(".mm-panel")).parentElement.matches(".mm-listitem_vertical")){var o=g(s,".mm-navbar__title span")[0];if(o){var r=o.textContent;r.length&&n.unshift(a?"<span>"+r+"</span>":'<a href="#'+s.id+'">'+r+"</a>")}a=!1}s=s.mmParent}t.conf.navbars.breadcrumbs.removeFirst&&n.shift(),i.innerHTML=n.join('<span class="mm-separator">'+t.conf.navbars.breadcrumbs.separator+"</span>"),_(e,".mm-navbar")[0].append(i)}})),this.bind("openPanel:start",(function(e){var t=e.querySelector(".mm-navbar__breadcrumbs");n.innerHTML=t?t.innerHTML:""})),this.bind("initNavbar:after:sr-aria",(function(e){g(e,".mm-breadcrumbs a").forEach((function(e){S.sr_aria(e,"owns",e.getAttribute("href").slice(1))}))}))},close:function(e){var t=this,n=b("a.mm-btn.mm-btn_close.mm-navbar__btn");e.append(n),this.bind("setPage:after",(function(e){n.setAttribute("href","#"+e.id)})),this.bind("setPage:after:sr-text",(function(){n.innerHTML=S.sr_text(t.i18n(t.conf.screenReader.text.closeMenu))}))},prev:function(e){var t,n,i,s=this,a=b("a.mm-btn.mm-btn_prev.mm-navbar__btn");e.append(a),this.bind("initNavbar:after",(function(e){_(e,".mm-navbar")[0].classList.add("mm-hidden")})),this.bind("openPanel:start",(function(e){e.parentElement.matches(".mm-listitem_vertical")||((t=e.querySelector("."+s.conf.classNames.navbars.panelPrev))||(t=e.querySelector(".mm-navbar__btn.mm-btn_prev")),n=t?t.getAttribute("href"):"",i=t?t.innerHTML:"",n?a.setAttribute("href",n):a.removeAttribute("href"),a.classList[n||i?"remove":"add"]("mm-hidden"),a.innerHTML=i)})),this.bind("initNavbar:after:sr-aria",(function(e){S.sr_aria(e.querySelector(".mm-navbar"),"hidden",!0)})),this.bind("openPanel:start:sr-aria",(function(e){S.sr_aria(a,"hidden",a.matches(".mm-hidden")),S.sr_aria(a,"owns",(a.getAttribute("href")||"").slice(1))}))},searchfield:function(e){"object"!=o(this.opts.searchfield)&&(this.opts.searchfield={});var t=b("div.mm-navbar__searchfield");e.append(t),this.opts.searchfield.add=!0,this.opts.searchfield.addTo=[t]},title:function(e){var t,n,i,s,a=this,o=b("a.mm-navbar__title"),r=b("span");o.append(r),e.append(o),this.bind("openPanel:start",(function(e){e.parentElement.matches(".mm-listitem_vertical")||((i=e.querySelector("."+a.conf.classNames.navbars.panelTitle))||(i=e.querySelector(".mm-navbar__title span")),(t=i&&i.closest("a")?i.closest("a").getAttribute("href"):"")?o.setAttribute("href",t):o.removeAttribute("href"),n=i?i.innerHTML:"",r.innerHTML=n)})),this.bind("openPanel:start:sr-aria",(function(e){if(a.opts.screenReader.text){if(!s)_(a.node.menu,".mm-navbars_top, .mm-navbars_bottom").forEach((function(e){var t=e.querySelector(".mm-btn_prev");t&&(s=t)}));if(s){var t=!0;"parent"==a.opts.navbar.titleLink&&(t=!s.matches(".mm-hidden")),S.sr_aria(o,"hidden",t)}}}))}},_e.navbarTypes={tabs:function(e){var t=this;e.classList.add("mm-navbar_tabs"),e.parentElement.classList.add("mm-navbars_has-tabs");var n=_(e,"a");e.addEventListener("click",(function(e){var n=e.target;if(n.matches("a"))if(n.matches(".mm-navbar__tab_selected"))e.stopImmediatePropagation();else try{t.openPanel(t.node.menu.querySelector(n.getAttribute("href")),!1),e.stopImmediatePropagation()}catch(e){}})),this.bind("openPanel:start",(function e(t){n.forEach((function(e){e.classList.remove("mm-navbar__tab_selected")}));var i=n.filter((function(e){return e.matches('[href="#'+t.id+'"]')}))[0];if(i)i.classList.add("mm-navbar__tab_selected");else{var s=t.mmParent;s&&e.call(this,s.closest(".mm-panel"))}}))}};var ye={scroll:!1,update:!1};var Le={scrollOffset:0,updateOffset:50};S.options.pageScroll=ye,S.configs.pageScroll=Le;var we={add:!1,addTo:"panels",cancel:!1,noResults:"No results found.",placeholder:"Search",panel:{add:!1,dividers:!0,fx:"none",id:null,splash:null,title:"Search"},search:!0,showTextItems:!1,showSubPanels:!0};var Ee={clear:!1,form:!1,input:!1,submit:!1},xe={Search:"جستجو","No results found.":"نتیجه‌ای یافت نشد.",cancel:"انصراف"},Pe={Search:"Suche","No results found.":"Keine Ergebnisse gefunden.",cancel:"beenden"},ke={Search:"Найти","No results found.":"Ничего не найдено.",cancel:"отменить"},Se=function(){for(var e=0,t=0,n=arguments.length;t<n;t++)e+=arguments[t].length;var i=Array(e),s=0;for(t=0;t<n;t++)for(var a=arguments[t],o=0,r=a.length;o<r;o++,s++)i[s]=a[o];return i};u({Search:"Zoeken","No results found.":"Geen resultaten gevonden.",cancel:"annuleren"},"nl"),u(xe,"fa"),u(Pe,"de"),u(ke,"ru"),S.options.searchfield=we,S.configs.searchfield=Ee;var Me=function(){var e=this.opts.searchfield,t=(this.conf.searchfield,_(this.node.pnls,".mm-panel_search")[0]);if(t)return t;t=b("div.mm-panel.mm-panel_search.mm-hidden"),e.panel.id&&(t.id=e.panel.id),e.panel.title&&t.setAttribute("data-mm-title",e.panel.title);var n=b("ul");switch(t.append(n),this.node.pnls.append(t),this.initListview(n),this._initNavbar(t),e.panel.fx){case!1:break;case"none":t.classList.add("mm-panel_noanimation");break;default:t.classList.add("mm-panel_fx-"+e.panel.fx)}if(e.panel.splash){var i=b("div.mm-panel__content");i.innerHTML=e.panel.splash,t.append(i)}return t.classList.add("mm-panel"),t.classList.add("mm-hidden"),this.node.pnls.append(t),t},Ae=function(e){var t=this.opts.searchfield,n=this.conf.searchfield;if(e.parentElement.matches(".mm-listitem_vertical"))return null;if(a=g(e,".mm-searchfield")[0])return a;function i(e,t){if(t)for(var n in t)e.setAttribute(n,t[n])}var s,a=b((n.form?"form":"div")+".mm-searchfield"),o=b("div.mm-searchfield__input"),r=b("input");(r.type="text",r.autocomplete="off",r.placeholder=this.i18n(t.placeholder),o.append(r),a.append(o),e.prepend(a),i(r,n.input),n.clear)&&((s=b("a.mm-btn.mm-btn_close.mm-searchfield__btn")).setAttribute("href","#"),o.append(s));(i(a,n.form),n.form&&n.submit&&!n.clear)&&((s=b("a.mm-btn.mm-btn_next.mm-searchfield__btn")).setAttribute("href","#"),o.append(s));t.cancel&&((s=b("a.mm-searchfield__cancel")).setAttribute("href","#"),s.textContent=this.i18n("cancel"),a.append(s));return a},Te=function(e){var t=this,n=this.opts.searchfield,i=(this.conf.searchfield,{});e.closest(".mm-panel_search")?(i.panels=g(this.node.pnls,".mm-panel"),i.noresults=[e.closest(".mm-panel")]):e.closest(".mm-panel")?(i.panels=[e.closest(".mm-panel")],i.noresults=i.panels):(i.panels=g(this.node.pnls,".mm-panel"),i.noresults=[this.node.menu]),i.panels=i.panels.filter((function(e){return!e.matches(".mm-panel_search")})),i.panels=i.panels.filter((function(e){return!e.parentElement.matches(".mm-listitem_vertical")})),i.listitems=[],i.dividers=[],i.panels.forEach((function(e){var t,n;(t=i.listitems).push.apply(t,g(e,".mm-listitem")),(n=i.dividers).push.apply(n,g(e,".mm-divider"))}));var s=_(this.node.pnls,".mm-panel_search")[0],a=g(e,"input")[0],o=g(e,".mm-searchfield__cancel")[0];a.mmSearchfield=i,n.panel.add&&n.panel.splash&&(N(a,"focus.splash"),C(a,"focus.splash",(function(e){t.openPanel(s)}))),n.cancel&&(N(a,"focus.cancel"),C(a,"focus.cancel",(function(e){o.classList.add("mm-searchfield__cancel-active")})),N(o,"click.splash"),C(o,"click.splash",(function(e){if(e.preventDefault(),o.classList.remove("mm-searchfield__cancel-active"),s.matches(".mm-panel_opened")){var n=_(t.node.pnls,".mm-panel_opened-parent");n.length&&t.openPanel(n[n.length-1])}}))),n.panel.add&&"panel"==n.addTo&&this.bind("openPanel:finish",(function(e){e===s&&a.focus()})),N(a,"input.search"),C(a,"input.search",(function(e){switch(e.keyCode){case 9:case 16:case 17:case 18:case 37:case 38:case 39:case 40:break;default:t.search(a)}})),this.search(a)},Ce=function(e){if(e){var t=this.opts.searchfield;this.conf.searchfield;if(e.closest(".mm-panel")||(e=_(this.node.pnls,".mm-panel")[0]),!_(e,".mm-panel__noresultsmsg").length){var n=b("div.mm-panel__noresultsmsg.mm-hidden");n.innerHTML=this.i18n(t.noResults),e.append(n)}}};S.prototype.search=function(e,t){var n,i=this,s=this.opts.searchfield;this.conf.searchfield;t=(t=t||""+e.value).toLowerCase().trim();var a=e.mmSearchfield,o=g(e.closest(".mm-searchfield"),".mm-btn"),r=_(this.node.pnls,".mm-panel_search")[0],c=a.panels,m=a.noresults,l=a.listitems,d=a.dividers;if(l.forEach((function(e){e.classList.remove("mm-listitem_nosubitems"),e.classList.remove("mm-listitem_onlysubitems"),e.classList.remove("mm-hidden")})),r&&(_(r,".mm-listview")[0].innerHTML=""),c.forEach((function(e){e.scrollTop=0})),t.length){d.forEach((function(e){e.classList.add("mm-hidden")})),l.forEach((function(e){var n,i=_(e,".mm-listitem__text")[0],a=!1;i&&(n=i,Array.prototype.slice.call(n.childNodes).filter((function(e){return 3==e.nodeType})).map((function(e){return e.textContent})).join(" ")).toLowerCase().indexOf(t)>-1&&(i.matches(".mm-listitem__btn")?s.showSubPanels&&(a=!0):(i.matches("a")||s.showTextItems)&&(a=!0)),a||e.classList.add("mm-hidden")}));var p=l.filter((function(e){return!e.matches(".mm-hidden")})).length;if(s.panel.add){var u=[];c.forEach((function(e){var t=L(g(e,".mm-listitem"));if((t=t.filter((function(e){return!e.matches(".mm-hidden")}))).length){if(s.panel.dividers){var n=b("li.mm-divider"),i=g(e,".mm-navbar__title")[0];i&&(n.innerHTML=i.innerHTML,u.push(n))}t.forEach((function(e){u.push(e.cloneNode(!0))}))}})),u.forEach((function(e){e.querySelectorAll(".mm-toggle, .mm-check").forEach((function(e){e.remove()}))})),(n=_(r,".mm-listview")[0]).append.apply(n,u),this.openPanel(r)}else s.showSubPanels&&c.forEach((function(e){L(g(e,".mm-listitem")).forEach((function(e){var t=e.mmChild;t&&g(t,".mm-listitem").forEach((function(e){e.classList.remove("mm-hidden")}))}))})),Se(c).reverse().forEach((function(t,n){var s=t.mmParent;s&&(L(g(t,".mm-listitem")).length?(s.matches(".mm-hidden")&&s.classList.remove("mm-hidden"),s.classList.add("mm-listitem_onlysubitems")):e.closest(".mm-panel")||((t.matches(".mm-panel_opened")||t.matches(".mm-panel_opened-parent"))&&setTimeout((function(){i.openPanel(s.closest(".mm-panel"))}),(n+1)*(1.5*i.conf.openingInterval)),s.classList.add("mm-listitem_nosubitems")))})),c.forEach((function(e){L(g(e,".mm-listitem")).forEach((function(e){y(e,".mm-listitem_vertical").forEach((function(e){e.matches(".mm-hidden")&&(e.classList.remove("mm-hidden"),e.classList.add("mm-listitem_onlysubitems"))}))}))})),c.forEach((function(e){L(g(e,".mm-listitem")).forEach((function(e){var t=function(e,t){for(var n=[],i=e.previousElementSibling;i;)t&&!i.matches(t)||n.push(i),i=i.previousElementSibling;return n}(e,".mm-divider")[0];t&&t.classList.remove("mm-hidden")}))}));o.forEach((function(e){return e.classList.remove("mm-hidden")})),m.forEach((function(e){g(e,".mm-panel__noresultsmsg").forEach((function(e){return e.classList[p?"add":"remove"]("mm-hidden")}))})),s.panel.add&&(s.panel.splash&&g(r,".mm-panel__content").forEach((function(e){return e.classList.add("mm-hidden")})),l.forEach((function(e){return e.classList.remove("mm-hidden")})),d.forEach((function(e){return e.classList.remove("mm-hidden")})))}else if(l.forEach((function(e){return e.classList.remove("mm-hidden")})),d.forEach((function(e){return e.classList.remove("mm-hidden")})),o.forEach((function(e){return e.classList.add("mm-hidden")})),m.forEach((function(e){g(e,".mm-panel__noresultsmsg").forEach((function(e){return e.classList.add("mm-hidden")}))})),s.panel.add)if(s.panel.splash)g(r,".mm-panel__content").forEach((function(e){return e.classList.remove("mm-hidden")}));else if(!e.closest(".mm-panel_search")){var f=_(this.node.pnls,".mm-panel_opened-parent");this.openPanel(f.slice(-1)[0])}this.trigger("updateListview")};var Ne={add:!1,addTo:"panels"};S.options.sectionIndexer=Ne;var He={current:!0,hover:!1,parent:!1};S.options.setSelected=He;var je={collapsed:{use:!1,blockMenu:!0,hideDivider:!1,hideNavbar:!0},expanded:{use:!1,initial:"open"}};S.options.sidebar=je;S.configs.classNames.toggles={toggle:"Toggle",check:"Check"};
 /*!

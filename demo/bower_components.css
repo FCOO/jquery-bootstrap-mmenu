@@ -9846,28 +9846,36 @@ Icons for modal header inside a container
   .header-icon-container .header-icon {
     width: 1em;
     text-align: center;
-    color: #000;
-    text-shadow: 0 1px 0 #fff;
-    opacity: .5;
-    cursor: default; }
-    .header-icon-container .header-icon.disabled {
-      opacity: .25; }
+    cursor: default;
+    color: #6c757d; }
     .header-icon-container .header-icon.hidden {
       display: none; }
-    .header-icon-container .header-icon:not(.disabled):hover {
-      color: #000;
-      text-decoration: none;
-      opacity: .75; }
-      .header-icon-container .header-icon:not(.disabled):hover:active {
-        opacity: .9; }
-    .header-icon-container .header-icon.header-icon-colored-background * {
-      text-shadow: none; }
+    .mouse-hover .hover .header-icon-container .header-icon:not(:active):not(:disabled):not(.disabled),
+    .mouse-hover .header-icon-container .header-icon.hover:not(:active):not(:disabled):not(.disabled),
+    .mouse-hover .header-icon-container .header-icon:hover:not(:active):not(:disabled):not(.disabled) {
+      color: #60686f; }
+    .header-icon-container .header-icon:active {
+      color: #5a6268; }
+    .header-icon-container .header-icon.active {
+      color: #fff;
+      background: #007bff linear-gradient(180deg, #268fff, #007bff) repeat-x; }
+      .mouse-hover .hover .header-icon-container .header-icon.active:not(:active):not(:disabled):not(.disabled),
+      .mouse-hover .header-icon-container .header-icon.active.hover:not(:active):not(:disabled):not(.disabled),
+      .mouse-hover .header-icon-container .header-icon.active:hover:not(:active):not(:disabled):not(.disabled) {
+        color: #f2f2f2;
+        background: #006fe6 linear-gradient(180deg, #2684e9, #006fe6) repeat-x; }
+      .header-icon-container .header-icon.active:active {
+        color: #ececec;
+        background: #0069d9 linear-gradient(180deg, #267fde, #0069d9) repeat-x; }
+      .header-icon-container .header-icon.active.disabled:not(.show-as-normal), .header-icon-container .header-icon.active:disabled:not(.show-as-normal) {
+        opacity: 1 !important;
+        color: rgba(255, 255, 255, 0.65);
+        background: #007bff linear-gradient(180deg, #268fff, #007bff) repeat-x; }
+    .header-icon-container .header-icon.disabled:not(.show-as-normal), .header-icon-container .header-icon:disabled:not(.show-as-normal) {
+      opacity: 1 !important;
+      color: rgba(108, 117, 125, 0.65); }
     .header-icon-container .header-icon.header-icon-colored-background .back {
       color: transparent; }
-    .header-icon-container .header-icon.header-icon-colored-background:not(.disabled):hover {
-      opacity: .9; }
-      .header-icon-container .header-icon.header-icon-colored-background:not(.disabled):hover:active {
-        opacity: 1; }
     .header-icon-container .header-icon.header-icon-close:not(.disabled):hover .back {
       color: #dc3545; }
     .header-icon-container .header-icon.header-icon-close:not(.disabled):hover .middle {
