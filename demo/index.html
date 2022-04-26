@@ -63,13 +63,26 @@
                     list: [{
                         id: 'HER', text: 'HER Item 2-1', icon:'fa-home',
                         list: [{
-                            text: 'Item 2-1-1 der er meget lang med en masse tekst der gerne skal vises over flere linier', icon:'fa-home', type:'checkbox', state: true
+                            text: 'Item 2-1-1 der er meget lang med en masse tekst der gerne skal vises over flere linier', icon:'fa-home', type:'checkbox', state: true,
+                            buttonList: [
+                                {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
+                                {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }}
+                            ]
+
                         }, {
                             text: 'Item 2-1-2', type: 'checkbox', icon:'fa fa-home',
+                            buttonList: [
+                                {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
+                                {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }}
+                            ]
                         }, {
                             text: 'Item 2-1-3', type: 'radio', state:123
                         }, {
-                            text: 'Item 2-1-4', type: 'radio', state: true
+                            text: 'Item 2-1-4', type: 'radio', state: true,
+                            buttonList: [
+                                {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
+                                {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }}
+                            ]
                         }]
                     }, {
                         id:'SEALVL', text: {da: 'Vandstand', en:'Sea Level'},
@@ -81,6 +94,10 @@
                                     {text: {da: '1: Indre Danske Farvande', en:'1: Inner Danish Waters'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>'),
                                     //$('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
+                                ],
+                                buttonList: [
+                                    {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
+                                    {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }}
                                 ]
                             }, {
                                 id: 'sealvl2',

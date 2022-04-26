@@ -120,10 +120,38 @@
             this.$outer   = $('<span/>').appendTo(this.$li);
             this.$content = $('<div/>').appendTo(this.$outer);
 
+
+            var content = clone(this.options.content || this.options);
+
+            //Add buttons from this.options.buttonList (if any) to content (once)
+            var buttonList = this.options.buttonList || this.options.buttons;
+            if (buttonList){
+                //Adjust button-options
+                buttonList.forEach( function( options, index ){
+                    options.small = true;
+                    options.type = options.type || 'button';
+                    if (!index)
+                        options.class = 'ml-0 ms-0'; //Margin-left = 0 Bootstrap 4 / Bootstrap 5
+                });
+
+                //Add div with buttons
+                content = $.isArray(content) ? content : [content];
+                content.push(
+                    $('<div/>')
+                        .addClass('justify-content-start modal-footer')
+                        .css({
+                            'padding'   : 0,
+                            'border-top': 'none'
+                        })
+                        ._bsAppendContent( buttonList )
+                );
+            }
+
+
             if (this.first || !this.hasCheckbox){
                 this.$content
                     .toggleClass('mm-listitem-content', this.type == 'text')
-                    ._bsAddHtml(this.options.content || this.options);
+                    ._bsAddHtml(content);
             }
             else {
                 this.checkbox = $.bsCheckbox({
@@ -132,7 +160,7 @@
                     multiLines  : true,
                     icon        : this.options.icon,
                     text        : this.options.text,
-                    content     : this.options.content,
+                    content     : content,
                     onClick     : $.proxy(owner._onClick, owner)
                 })
                 .appendTo( this.$content );
@@ -173,6 +201,7 @@
                     this.$outer.addClass('padding-right-none');
                 }
             }
+
         },
 
         /***********************************

@@ -24024,17 +24024,11 @@ if (typeof define === 'function' && define.amd) {
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function _typeof(obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function _typeof(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+      return typeof obj;
+    } : function (obj) {
+      return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    }, _typeof(obj);
   }
 
   function _classCallCheck(instance, Constructor) {
@@ -24056,6 +24050,9 @@ if (typeof define === 'function' && define.amd) {
   function _createClass(Constructor, protoProps, staticProps) {
     if (protoProps) _defineProperties(Constructor.prototype, protoProps);
     if (staticProps) _defineProperties(Constructor, staticProps);
+    Object.defineProperty(Constructor, "prototype", {
+      writable: false
+    });
     return Constructor;
   }
 
@@ -24088,12 +24085,17 @@ if (typeof define === 'function' && define.amd) {
         configurable: true
       }
     });
+    Object.defineProperty(subClass, "prototype", {
+      writable: false
+    });
     if (superClass) _setPrototypeOf(subClass, superClass);
   }
 
   function _possibleConstructorReturn(self, call) {
     if (call && (_typeof(call) === "object" || typeof call === "function")) {
       return call;
+    } else if (call !== void 0) {
+      throw new TypeError("Derived constructors may only return object or undefined");
     }
 
     return _assertThisInitialized(self);
@@ -24461,8 +24463,12 @@ if (typeof define === 'function' && define.amd) {
         }
 
         if (mix === undefined) return undefined;
-        if (typeof mix === 'string') return mix;
-        if (p && typeof mix[p] === 'string') return mix[p];
+
+        if (path.endsWith(p)) {
+          if (typeof mix === 'string') return mix;
+          if (p && typeof mix[p] === 'string') return mix[p];
+        }
+
         var joinedPath = paths.slice(i + j).join(keySeparator);
         if (joinedPath) return deepFind(mix, joinedPath, keySeparator);
         return undefined;
@@ -24888,7 +24894,7 @@ if (typeof define === 'function' && define.amd) {
             if (this.options.saveMissing) {
               if (this.options.saveMissingPlurals && needsPluralHandling) {
                 lngs.forEach(function (language) {
-                  _this2.pluralResolver.getSuffixes(language).forEach(function (suffix) {
+                  _this2.pluralResolver.getSuffixes(language, options).forEach(function (suffix) {
                     send([language], key + suffix, options["defaultValue".concat(suffix)] || defaultValue);
                   });
                 });
@@ -24900,7 +24906,14 @@ if (typeof define === 'function' && define.amd) {
 
           res = this.extendTranslation(res, keys, options, resolved, lastKey);
           if (usedKey && res === key && this.options.appendNamespaceToMissingKey) res = "".concat(namespace, ":").concat(key);
-          if ((usedKey || usedDefault) && this.options.parseMissingKeyHandler) res = this.options.parseMissingKeyHandler(res);
+
+          if ((usedKey || usedDefault) && this.options.parseMissingKeyHandler) {
+            if (this.options.compatibilityAPI !== 'v1') {
+              res = this.options.parseMissingKeyHandler(key, usedDefault ? res : undefined);
+            } else {
+              res = this.options.parseMissingKeyHandler(res);
+            }
+          }
         }
 
         return res;
@@ -24911,14 +24924,14 @@ if (typeof define === 'function' && define.amd) {
         var _this3 = this;
 
         if (this.i18nFormat && this.i18nFormat.parse) {
-          res = this.i18nFormat.parse(res, options, resolved.usedLng, resolved.usedNS, resolved.usedKey, {
+          res = this.i18nFormat.parse(res, _objectSpread$2(_objectSpread$2({}, this.options.interpolation.defaultVariables), options), resolved.usedLng, resolved.usedNS, resolved.usedKey, {
             resolved: resolved
           });
         } else if (!options.skipInterpolation) {
           if (options.interpolation) this.interpolator.init(_objectSpread$2(_objectSpread$2({}, options), {
             interpolation: _objectSpread$2(_objectSpread$2({}, this.options.interpolation), options.interpolation)
           }));
-          var skipOnVariables = typeof res === 'string' && (options.interpolation && options.interpolation.skipOnVariables || this.options.interpolation.skipOnVariables);
+          var skipOnVariables = typeof res === 'string' && (options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
           var nestBef;
 
           if (skipOnVariables) {
@@ -25649,7 +25662,7 @@ if (typeof define === 'function' && define.amd) {
 
         this.resetRegExp();
         var missingInterpolationHandler = options && options.missingInterpolationHandler || this.options.missingInterpolationHandler;
-        var skipOnVariables = options && options.interpolation && options.interpolation.skipOnVariables || this.options.interpolation.skipOnVariables;
+        var skipOnVariables = options && options.interpolation && options.interpolation.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables;
         var todos = [{
           regex: this.regexpUnescape,
           safeValue: function safeValue(val) {
@@ -25665,17 +25678,20 @@ if (typeof define === 'function' && define.amd) {
           replaces = 0;
 
           while (match = todo.regex.exec(str)) {
-            value = handleFormat(match[1].trim());
+            var matchedVar = match[1].trim();
+            value = handleFormat(matchedVar);
 
             if (value === undefined) {
               if (typeof missingInterpolationHandler === 'function') {
                 var temp = missingInterpolationHandler(str, match, options);
                 value = typeof temp === 'string' ? temp : '';
+              } else if (options && options.hasOwnProperty(matchedVar)) {
+                value = '';
               } else if (skipOnVariables) {
                 value = match[0];
                 continue;
               } else {
-                _this.logger.warn("missed to pass in variable ".concat(match[1], " for interpolating ").concat(str));
+                _this.logger.warn("missed to pass in variable ".concat(matchedVar, " for interpolating ").concat(str));
 
                 value = '';
               }
@@ -25782,31 +25798,8 @@ if (typeof define === 'function' && define.amd) {
     if (Array.isArray(arr)) return arr;
   }
 
-  function _iterableToArrayLimit(arr, i) {
-    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
   }
 
   function _arrayLikeToArray(arr, len) {
@@ -25832,8 +25825,8 @@ if (typeof define === 'function' && define.amd) {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+  function _toArray(arr) {
+    return _arrayWithHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableRest();
   }
 
   function ownKeys$4(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
@@ -25859,14 +25852,15 @@ if (typeof define === 'function' && define.amd) {
           if (!opt) return;
 
           var _opt$split = opt.split(':'),
-              _opt$split2 = _slicedToArray(_opt$split, 2),
+              _opt$split2 = _toArray(_opt$split),
               key = _opt$split2[0],
-              val = _opt$split2[1];
+              rest = _opt$split2.slice(1);
 
+          var val = rest.join(':');
+          if (!formatOptions[key.trim()]) formatOptions[key.trim()] = val.trim();
           if (val.trim() === 'false') formatOptions[key.trim()] = false;
           if (val.trim() === 'true') formatOptions[key.trim()] = true;
           if (!isNaN(val.trim())) formatOptions[key.trim()] = parseInt(val.trim(), 10);
-          if (!formatOptions[key.trim()]) formatOptions[key.trim()] = val.trim();
         });
       }
     }
@@ -25919,7 +25913,7 @@ if (typeof define === 'function' && define.amd) {
     }, {
       key: "add",
       value: function add(name, fc) {
-        this.formats[name] = fc;
+        this.formats[name.toLowerCase().trim()] = fc;
       }
     }, {
       key: "format",
@@ -26543,7 +26537,10 @@ if (typeof define === 'function' && define.amd) {
             });
           }
 
-          this.services.backendConnector.load(toLoad, this.options.ns, usedCallback);
+          this.services.backendConnector.load(toLoad, this.options.ns, function (e) {
+            if (!e && !_this3.resolvedLanguage && _this3.language) _this3.setResolvedLanguage(_this3.language);
+            usedCallback(e);
+          });
         } else {
           usedCallback(null);
         }
@@ -26598,6 +26595,22 @@ if (typeof define === 'function' && define.amd) {
         return this;
       }
     }, {
+      key: "setResolvedLanguage",
+      value: function setResolvedLanguage(l) {
+        if (!l || !this.languages) return;
+        if (['cimode', 'dev'].indexOf(l) > -1) return;
+
+        for (var li = 0; li < this.languages.length; li++) {
+          var lngInLngs = this.languages[li];
+          if (['cimode', 'dev'].indexOf(lngInLngs) > -1) continue;
+
+          if (this.store.hasLanguageSomeTranslations(lngInLngs)) {
+            this.resolvedLanguage = lngInLngs;
+            break;
+          }
+        }
+      }
+    }, {
       key: "changeLanguage",
       value: function changeLanguage(lng, callback) {
         var _this4 = this;
@@ -26610,17 +26623,8 @@ if (typeof define === 'function' && define.amd) {
           _this4.language = l;
           _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
           _this4.resolvedLanguage = undefined;
-          if (['cimode', 'dev'].indexOf(l) > -1) return;
 
-          for (var li = 0; li < _this4.languages.length; li++) {
-            var lngInLngs = _this4.languages[li];
-            if (['cimode', 'dev'].indexOf(lngInLngs) > -1) continue;
-
-            if (_this4.store.hasLanguageSomeTranslations(lngInLngs)) {
-              _this4.resolvedLanguage = lngInLngs;
-              break;
-            }
-          }
+          _this4.setResolvedLanguage(l);
         };
 
         var done = function done(err, l) {
@@ -26763,7 +26767,7 @@ if (typeof define === 'function' && define.amd) {
         }
 
         if (this.hasResourceBundle(lng, ns)) return true;
-        if (!this.services.backendConnector.backend) return true;
+        if (!this.services.backendConnector.backend || this.options.resources && !this.options.partialBundledLanguages) return true;
         if (loadNotPending(lng, ns) && (!fallbackLng || loadNotPending(lastLng, ns))) return true;
         return false;
       }
@@ -33894,6 +33898,7 @@ if (typeof define === 'function' && define.amd) {
                         id       : options.id || $this.prop('id') || 'checkbox_' + globalCheckboxId++,
                         prop     : '',
                         className: '',
+                        className_semi: '',
                         selector : null,
                         modernizr: false,
                         selected : false,
@@ -33901,13 +33906,10 @@ if (typeof define === 'function' && define.amd) {
                     }, options);
                 $this.data('cbx_options', _options );
 
+                if (options.getSelected)
+                    _options.selected = options.getSelected.apply( options.getSelectedContext, [this, _options] );
 
-                if (options.className_semi && options.semiSelected){
-                    _options.selected = true;
-                    $this.addClass(options.className_semi);
-                }
-
-                $this._cbxSet( _options.selected, true );
+                $this._cbxSet( _options.selected, true, options.className_semi && options.semiSelected );
 
                 $this.on('click', $.proxy( $this._cbxOnClick, $this ));
                 if (options.onDblClick)
@@ -33920,10 +33922,9 @@ if (typeof define === 'function' && define.amd) {
             return this.data('cbx_options').selected;
         },
 
-        _cbxSet: function( selected, dontCallOnChange ){
+        _cbxSet: function( selected, dontCallOnChange, semiSelected, semiSelectedValue ){
             var options = this.data('cbx_options');
             options.selected = !!selected;
-            this.data('cbx_options', options );
 
             var $elements = options.selector ? this.children( options.selector ) : this;
             $elements.each( function(){
@@ -33940,16 +33941,23 @@ if (typeof define === 'function' && define.amd) {
 
             });
 
-            if (!dontCallOnChange){
-                this.removeClass(options.className_semi);
-                this._cbxCallOnChange();
+            if (typeof semiSelected == 'boolean'){
+                this.toggleClass(options.className_semi, semiSelected);
+                options.semiSelected = semiSelected;
+                options.semiSelectedValue = semiSelectedValue || options.semiSelectedValue || 'semi';
             }
+
+            this.data('cbx_options', options );
+
+            if (!dontCallOnChange)
+                this._cbxCallOnChange();
+
             return this;
         },
 
         _cbxOnClick: function(){
             var options = this.data('cbx_options');
-            return this._cbxSet( !options.selected );
+            return this._cbxSet( !options.selected, false, false );
         },
 
         _cbxCallOnChange: function(){
@@ -34075,9 +34083,9 @@ if (typeof define === 'function' && define.amd) {
                     childUnselected++;
             });
             //Update selected and semi-selectd state
-            this._cbxSet( childSelected == this._cbxChildList.length, true );
             var options = this.data('cbx_options'),
                 semiSelected = childSelected*childUnselected > 0;
+            this._cbxSet( childSelected == this._cbxChildList.length, true, semiSelected );
 
             if (options.prop_semi)
                 this.prop(options.prop_semi, semiSelected);
@@ -34173,13 +34181,15 @@ if (typeof define === 'function' && define.amd) {
 
         //getSelected: Return the id of the selected item (if any)
         getSelected: function(){
-            var $selectedChild = this._getSelectedChild();
-            return $selectedChild ? $selectedChild.data('cbx_options').id : null;
+            var $selectedChild = this._getSelectedChild(),
+                options        = $selectedChild ? $selectedChild.data('cbx_options') : null;
+
+            return options ? (options.semiSelected ? options.semiSelectedValue : options.id) : null;
         },
 
-        //setSelected: function(id, dontCallOnChange )
-        setSelected: function(id, dontCallOnChange ){
-            this.onChange(id, true, null, dontCallOnChange );
+        //setSelected: function(id, dontCallOnChange, semiSelected, semiSelectedValue )
+        setSelected: function(id, dontCallOnChange, semiSelected, semiSelectedValue ){
+            this.onChange(id, true, null, dontCallOnChange, semiSelected, semiSelectedValue );
         },
 
         //setUnselected: function(id, dontCallOnChange )
@@ -34187,8 +34197,8 @@ if (typeof define === 'function' && define.amd) {
             this.onChange(id, false, null, dontCallOnChange );
         },
 
-        //onChange: function(id, selected, dontCallOnChange )
-        onChange: function(id, selected, dummy, dontCallOnChange ){
+        //onChange: function(id, selected, dummy, dontCallOnChange, semiSelected, semiSelectedValue )
+        onChange: function(id, selected, dummy, dontCallOnChange, semiSelected, semiSelectedValue ){
             //Find clicked child and other selected child
             var $child = $.grep(this._cbxChildList, function($elem){ return $elem.data('cbx_options').id == id; })[0];
             if (!$child)
@@ -34200,14 +34210,14 @@ if (typeof define === 'function' && define.amd) {
 
             //Unselect the selected child
             if ($selectedChild){
-                $selectedChild._cbxSet( false, true );
+                $selectedChild._cbxSet( false, true, false );
                 if (this.options.allowZeroSelected)
                     selectedChildOptions.ownOnChange( selectedChildOptions.id, false, $selectedChild, this.options.radioGroupId );
             }
 
             //Only allow click on selected element if options.allowZeroSelected: true
             if (selected || this.options.allowZeroSelected){
-                $child._cbxSet( selected, true); //Update element
+                $child._cbxSet( selected, true, semiSelected, semiSelectedValue);//Update element
                 if (!dontCallOnChange){
                     childOptions.ownOnChange( childOptions.id, selected, $child, this.options.radioGroupId );
                     if (this.options.postOnChange)
@@ -34216,7 +34226,7 @@ if (typeof define === 'function' && define.amd) {
             }
             else
                 //Select again
-                $child._cbxSet( true, !this.options.allowReselect || dontCallOnChange);
+                $child._cbxSet( true, !this.options.allowReselect || dontCallOnChange, semiSelected, semiSelectedValue );
         }
     };
 
@@ -41724,7 +41734,7 @@ return index;
 
 ;
 //! moment.js
-//! version : 2.29.1
+//! version : 2.29.3
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -41801,8 +41811,9 @@ return index;
 
     function map(arr, fn) {
         var res = [],
-            i;
-        for (i = 0; i < arr.length; ++i) {
+            i,
+            arrLen = arr.length;
+        for (i = 0; i < arrLen; ++i) {
             res.push(fn(arr[i], i));
         }
         return res;
@@ -41931,7 +41942,10 @@ return index;
         updateInProgress = false;
 
     function copyConfig(to, from) {
-        var i, prop, val;
+        var i,
+            prop,
+            val,
+            momentPropertiesLen = momentProperties.length;
 
         if (!isUndefined(from._isAMomentObject)) {
             to._isAMomentObject = from._isAMomentObject;
@@ -41964,8 +41978,8 @@ return index;
             to._locale = from._locale;
         }
 
-        if (momentProperties.length > 0) {
-            for (i = 0; i < momentProperties.length; i++) {
+        if (momentPropertiesLen > 0) {
+            for (i = 0; i < momentPropertiesLen; i++) {
                 prop = momentProperties[i];
                 val = from[prop];
                 if (!isUndefined(val)) {
@@ -42020,8 +42034,9 @@ return index;
                 var args = [],
                     arg,
                     i,
-                    key;
-                for (i = 0; i < arguments.length; i++) {
+                    key,
+                    argLen = arguments.length;
+                for (i = 0; i < argLen; i++) {
                     arg = '';
                     if (typeof arguments[i] === 'object') {
                         arg += '\n[' + i + '] ';
@@ -42171,7 +42186,8 @@ return index;
         );
     }
 
-    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|N{1,5}|YYYYYY|YYYYY|YYYY|YY|y{2,4}|yo?|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,
+    var formattingTokens =
+            /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|N{1,5}|YYYYYY|YYYYY|YYYY|YY|y{2,4}|yo?|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,
         localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g,
         formatFunctions = {},
         formatTokenFunctions = {};
@@ -42475,8 +42491,9 @@ return index;
         if (typeof units === 'object') {
             units = normalizeObjectUnits(units);
             var prioritized = getPrioritizedUnits(units),
-                i;
-            for (i = 0; i < prioritized.length; i++) {
+                i,
+                prioritizedLen = prioritized.length;
+            for (i = 0; i < prioritizedLen; i++) {
                 this[prioritized[i].unit](units[prioritized[i].unit]);
             }
         } else {
@@ -42506,7 +42523,8 @@ return index;
         matchTimestamp = /[+-]?\d+(\.\d{1,3})?/, // 123456789 123456789.123
         // any word (or two) characters or numbers including two/three word month in arabic.
         // includes scottish gaelic two word and hyphenated months
-        matchWord = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i,
+        matchWord =
+            /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i,
         regexes;
 
     regexes = {};
@@ -42532,15 +42550,12 @@ return index;
         return regexEscape(
             s
                 .replace('\\', '')
-                .replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (
-                    matched,
-                    p1,
-                    p2,
-                    p3,
-                    p4
-                ) {
-                    return p1 || p2 || p3 || p4;
-                })
+                .replace(
+                    /\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g,
+                    function (matched, p1, p2, p3, p4) {
+                        return p1 || p2 || p3 || p4;
+                    }
+                )
         );
     }
 
@@ -42552,7 +42567,8 @@ return index;
 
     function addParseToken(token, callback) {
         var i,
-            func = callback;
+            func = callback,
+            tokenLen;
         if (typeof token === 'string') {
             token = [token];
         }
@@ -42561,7 +42577,8 @@ return index;
                 array[callback] = toInt(input);
             };
         }
-        for (i = 0; i < token.length; i++) {
+        tokenLen = token.length;
+        for (i = 0; i < tokenLen; i++) {
             tokens[token[i]] = func;
         }
     }
@@ -42672,12 +42689,12 @@ return index;
 
     // LOCALES
 
-    var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split(
-            '_'
-        ),
-        defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split(
-            '_'
-        ),
+    var defaultLocaleMonths =
+            'January_February_March_April_May_June_July_August_September_October_November_December'.split(
+                '_'
+            ),
+        defaultLocaleMonthsShort =
+            'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_'),
         MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/,
         defaultMonthsShortRegex = matchWord,
         defaultMonthsRegex = matchWord;
@@ -43119,14 +43136,12 @@ return index;
     addRegexToken('W', match1to2);
     addRegexToken('WW', match1to2, match2);
 
-    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (
-        input,
-        week,
-        config,
-        token
-    ) {
-        week[token.substr(0, 1)] = toInt(input);
-    });
+    addWeekParseToken(
+        ['w', 'ww', 'W', 'WW'],
+        function (input, week, config, token) {
+            week[token.substr(0, 1)] = toInt(input);
+        }
+    );
 
     // HELPERS
 
@@ -43251,9 +43266,8 @@ return index;
         return ws.slice(n, 7).concat(ws.slice(0, n));
     }
 
-    var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split(
-            '_'
-        ),
+    var defaultLocaleWeekdays =
+            'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_'),
         defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_'),
         defaultLocaleWeekdaysMin = 'Su_Mo_Tu_We_Th_Fr_Sa'.split('_'),
         defaultWeekdaysRegex = matchWord,
@@ -43801,6 +43815,11 @@ return index;
         return globalLocale;
     }
 
+    function isLocaleNameSane(name) {
+        // Prevent names that look like filesystem paths, i.e contain '/' or '\'
+        return name.match('^[^/\\\\]*$') != null;
+    }
+
     function loadLocale(name) {
         var oldLocale = null,
             aliasedRequire;
@@ -43809,7 +43828,8 @@ return index;
             locales[name] === undefined &&
             typeof module !== 'undefined' &&
             module &&
-            module.exports
+            module.exports &&
+            isLocaleNameSane(name)
         ) {
             try {
                 oldLocale = globalLocale._abbr;
@@ -44026,8 +44046,10 @@ return index;
 
     // iso 8601 regex
     // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
-    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/,
-        basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d|))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/,
+    var extendedIsoRegex =
+            /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/,
+        basicIsoRegex =
+            /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d|))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/,
         tzRegex = /Z|[+-]\d\d(?::?\d\d)?/,
         isoDates = [
             ['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/],
@@ -44058,7 +44080,8 @@ return index;
         ],
         aspNetJsonRegex = /^\/?Date\((-?\d+)/i,
         // RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
-        rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/,
+        rfc2822 =
+            /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/,
         obsOffsets = {
             UT: 0,
             GMT: 0,
@@ -44081,12 +44104,13 @@ return index;
             allowTime,
             dateFormat,
             timeFormat,
-            tzFormat;
+            tzFormat,
+            isoDatesLen = isoDates.length,
+            isoTimesLen = isoTimes.length;
 
         if (match) {
             getParsingFlags(config).iso = true;
-
-            for (i = 0, l = isoDates.length; i < l; i++) {
+            for (i = 0, l = isoDatesLen; i < l; i++) {
                 if (isoDates[i][1].exec(match[1])) {
                     dateFormat = isoDates[i][0];
                     allowTime = isoDates[i][2] !== false;
@@ -44098,7 +44122,7 @@ return index;
                 return;
             }
             if (match[3]) {
-                for (i = 0, l = isoTimes.length; i < l; i++) {
+                for (i = 0, l = isoTimesLen; i < l; i++) {
                     if (isoTimes[i][1].exec(match[3])) {
                         // match[2] should be 'T' or space
                         timeFormat = (match[2] || ' ') + isoTimes[i][0];
@@ -44478,12 +44502,13 @@ return index;
             skipped,
             stringLength = string.length,
             totalParsedInputLength = 0,
-            era;
+            era,
+            tokenLen;
 
         tokens =
             expandFormat(config._f, config._locale).match(formattingTokens) || [];
-
-        for (i = 0; i < tokens.length; i++) {
+        tokenLen = tokens.length;
+        for (i = 0; i < tokenLen; i++) {
             token = tokens[i];
             parsedInput = (string.match(getParseRegexForToken(token, config)) ||
                 [])[0];
@@ -44578,15 +44603,16 @@ return index;
             i,
             currentScore,
             validFormatFound,
-            bestFormatIsValid = false;
+            bestFormatIsValid = false,
+            configfLen = config._f.length;
 
-        if (config._f.length === 0) {
+        if (configfLen === 0) {
             getParsingFlags(config).invalidFormat = true;
             config._d = new Date(NaN);
             return;
         }
 
-        for (i = 0; i < config._f.length; i++) {
+        for (i = 0; i < configfLen; i++) {
             currentScore = 0;
             validFormatFound = false;
             tempConfig = copyConfig({}, config);
@@ -44827,7 +44853,8 @@ return index;
     function isDurationValid(m) {
         var key,
             unitHasDecimal = false,
-            i;
+            i,
+            orderLen = ordering.length;
         for (key in m) {
             if (
                 hasOwnProp(m, key) &&
@@ -44840,7 +44867,7 @@ return index;
             }
         }
 
-        for (i = 0; i < ordering.length; ++i) {
+        for (i = 0; i < orderLen; ++i) {
             if (m[ordering[i]]) {
                 if (unitHasDecimal) {
                     return false; // only allow non-integers for smallest unit
@@ -45165,7 +45192,8 @@ return index;
         // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
         // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
         // and further modified to allow for strings containing both week and day
-        isoRegex = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
+        isoRegex =
+            /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
 
     function createDuration(input, key) {
         var duration = input,
@@ -45386,9 +45414,10 @@ return index;
                 'ms',
             ],
             i,
-            property;
+            property,
+            propertyLen = properties.length;
 
-        for (i = 0; i < properties.length; i += 1) {
+        for (i = 0; i < propertyLen; i += 1) {
             property = properties[i];
             propertyTest = propertyTest || hasOwnProp(input, property);
         }
@@ -46011,19 +46040,17 @@ return index;
     addRegexToken('NNNN', matchEraName);
     addRegexToken('NNNNN', matchEraNarrow);
 
-    addParseToken(['N', 'NN', 'NNN', 'NNNN', 'NNNNN'], function (
-        input,
-        array,
-        config,
-        token
-    ) {
-        var era = config._locale.erasParse(input, token, config._strict);
-        if (era) {
-            getParsingFlags(config).era = era;
-        } else {
-            getParsingFlags(config).invalidEra = input;
+    addParseToken(
+        ['N', 'NN', 'NNN', 'NNNN', 'NNNNN'],
+        function (input, array, config, token) {
+            var era = config._locale.erasParse(input, token, config._strict);
+            if (era) {
+                getParsingFlags(config).era = era;
+            } else {
+                getParsingFlags(config).invalidEra = input;
+            }
         }
-    });
+    );
 
     addRegexToken('y', matchUnsigned);
     addRegexToken('yy', matchUnsigned);
@@ -46315,14 +46342,12 @@ return index;
     addRegexToken('GGGGG', match1to6, match6);
     addRegexToken('ggggg', match1to6, match6);
 
-    addWeekParseToken(['gggg', 'ggggg', 'GGGG', 'GGGGG'], function (
-        input,
-        week,
-        config,
-        token
-    ) {
-        week[token.substr(0, 2)] = toInt(input);
-    });
+    addWeekParseToken(
+        ['gggg', 'ggggg', 'GGGG', 'GGGGG'],
+        function (input, week, config, token) {
+            week[token.substr(0, 2)] = toInt(input);
+        }
+    );
 
     addWeekParseToken(['gg', 'GG'], function (input, week, config, token) {
         week[token] = hooks.parseTwoDigitYear(input);
@@ -47345,7 +47370,7 @@ return index;
 
     //! moment.js
 
-    hooks.version = '2.29.1';
+    hooks.version = '2.29.3';
 
     setHookCallback(createLocal);
 
@@ -55795,7 +55820,6 @@ module.exports = g;
                 _this.addClass('text-'+ options.color);
 
             //Add text
-
             $.each( textArray, function( index, text ){
                 //If text ={da,en} and both da and is html-stirng => build inside div
                 var tagName = 'span';
@@ -55803,6 +55827,8 @@ module.exports = g;
                     tagName = 'div';
 
                 var $text = $._bsCreateElement( tagName, linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index], textDataArray[index] );
+                $text.appendTo( _this );
+
                 if ($.isFunction( text ))
                     text( $text );
                 else
@@ -55820,7 +55846,6 @@ module.exports = g;
                 if (index < textClassArray.length)
                     $text.addClass( textClassArray[index] );
 
-                $text.appendTo( _this );
             });
 
             //Add value-format content
@@ -55854,7 +55879,7 @@ module.exports = g;
 
         The default bootstrap structure used for elements in a form is
         <div class="form-group">
-            <div class="input-group">
+            <div class="input-group input-group-with-float-label">
                 <div class="input-group-prepend">               //optional
                     <button class="btn btn-standard">..</buton> //optional 1-N times
                 </div>                                          //optional
@@ -55885,10 +55910,48 @@ module.exports = g;
             function buildBaseSlider(options, $parent){ buildSlider(options, 'baseSlider', $parent); }
             function buildTimeSlider(options, $parent){ buildSlider(options, 'timeSlider', $parent); }
 
+
+            //buildCompactText - Compact box with label-icon to the left
+            function buildCompactText( options ){
+                var $result = $();
+                options.title = options.title || (options.label ? options.label.text : null);
+                $result = $result.add(
+                    $._bsCreateIcon(
+                        {icon: options.label ? options.label.icon : 'fas fa_'},
+                        null,
+                        options.title,
+                        'part-of-compact-text fa-fw text-center flex-grow-0 align-self-center'
+                    )
+                );
+
+                var $content = $('<div/>')
+                        ._bsAddHtml( options )
+                        .addClass('_input-group-with-text flex-grow-1');
+
+                if (options.title)
+                    $content.i18n(options.title, 'title');
+
+                return $result.add( $content );
+            }
+
+
+            //buildTextBox - Simple multi-line text-box
             function buildTextBox( options ){
                 return $('<div/>')
-                        ._bsAddHtml( options );
+                        ._bsAddHtml( options )
+                        .addClass('input-group-with-text');
             }
+
+            //buildInlineTextBox - Inline (pre/post) with single line text
+            function buildInlineTextBox( options ){
+                var $inner =
+                        $('<div/>')
+                           ._bsAddHtml( options )
+                           .addClass('form-control-border form-control no-hover');
+
+                return options.label ? $inner._wrapLabel(options) : $inner;
+            }
+
 
             function buildHidden( options ){
                 return $.bsInput( options ).css('display', 'none');
@@ -55916,7 +55979,7 @@ module.exports = g;
 
             //Function: Include arg (if any) in call to method (=options)
             if ($.isFunction( options )){
-                arg = arg ? $.isArray(arg) ? arg : [arg] : [];
+                arg = arg ? ($.isArray(arg) ? arg.slice() : [arg]) : [];
                 arg.unshift(this);
                 options.apply( context, arg );
                 return this;
@@ -55943,28 +56006,61 @@ module.exports = g;
             });
 
 
+            var hasPreOrPost = options.prepend || options.before || options.append || options.after;
+
             if (options.type){
                 var type = options.type.toLowerCase();
                 switch (type){
-                    case 'input'            :   buildFunc = $.bsInput;              insideFormGroup = true; break;
-                    case 'button'           :   buildFunc = $.bsButton;             break;
-                    case 'buttongroup'      :   buildFunc = $.bsButtonGroup;        break;
+                    case 'button'                : buildFunc = $.bsButton;                  break;
+
+                    case 'checkboxbutton'        : buildFunc = $.bsCheckboxButton;          break;
+                    case 'standardcheckboxbutton': buildFunc = $.bsStandardCheckboxButton;  break;
+                    case 'iconcheckboxbutton'    : buildFunc = $.bsIconCheckboxButton;      break;
+
+                    case 'buttongroup'           : buildFunc = $.bsButtonGroup;             insideFormGroup = true; break;
+
                     case 'menu'             :   buildFunc = $.bsMenu;               break;
                     case 'select'           :   buildFunc = $.bsSelectBox;          insideFormGroup = true; break;
                     case 'selectlist'       :   buildFunc = $.bsSelectList;         break;
                     case 'radiobuttongroup' :   buildFunc = $.bsRadioButtonGroup;   addBorder = true; insideFormGroup = true; break;
                     case 'checkbox'         :   buildFunc = $.bsCheckbox;           insideFormGroup = true; break;
+
                     case 'tabs'             :   buildFunc = $.bsTabs;               break;
                     case 'table'            :   buildFunc = $.bsTable;              break;
                     case 'list'             :   buildFunc = $.bsList;               break;
                     case 'accordion'        :   buildFunc = $.bsAccordion;          break;
                     case 'slider'           :   buildFunc = buildBaseSlider;        insideFormGroup = true; addBorder = true; buildInsideParent = true; break;
                     case 'timeslider'       :   buildFunc = buildTimeSlider;        insideFormGroup = true; addBorder = true; buildInsideParent = true; break;
-                    case 'text'             :   buildFunc = $.bsText;               insideFormGroup = true; break;
-                    case 'textarea'         :   buildFunc = $.bsTextArea;           insideFormGroup = true; break;
-                    case 'textbox'          :   buildFunc = buildTextBox;           insideFormGroup = true; addBorder = true; noValidation = true; break;
+
+
+                    case 'compact'          :
+                    case 'conpacttext'      :   buildFunc = buildCompactText;
+                                                options.noLabel = true; options.noVerticalPadding = true;
+                                                insideFormGroup = true; addBorder = true; noValidation = true; break;
+
+                    case 'text'             ://REMOVED                        buildFunc = $.bsText;               insideFormGroup = true; break;
+                    case 'textarea'         ://REMOVED                        buildFunc = $.bsTextArea;           insideFormGroup = true; break;
+                    case 'textbox'          :   if (!options.vfFormat)
+                                                    options.text = options.text || $.EMPTY_TEXT;
+                                                if (hasPreOrPost){
+                                                    buildFunc = buildInlineTextBox; insideFormGroup = true; break;
+                                                }
+                                                else {
+                                                    if (options.compact){
+                                                        //Same as type="compacttext" but with outer padding
+                                                        buildFunc = buildCompactText;
+                                                        options.noLabel = true;
+                                                    }
+                                                    else
+                                                        buildFunc = buildTextBox;
+                                                    insideFormGroup = true; addBorder = true; noValidation = true;
+                                                }
+                                                break;
+
                     case 'fileview'         :   buildFunc = $.bsFileView;           break;
                     case 'hidden'           :   buildFunc = buildHidden;            noValidation = true; break;
+
+                    case 'input'            :   buildFunc = $.bsInput;              insideFormGroup = true; break;
                     case 'inputgroup'       :   buildFunc = buildInputGroup;        addBorder = true; insideFormGroup = true; buildInsideParent = true; break;
 //                    case 'xx'               :   buildFunc = $.bsXx;               break;
 
@@ -55984,8 +56080,13 @@ module.exports = g;
                 //Create outer form-group
                 insideInputGroup = true;
                 $parent = $divXXGroup('form-group', options).appendTo( $parent );
+
                 if (options.smallBottomPadding)
                     $parent.addClass('small-bottom-padding');
+
+                if (options.noVerticalPadding)
+                    $parent.addClass('no-vertical-padding');
+
 
                 if (options.lineBefore)
                     $('<hr/>')
@@ -55996,8 +56097,10 @@ module.exports = g;
                 if (noValidation || options.noValidation)
                     $parent.addClass('no-validation');
             }
-            var $originalParent = $parent;
-            if (insideInputGroup || options.prepend || options.before || options.append || options.after){
+            var $originalParent = $parent,
+                isInputGroupWithFloatLabel = !!options.label;
+
+            if (insideInputGroup || hasPreOrPost){
                 //Create element inside input-group
                 var $inputGroup = $divXXGroup('input-group', options);
                 if (addBorder && !options.noBorder){
@@ -56007,7 +56110,8 @@ module.exports = g;
                     if (options.darkBorderlabel)
                         $inputGroup.addClass('input-group-border-dark');
 
-                    if (options.label){
+                    if (options.label && !options.noLabel){
+                        isInputGroupWithFloatLabel = false; //Correct padding is set via input-group-border-with-label
                         $inputGroup.addClass('input-group-border-with-label');
                         $('<span/>')
                             .addClass('has-fixed-label')
@@ -56015,6 +56119,10 @@ module.exports = g;
                             .appendTo( $inputGroup );
                     }
                 }
+
+                if (isInputGroupWithFloatLabel)
+                    $inputGroup.addClass('input-group-with-float-label');
+
                 $parent = $inputGroup.appendTo( $parent );
             }
 
@@ -56322,11 +56430,15 @@ module.exports = g;
                 transparentOnDark   : 'transparent-on-dark',
                 semiTransparent     : 'semi-transparent',
                 square              : 'square',
+                bigSquare           : 'square big-square',
                 bigIcon             : 'big-icon',
                 extraLargeIcon      : 'extra-large-icon',
                 selected            : 'active',
                 noBorder            : 'no-border',
-                focus               : 'init_focus'
+                noShadow            : 'no-shadow',
+                focus               : 'init_focus',
+                fullWidth           : 'w-100'
+
             };
 
         //Add class-name corresponding to options
@@ -56408,7 +56520,12 @@ module.exports = g;
     $.bsCheckboxButton = function( options ){
         //Clone options to avoid reflux
         options = $.extend({}, options);
-        options.class = 'allow-zero-selected';
+
+        if (options.semiSelected)
+            options.selected = true;
+
+        options.class = 'allow-zero-selected' + (options.class ? ' '+options.class : '');
+        options.className_semi = 'semi-selected';
 
         //Use modernizr-mode and classes if icon and/or text containe two values
         if ($.isArray(options.icon) && (options.icon.length == 2)){
@@ -56431,28 +56548,38 @@ module.exports = g;
     Bootstrap-button as a checkbox with check-icon in blue box
     **********************************************************/
     $.bsStandardCheckboxButton = function( options = {}){
-        if (!options.icon)
-            options.icon =
+        var icon = [
                 options.type == 'radio' ?
                     //Radio-button icons
-                    [[
-                        'fas fa-circle text-checked   icon-show-for-checked', //"Blue" background
-                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-dot-circle text-white icon-show-for-checked', //Dot marker
-                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'                                       //Border
-                    ]] :
+                    [
+                        'fas fa-circle standard-checkbox-checked-color icon-show-for-checked',              //"Blue"/"Semi-selected-orange" background
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-dot-circle text-white icon-show-for-checked',  //Dot marker
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'                                        //Border
+                    ] :
                     //Checkbox-button icons
-                    [[
-                        'fas fa-square text-checked      icon-show-for-checked', //"Blue" background
+                    [
+                        'fas fa-square standard-checkbox-checked-color icon-show-for-checked',                //"Blue"/"Semi-selected-orange" background
                         $.FONTAWESOME_PREFIX_STANDARD + ' fa-check-square text-white  icon-show-for-checked', //Check marker
                         $.FONTAWESOME_PREFIX_STANDARD + ' fa-square'                                          //Border
-                    ]];
+                    ]
+            ];
 
+        if (options.icon)
+            icon.push(options.icon);
+
+        options.icon = options.forceIcon || icon;
 
         //Clone options to avoid reflux
         options = $.extend({}, options, {
-            class    : 'allow-zero-selected',
+            class    : 'allow-zero-selected' + (options.class ? ' '+options.class : ''),
             modernizr: true,
         });
+
+        if (options.semiSelected)
+            options.selected = true;
+
+        options.class = options.class + ' standard-checkbox';
+        options.className_semi = 'semi-selected';
 
         //Bug fix: To avoid bsButton to add class 'active', selected is set to false in options for bsButton
         var bsButtonOptions = $.extend({}, options);
@@ -56476,8 +56603,30 @@ module.exports = g;
         if (options.icon.length > 2)
             icon.push( options.icon[2] );
 
-        return $.bsStandardCheckboxButton( $.extend({}, options, {square: true, icon: [icon]}) );
+        return $.bsStandardCheckboxButton( $.extend({}, options, {square: true, forceIcon: [icon]}) );
     };
+
+
+
+
+    /**********************************************************
+    _anyBsButton( options )
+    Create a specific variant of bs-buttons based on options.type
+    **********************************************************/
+    $._anyBsButton = function( options ){
+        var type = options.type || 'button',
+            constructor;
+
+        switch (type.toLowerCase()){
+            case 'button'                : constructor = $.bsButton; break;
+            case 'checkboxbutton'        : constructor = $.bsCheckboxButton; break;
+            case 'standardcheckboxbutton': constructor = $.bsStandardCheckboxButton; break;
+            case 'iconcheckboxbutton'    : constructor = $.bsIconCheckboxButton; break;
+            default                      : constructor = $.bsButton;
+        }
+        return constructor(options);
+    },
+
 
     /**********************************************************
     bsButtonGroup( options ) - create a Bootstrap-buttonGroup
@@ -56504,6 +56653,13 @@ module.exports = g;
         var result = $('<'+ options.tagName + '/>')
                         ._bsAddIdAndName( options )
                         ._bsAddBaseClassAndSize( options );
+
+        //Transfere generel button-options to buttonOptions
+        $.each(['square', 'bigSquare', 'bigIcon', 'extraLargeIcon'], function(index, id){
+            if ((options[id] !== undefined) && (options.buttonOptions[id] === undefined))
+                options.buttonOptions[id] = options[id];
+        });
+
 
         if (options.center)
             result.addClass( options.centerClass );
@@ -56533,8 +56689,9 @@ module.exports = g;
             result.attr( options.attr );
 
         $.each( options.list, function(index, buttonOptions ){
+
             if (buttonOptions.id)
-                $.bsButton( $.extend({}, options.buttonOptions, buttonOptions ) )
+                $._anyBsButton( $.extend({}, options.buttonOptions, buttonOptions ) )
                     .appendTo( result );
             else
                 $('<div/>')
@@ -56554,9 +56711,11 @@ module.exports = g;
 	    allowZeroSelected: boolean. If true it is allowed to des-select a selected radio-button.
 	                       If allowZeroSelected=true onChange will also be called on the un-selected radio-input
         buttons          : as bsButtonGroup
-
     **********************************************************/
     $.bsRadioButtonGroup = function( options ){
+        options.items = options.items || options.list;
+        options.list = options.list || options.items;
+
         //Set options for RadioGroup
         $.each( options.list, function(index, buttonOptions ){
             buttonOptions = $._bsAdjustOptions( buttonOptions );
@@ -56571,7 +56730,8 @@ module.exports = g;
                     $.extend({}, options, {
                         radioGroupId     : options.id,
                         className        : 'active',
-                        allowZeroSelected: false
+                        className_semi   : 'semi-selected',
+                        allowZeroSelected: false,
                     })
                 );
 
@@ -56931,6 +57091,9 @@ module.exports = g;
 
     //BsModalinput = internal object representing an input-element in the form
     function BsModalInput( options, modalForm ){
+        options.items = options.items || options.list;
+        options.list = options.list || options.items;
+
         this.options = options;
         this.modalForm = modalForm;
         this.options.userId = this.options.id;
@@ -56984,31 +57147,39 @@ module.exports = g;
         setValue
         *******************************************************/
         setValue: function(value, validate){
-            var $elem = this.getElement();
+            var $elem = this.getElement(),
+                isSemiSelected;
+
+            //Special case: If it is a element with possible semi-selected value and vaule is a string/array => the element get semi-selected mode (yellow background)
+            if (this.canBeSemiSelected){
+                var semiSelectedValue;
+
+                isSemiSelected = ($.type(value) == this.semiSelectedValueType);
+                if ((isSemiSelected && this.semiSelectedValueType == 'array')){
+                    semiSelectedValue = value[1];
+                    value             = value[0];
+                }
+                else
+                    semiSelectedValue = value;
+            }
+
             switch (this.options.type || 'input'){
-                case 'input'            : $elem.val( value );                      break;
-                case 'select'           : $elem.selectpicker('val', value );       break;
-                case 'checkbox'         :
-                    //Special case: If value is a string => the checkbox get semi-selected mode (yellow background)
-                    var isSemiSelected = (typeof value == 'string');
-                    $elem.toggleClass('semi-selected', isSemiSelected);
+                case 'input'   : $elem.val( value );                break;
+                case 'select'  : $elem.selectpicker('val', value ); break;
 
-                    //Update options for the checkbox
-                    var options = $elem.data('cbx_options');
-                    options.className_semi = isSemiSelected ? 'semi-selected' : '';
-                    options.semiSelectedValue = isSemiSelected ? value : '';
-                    $elem.data('cbx_options', options );
+                case 'checkbox': $elem.prop('checked', value );     break;
 
-                    $elem.prop('checked', value );
-                    break;
+                case 'checkboxbutton'        :
+                case 'standardcheckboxbutton':
+                case 'iconcheckboxbutton'    : $elem._cbxSet(value, true, isSemiSelected, semiSelectedValue); break;
 
-                case 'selectlist'       : this.getRadioGroup().setSelected(value); break;
-                case 'radiobuttongroup' : this.getRadioGroup().setSelected(value); break;
+                case 'selectlist'      : this.getRadioGroup().setSelected(value); break;
+                case 'radiobuttongroup': this.getRadioGroup().setSelected(value, false, isSemiSelected, semiSelectedValue); break;
 
-                case 'slider'           :
-                case 'timeslider'       : this.getSlider().setValue( value );      break;
-                case 'text'             :                                          break;
-                case 'hidden'           : $elem.val( value );                      break;
+                case 'slider'    :
+                case 'timeslider': this.getSlider().setValue( value );  break;
+                case 'text'      :                                      break;
+                case 'hidden'    : $elem.val( value );                  break;
             }
             this.onChanging();
             return validate ? this.validate() : this;
@@ -57018,18 +57189,26 @@ module.exports = g;
         getResetValue: function(){
         *******************************************************/
         getResetValue: function(){
-            var result = null;
+            var result;
             switch (this.options.type || 'input'){
                 case 'input'            : result = '';    break;
                 case 'select'           : result = null;  break;
-                case 'checkbox'         : result = false; break;
-                case 'selectlist'       : result = this.getRadioGroup().options.list[0].id; break;
+
+                case 'checkbox'              :
+                case 'checkboxbutton'        :
+                case 'standardcheckboxbutton':
+                case 'iconcheckboxbutton'    : result = false; break;
+
+                case 'selectlist'       :
                 case 'radiobuttongroup' : result = this.getRadioGroup().options.list[0].id; break;
 
                 case 'slider'           :
                 case 'timeslider'       : result = this.getSlider().result.min; break;
-                case 'text'             : result = '';                          break;
+
+                case 'text'             :
                 case 'hidden'           : result = '';                          break;
+
+                default                 : result = false;
             }
             return result;
         },
@@ -57056,26 +57235,27 @@ module.exports = g;
         getValue: function(){
             var $elem = this.getElement(),
                 result = null;
+
             switch (this.options.type || 'input'){
-                case 'input'            : result = $elem.val();               break;
-                case 'select'           : result = $elem.selectpicker('val'); break;
-                case 'checkbox'         :
-                    result = !!$elem.prop('checked');
+                case 'input'   : result = $elem.val();                    break;
+                case 'select'  : result = $elem.selectpicker('val');      break;
 
-                    //Special case: If $elem is semi-selected: return special value from option
-                    var options = $elem.data('cbx_options');
-                    if (result && options.semiSelectedValue && options.className_semi && $elem.hasClass(options.className_semi))
-                        result = options.semiSelectedValue;
+                case 'checkbox': result = !!$elem.prop('checked');        break;
 
-                    break;
+                case 'checkboxbutton'        :
+                case 'standardcheckboxbutton':
+                case 'iconcheckboxbutton'    : result = !!$elem._cbxGet();              break;
 
-                case 'selectlist'       : result = this.getRadioGroup().getSelected(); break;
-                case 'radiobuttongroup' : result = this.getRadioGroup().getSelected(); break;
-                case 'slider'           :
-                case 'timeslider'       : result = this._getSliderValue(); break;
-                case 'text'             : result = ' ';                    break;
-                case 'hidden'           : result = $elem.val();            break;
+                case 'selectlist'       : result = this.getRadioGroup().getSelected();  break;
+                case 'radiobuttongroup' : result = this.getRadioGroup().getSelected();  break;
+
+                case 'slider'    :
+                case 'timeslider': result = this._getSliderValue();              break;
+
+                case 'text'      : result = ' ';                                 break;
+                case 'hidden'    : result = $elem.val();                         break;
             }
+
             return result === null ? this.getResetValue() : result;
         },
 
@@ -57174,12 +57354,26 @@ module.exports = g;
         //this.input = simple object with all input-elements. Also convert element-id to unique id for input-element
         this.inputs = {};
 
-        var types = ['button', 'input', 'select', 'selectlist', 'radiobuttongroup', 'checkbox', 'radio', 'table', 'slider', 'timeslider', 'hidden', 'inputgroup'];
+        var typeList = ['button', 'checkboxbutton', 'standardcheckboxbutton', 'iconcheckboxbutton',
+                        'input', 'select', 'selectlist', 'radiobuttongroup', 'checkbox', 'radio', 'table', 'slider', 'timeslider', 'hidden', 'inputgroup'],
+
+            //semiSelectedValueTypes = {TYPE_ID:TYPE} TYPE_ID = the types that accept a semi-selected value. TYPE = the $.type result that detect if the value of a element is semi-selected
+            semiSelectedValueTypes = {
+                checkboxbutton          : {type: 'string' },
+                standardcheckboxbutton  : {type: 'string' },
+                checkbox                : {type: 'string' },
+                radiobuttongroup        : {type: 'array',   addSemiSelectedClassToChild: true }
+            };
 
         function setId( dummy, obj ){
-            if ($.isPlainObject(obj) && (obj.type !== undefined) && (types.indexOf(obj.type) >= 0) && obj.id){
+            if ($.isPlainObject(obj) && (obj.type !== undefined) && typeList.includes(obj.type) && obj.id){
                 var bsModalInput = new BsModalInput( obj, _this ),
-                    onChangingFunc = $.proxy( bsModalInput.onChanging, bsModalInput );
+                    onChangingFunc = $.proxy( bsModalInput.onChanging, bsModalInput ),
+                    ssvt = semiSelectedValueTypes[obj.type];
+
+                var canBeSemiSelected = bsModalInput.canBeSemiSelected = !!ssvt;
+                bsModalInput.semiSelectedValueType       = canBeSemiSelected ? ssvt.type                        : null;
+                bsModalInput.addSemiSelectedClassToChild = canBeSemiSelected ? ssvt.addSemiSelectedClassToChild : null;
 
                 //Set options to call onChanging
                 switch (obj.type){
@@ -57187,6 +57381,7 @@ module.exports = g;
                     case 'timeslider': obj.onChanging = onChangingFunc; break;
                     default          : obj.onChange = onChangingFunc;
                 }
+
                 //Add element to inputs
                 _this.inputs[obj.id] = bsModalInput;
             }
@@ -57273,13 +57468,13 @@ module.exports = g;
         /*******************************************************
         edit
         *******************************************************/
-        edit: function( values, tabIndexOrId ){
+        edit: function( values, tabIndexOrId, semiSelected ){
             this.$bsModal.show();
 
             if (tabIndexOrId !== undefined)
                 this.$bsModal.bsSelectTab(tabIndexOrId);
 
-            this.setValues( values, false, true );
+            this.setValues( values, false, true, semiSelected );
             this.originalValues = this.getValues();
 
             //Reset validation
@@ -57443,13 +57638,13 @@ module.exports = g;
         /*******************************************************
         setValues
         *******************************************************/
-        setValues: function(values, validate, restUndefined){
+        setValues: function(values, validate, resetUndefined){
             this._eachInput( function( input ){
                 var value = values[input.options.userId];
                 if ( value != undefined)
                     input.setValue(value, validate);
                 else
-                    if (restUndefined)
+                    if (resetUndefined)
                         input.resetValue();
             });
         },
@@ -57541,32 +57736,37 @@ module.exports = g;
     $._set_bsHeaderIcons = function( forceOptions = {}){
 
         $.bsHeaderIcons = $.extend( $.bsHeaderIcons, {
-            back    : 'fa-chevron-left',
-            forward : 'fa-chevron-right',
+            back    : 'fa-circle-chevron-left',
+            forward : 'fa-circle-chevron-right',
 
             pin     : ['fas fa-thumbtack fa-inside-circle', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
             unpin   : 'fa-thumbtack',
 
-            extend  : 'fa-chevron-up',
-            diminish: 'fa-chevron-down',
+            extend  : 'fa-chevron-circle-up',
+            diminish: 'fa-chevron-circle-down',
 
-            new     : [$.FONTAWESOME_PREFIX_STANDARD + ' fa-window-maximize fa-inside-circle2', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
 
-            warning : [['fas fa-circle back text-warning', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle front'], 'fas fa-exclamation middle'],
+            new     : [ $.FONTAWESOME_PREFIX_STANDARD + ' fa-window-maximize fa-inside-circle2',
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'  ],
 
-            info    : /*$.FONTAWESOME_PREFIX_STANDARD + */'fas fa-info-circle', //fas-info-circle is not part of FA v5 free regulare
+            warning : [ 'fas fa-circle back text-warning',
+                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle',
+                        'fas fa-exclamation fa-inside-circle-xmark'   ],
 
-            help    : $.FONTAWESOME_PREFIX_STANDARD + ' fa-question-circle',
+            info    : 'fa-circle-info',
+            help    : 'fa-circle-question',
 
-            close   : ['fas fa-circle back', $.FONTAWESOME_PREFIX_STANDARD + ' fa-times-circle middle', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle front']
+            close   : [ 'fas fa-circle show-for-hover fa-hover-color-red',
+                        'fa-xmark fa-inside-circle-xmark fa-hover-color-white',
+                        $.FONTAWESOME_PREFIX_STANDARD+' fa-circle' ]
+
         }, forceOptions );
     };
     $._set_bsHeaderIcons();
 
     //mandatoryHeaderIconClass = mandatory class-names and title for the different icons on the header
     var mandatoryHeaderIconClassAndTitle = {
-        warning: {class:'header-icon-colored-background header-icon-warning', __title: {da:'Luk', en:'Close'}},
-        close  : {class:'header-icon-colored-background header-icon-close',   title: {da:'Luk', en:'Close'}},
+        close  : {/*class:'',*/ title: {da:'Luk', en:'Close'}},
     };
 
     /******************************************************
@@ -57692,23 +57892,25 @@ module.exports = g;
         $.bsText( options )
         Create a <div> with text inside a <label>
         ******************************************************/
+/* REMOVED. ALL TEXT-INPUTS ARE CREATED IN _bsAppendContent
         bsText: function( options ){
             return $('<div/>')
                        ._bsAddHtml( options )
                        .addClass('form-control-border form-control no-hover')
                        ._wrapLabel(options);
         },
-
+//*/
         /******************************************************
         $.bsTextArea( options )
         Create a <div> with text inside a <label>
         ******************************************************/
+/* REMOVED. ALL TEXT-INPUTS ARE CREATED IN _bsAppendContent
         bsTextArea: function( options ){
             var $result = $.bsText( options );
             $result.children('.form-control').css('height', 'auto');
             return $result;
         }
-
+//*/
     });
 
 
@@ -58602,7 +58804,7 @@ jquery-bootstrap-modal-promise.js
     as expected/needed
     Instead a resize-event is added to update the max-height of
     elements with the current value of window.innerHeight
-    Sets both max-height and height to allow always-max-heigth options
+    Sets both max-height and height to allow always-max-height options
     **********************************************************/
     function adjustModalMaxHeight( $modalContent ){
         var $modalContents = $modalContent || $('.modal-content.modal-flex-height');
@@ -58663,7 +58865,9 @@ jquery-bootstrap-modal-promise.js
             flexWidth : !!options.flexWidth,
             extraWidth: !!options.extraWidth,
             megaWidth : !!options.megaWidth,
-            width     : options.width ? options.width+'px' : null
+            width     : options.width ?
+                        ( (typeof options.width == 'number') ? options.width+'px' : options.width)
+                        : null
         };
     }
 
@@ -58955,9 +59159,10 @@ jquery-bootstrap-modal-promise.js
                         .addClass(scrollbarClass)
                         .addScrollbar({
                             direction       : scrollDirection,
-                            contentClassName: options.noVerticalPadding ? '' : 'modal-body-with-vertical-padding'
+                            contentClassName: options.noVerticalPadding ? '' : 'modal-body-with-vertical-padding' + (window.getScrollbarWidth() ? '' :' modal-body-with-horizontal-padding')
                         }) :
                     $modalBody;
+
 
         //Add content. If the content is 'dynamic' ie options.dynamic == true and options.content is a function, AND it is a different size => save function
         if (options.dynamic && (typeof options.content == 'function') && (size != initSize)){
@@ -59305,7 +59510,7 @@ jquery-bootstrap-modal-promise.js
                 buttonOptions.class = buttonOptions.class || buttonOptions.className || '';
 
                 var $button =
-                    $.bsButton( $.extend({}, defaultButtonOptions, buttonOptions ) )
+                    $._anyBsButton( $.extend({}, defaultButtonOptions, buttonOptions ) )
                         .appendTo( $modalButtonContainer );
 
                 //Add onClick from icons (if any)
@@ -60465,7 +60670,7 @@ jquery-bootstrap-modal-promise.js
                     var $child = $(elemList[index]).children().first();
                     if ($child.length){
                         $child.empty();
-                        $child._bsAddHtml(options.items[itemIndex]);
+                        $child._bsAddHtml(options.list[itemIndex]);
                     }
 
                     itemIndex++;
@@ -60537,6 +60742,10 @@ jquery-bootstrap-modal-promise.js
     **********************************************************/
     var selectboxId = 0;
     $.bsSelectBox = $.bsSelectbox = function( options ){
+
+        options.items = options.items || options.list;
+        options.list = options.list || options.items;
+
         //Add size-class to button-class
         var buttonSizeClass = $._bsGetSizeClass({
                 baseClass   : 'btn',
@@ -60577,12 +60786,12 @@ jquery-bootstrap-modal-promise.js
                 $('<div class="form-control-with-label"></div>')
                     .append( $select );
 
-        //Convert options.items to select-option
+        //Convert options.list to select-option
         var selectedId = null,
             $currentParent = $select,
             itemOptionsList = [{}]; //{} = dummy for the title
 
-        $.each( options.items, function( index, itemOptions ){
+        $.each( options.list, function( index, itemOptions ){
             if (itemOptions.id){
                 itemOptionsList.push(itemOptions);
 
