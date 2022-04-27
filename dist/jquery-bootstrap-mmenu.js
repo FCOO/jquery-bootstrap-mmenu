@@ -131,7 +131,8 @@
                     options.small = true;
                     options.type = options.type || 'button';
                     if (!index)
-                        options.class = 'ml-0 ms-0'; //Margin-left = 0 Bootstrap 4 / Bootstrap 5
+                        options.class = (options.class || '') + ' ml-0 ms-0'; //Margin-left = 0 Bootstrap 4 / Bootstrap 5
+
                 });
 
                 //Add div with buttons
