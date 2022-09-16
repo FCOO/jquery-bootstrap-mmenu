@@ -166,6 +166,9 @@
                 })
                 .appendTo( this.$content );
 
+                //Set flex shrink to 0 for input-element
+                this.checkbox.find('input').addClass('flex-shrink-0');
+
                 this.setState(this.state);
 
                 //Add button to toggle favorites
@@ -173,16 +176,18 @@
                     var inFavorites = this.menu.options.favorites.get(this.id);
                     this.$favoriteButton =
                        $.bsIconCheckboxButton({
-                            id  : this.id,
-                            icon: ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star'],
-                            title: {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
-                            transparent: true,
-                            square     : true,
-                            noBorder   : true,
-                            selected   : inFavorites,
-                            onChange   : $.proxy(this._toggleFavorite, this)
+                            id          : this.id,
+                            icon        : ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star'],
+                            title       : {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
+                            transparent : true,
+                            square      : true,
+                            noBorder    : true,
+                            class       :'flex-shrink-0',
+                            selected    : inFavorites,
+                            onChange    : $.proxy(this._toggleFavorite, this)
                         }).appendTo(this.$outer);
-                    this.$outer.addClass('padding-right-none');
+
+                    this.$outer.addClass('pe-0');
 
                     if (inFavorites)
                         this.toggleFavorite(inFavorites);
@@ -199,7 +204,7 @@
                         noBorder    : true,
                         onClick     : $.proxy(owner._toggleFavorite, owner)
                     }).appendTo(this.$outer);
-                    this.$outer.addClass('padding-right-none');
+                    this.$outer.addClass('pe-0');
                 }
             }
 

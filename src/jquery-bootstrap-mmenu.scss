@@ -27,7 +27,7 @@ Setting different _include_-variables to include
 or exclude parts of the css
 ***********************************************/
 //STYLING
-$mm_IE11Fallbacks       : true; //Whether or not to include support for Internet Explorer 11 throughout the entire CSS framework.
+    $mm_IE11Fallbacks       : false; //Whether or not to include support for Internet Explorer 11 throughout the entire CSS framework.
 
 $mm_include_vertical    : true; //Whether or not to include CSS for vertical submenus throughout the entire CSS framework.
 
@@ -89,53 +89,53 @@ $mm_include_setselected : true;     //Whether or not to include CSS for the setS
 
     $mm_include_checks      : false; //Whether or not to include CSS for checks throughout the entire CSS framework.
 
-
     $mm_opt_screenreader    : false;
 
 /***********************************************
 COLORS AND STYLE
 ***********************************************/
-//Colors
-    $mm_backgroundColor             : $control-bg-color;                                //#f3f3f3 !default;
-    $mm_borderColor                 : $control-border-color;                            //rgba(#000, 0.1) !default;
-  //$mm_dimmedTextColor             : Using default =                                   //rgba(#000, 0.3) !default;
-    $mm_emphasizedBackgroundColor   : darken($control-bg-color, $darken-hover-percent); //rgba(#fff, 0.4) !default;
-  //$mm_highlightedBackgroundColor  : Not used                                          //rgba(#000, 0.05) !default;
-    $mm_textColor                   : $control-color;                                   //rgba(#000, 0.75) !default;
+.mm-menu {
+    // font-size
+    --mm-font-size    : #{$jb-font-size};
 
-//Sizes
-$mm_listitemSize    : $button-square-dimension;     //44px !default;
-
-$mm_btnSize         : $button-square-dimension;     //50px !default;
-$mm_padding         : $input-btn-padding-y;         //10px !default;
-$mm_lineHeight      : $button-square-dimension;     //20px !default;
-
-//$mm_listitemIndent =  NOTE Must be in px
-$mm_listitemIndent  : (16px / 1rem) * $mm_padding * 2; //$mm_padding * 2 !default;
+    // sizes
+    --mm-line-height    : #{$button-square-dimension};
+    --mm-listitem-size  : #{$button-square-dimension};
+    --mm-navbar-size    : #{$button-square-dimension};
+    --mm-iconbar-size   : #{$button-square-dimension + 2 * $jb-padding-x};
 
 
-$mm_panelPadding    : $mm_padding * 2 !default;
 
+    // colors
+    --mm-color-border     : var(--jb-structure-border-color);
 
-$mm_subpanelOffset  : 30% !default;
+    --mm-color-text             : #{$jb-element-color};
+    --mm-color-text-dimmed-alpha: 0.5;
+    --mm-color-text-dimmed      : rgba( #{to-rgb($jb-element-color)}, var(--mm-color-text-dimmed-alpha) );
 
-$mm_menuWidth       : 0.8 !default;
-$mm_menuMinWidth    : 240px !default;
-$mm_menuMaxWidth    : 440px !default;
-$mm_menuHeight      : 0.8 !default;
-$mm_menuMinHeight   : 140px !default;
-$mm_menuMaxHeight   : 880px !default;
+    //Same bg as Bootstrap modal
+    --mm-color-background   : var(--bs-modal-bg);
 
+    //Open item. Possible to have different colors than panel
+    --mm-item-opened-color  : null;
+    --mm-item-opened-bg     : null;
 
-$mm_counterWidth    : $mm_btnSize !default;
+    //Open panel
+    --mm-panel-opened-bg    : rgba(0,0,0, 0.05);
 
-$mm_dropdownShadow  : 0 2px 10px rgba( #000, 0.3 ) !default;
-$mm_dropdownTipX    : 20px !default;
-$mm_dropdownTipY    : 10px !default;
+    //	misc
+    --mm-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
 
-$mm_iconbarSize     : $button-square-dimension + 2 * $input-btn-padding-x; //$mm_btnSize !default;
+//Size small - Adjust size when in no-touch-mode
+.mm-menu.mm-menu-sm {
+    --mm-font-size      : #{$jb-font-size-sm};
 
-$mm_sectionIndexerSize  : 20px !default;
+    --mm-line-height    : #{$button-square-dimension-sm};
+    --mm-listitem-size  : #{$button-square-dimension-sm};
+    --mm-navbar-size    : #{$button-square-dimension-sm};
+    --mm-iconbar-size   : #{$button-square-dimension-sm + 2 * $jb-padding-x-sm}
+}
 
 /***********************************************
 IMPORT MMENU SCSS
@@ -157,27 +157,23 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     padding: 0 0 0 5px !important;
 }
 
+//Overwrite standard to have different background and tex-color for open items
+.mm-menu {
+    .mm-listitem_opened > .mm-listitem__btn{
+        color       : var(--mm-item-opened-color);
+        background  : var(--mm-item-opened-bg);
+    }
+}
+
+
 //Adjust font-size and height
 .mm-listitem {
-    font-size : $font-size-base;
-    min-height: #{$button-square-dimension};
+    font-size : var(--mm-font-size);
+    min-height: var(--mm-line-height);
 
     .mm-listitem-content {
         line-height: 1.5 !important;
     }
-
-    .mm-menu-sm & {
-        font-size : $font-size-sm;
-        min-height: #{$button-square-dimension-sm};
-    }
-}
-
-//Adjust size when in no-touch-mode
-.mm-menu-sm {
-    --mm-line-height    : #{$button-square-dimension-sm};
-    --mm-listitem-size  : #{$button-square-dimension-sm};
-    --mm-navbar-size    : #{$button-square-dimension-sm};
-    --mm-iconbar-size   : #{$button-square-dimension-sm + 2 * $input-btn-padding-x-sm}
 }
 
 //Adjust chevrolet arrow on right side
@@ -193,37 +189,19 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     }
 }
 
-.mm-navbar__btn {
-    .mm-menu-sm & {
-        width: $button-square-dimension-sm;
-    }
-}
-
-
 //Buttons inside icon-bar on left side
 .mm-iconbar {
     .btn.btn-standard.square {
         margin-left  : auto;
         margin-right : auto;
-        margin-bottom: $button-square-dimension / 2;
-
-        &.btn-sm {
-            margin-bottom: $button-square-dimension-sm / 2;
-        }
+        margin-bottom: calc( var(--mm-listitem-size) / 2 );
     }
-    .mm-iconbar__top, .mm-iconbar__bottom {
-    }
-
 }
 
 .mm-listitem__text {
     display: flex;
     &  > *:first-child {
         flex: 1;
-    }
-
-    &.padding-right-none {
-        padding-right: 0 !important;
     }
 }
 

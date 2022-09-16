@@ -13,63 +13,138 @@ INCLUDE-JQUERY-BOOTSTRAP-VARIABLES
 USED IN FOR OTHER PACKAGES TO INCLUDE ALL SCSS-FILES NEEDED
 TO HAVE ACCESS TO ALL BOOTSTRAP AND FCOO/JQUERY-BOOTSTRAP SCSS-VARIABLES
 ************************************************************/
-/***********************************************
-JQUERY-BOOTSTRAP: Set and adjust bootstrap default values
-************************************************/
 /************************************************************
-BOOTSTRAP-VARIABLES
+FUNCTIONS
 ************************************************************/
 /***********************************************
 FUNCTIONS TO CONVETRT FROM PX TO REM
 To make it easier to design and calculate dimensions
 the function rem defined
 ************************************************/
+/************************************************************
+HEADER, TITLE, AND FOOTER PADDING AND FONT-SIZE
+Padding are set to button y-padding (moving text to the left)
+************************************************************/
+/************************************************************
+BOOTSTRAP_COLORSTEXT
+
+A copy of the colorws defined in bootstrap/scss_variables.scss
+************************************************************/
+/************************************************************
+VARIABLES-BOOTSTRAP
+Adjust Bootstrap 5 variables default values
+
+Variables should follow the `$component-state-property-size` formula for
+consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+
+All non-Bootstrap variables are prefixed with $jb-
+
+
+************************************************************/
 /***********************************************
-ADJUST BOOTSTRAP DEFAULT VALUES
+Customize Bootstrap
+See https://getbootstrap.com/docs/5.2/customize/options/ for description
+/star star/ = Differnet from default
 ************************************************/
+/**/
+/**/
+/***********************************************
+OPACITY
+************************************************/
+/***********************************************
+TEXT-COLOR
+************************************************/
+/***********************************************
+BACKGROUND-COLOR
+************************************************/
+/***********************************************
+BORDER-COLOR
+************************************************/
+/***********************************************
+CHECKBOX, RADIO, AND SELECT
+text-color and bg-color for selected item in <select> varies for different browsers.
+text-color = rgb(255, 255, 255)   for all
+    Browser     bg-color
+    Chrome      rgb( 30, 144, 255)
+    Firefox     rgb(  0, 120, 215)
+    Safari      rgb( 30, 144, 255)
+    Edge        rgb(195, 195, 195)  = gray
+
+For checkbox and radio default Bootstrap uses:
+text-color  = $form-check-input-checked-color    = $component-active-color = $white   = rgb(255, 25, 255);
+bg-color    = $form-check-input-checked-bg-color = $component-active-bg    = $primary = rgb(13, 110, 253);
+
+** BUT JQUERY-BOOTSTRAP USES SAME COLORS AS <SELECT> IN CHROME AND SAFARI **
+************************************************/
+/*
+indeterminate colors = checkbox or checkbox-button with semi-selected state
+Use $orange as bg-color and same bg-image as selected and standard border-color
+*/
+/***********************************************
+PADDING AND FONT-SIZE
+Padding and font-size for different sizes of
+    buttons,
+    accordion-, modal-, popup-, and tooltip-header/footer
+************************************************/
+/************************************************************
+Modal and popover header and content
+Bootstrap default = normal size
+************************************************************/
+/***********************************************
+Accordion
+***********************************************/
+/***********************************************
+Card
+***********************************************/
+/***********************************************
+Toast
+***********************************************/
+/***********************************************
+Tables
+For some (unknown) reason the padding of table cells
+are done by scss-variables instead of var(...) ???
+***********************************************/
+/***********************************************
+Nav, Pills and Tabs
+***********************************************/
+/***********************************************
+BUTTONS
+************************************************
+SYNTAX AND RELATIONS IN BOOTSTRAP
+    $input-btn-padding-x[-sm|-lg] = A Value
+    $input-btn-padding-y[-sm|-lg] = A Value
+    $input-btn-font-size[-sm|-lg] = A Value
+    $border-radius[-sm|-lg]       = A Value
+
+Used for button:
+    $btn-padding-y[-sm|-lg]      : $input-btn-padding-y[-sm|-lg] !default;
+    $btn-padding-x[-sm|-lg]      : $input-btn-padding-x[-sm|-lg] !default;
+    $btn-font-size[-sm|-lg]      : $input-btn-font-size[-sm|-lg] !default;
+    $btn-border-radius[-sm|-lg]  : $border-radius[-sm|-lg]       !default;
+
+Used for input
+    $input-padding-y[-sm|-lg]    : $input-btn-padding-y[-sm|-lg] !default;
+    $input-padding-x[-sm|-lg]    : $input-btn-padding-x[-sm|-lg] !default;
+    $input-font-size[-sm|-lg]    : $input-btn-font-size[-sm|-lg] !default;
+    $input-border-radius[-sm|-lg]: $border-radius[-sm|-lg]       !default;
+
+BOOTSTRAP 5 DEFAULT
+    $input-btn-line-height  : 1.5
+*/
+/************************************************************
+Including "size" xs as in Bootstrap 5
+************************************************************/
 /***********************************************
 Adjust bootstrap-variables to only have dimensions
 in integer px from rem
 ************************************************/
-/*Not used. No lg-buttons
-$input-btn-padding-y-lg: .75rem;
-$input-btn-padding-x-lg: $input-btn-padding-y-lg;
-
-Syntax and relations:
-In Bootstrap
-    $input-btn-padding(-x|-y)[-sm|-lg] = A Value
-    $btn-padding(-x|-y)[-sm|-lg] = $input-btn-padding(-x|-y)[-sm|-lg]
-
-
-
-In jquery-bootstrap
-    $input-btn-padding-x-sm = 3px
-    $input-btn-padding-y-sm = 4px
-
-    xs-versions added
-    $input-btn-padding-x-xs = 2px
-    $input-btn-padding-y-xs = 3px
-
-*/
 /************************************************************
-Including "size" xs as in Bootstrap 4
-************************************************************/
-/************************************************************
-Add line-heights for xs
-************************************************************/
-/************************************************************
-Border-colors
+Other adjustments
 ************************************************************/
 /************************************************************
 Make all font-size and margin for header (<h1>, <h2>,...<h6>)
 releative to container (rem -> em)
-************************************************************/
-/* Defalut not changed:
-$font-size-base         : 1rem !default;
-$spacer                 : 1rem !default;
-*/
-/************************************************************
-Set margin for buttons in block
+Default (not changed): $font-size-base = $spacer = 1rem
 ************************************************************/
 /************************************************************
 Adjust dropdown-menu
@@ -78,127 +153,39 @@ Adjust dropdown-menu
 Adjust modal
 ************************************************************/
 /***********************************************
-BOOTSTRAP: scss variables
-************************************************/
-/***********************************************
-JQUERY-BOOTSTRAP: Background-color and text color and Variables
-************************************************/
-/************************************************************
-COLOR
 
-background-color and text-color for
-headers modal, popover, tables, buttons, list-items etc.
+jquery-scroll-container-variables.scss
 
-"$header-" is used for header to modal-windows and popover
-"$title-" is used for headers on content - table, accordion etc.
-"$control-" is used for buttons, list-items etc.
-************************************************************/
+************************************************/
 /************************************************************
 VARIABLES
+
+Defines scss-variables used in jquery-bootstrap
+Some of these variables are based on Bootstrap variables
 ************************************************************/
 /***********************************************
-DEFINE BOOTSTRAP BUTTON STYLE
-$btn-style-name MUST correspond with ns.bsButtonClass
-in src/jquery-bootstrap-button.js
+Checkbox
 ************************************************/
-/************************************************************
-Variables bassed on bootstrop variables
-************************************************************/
-/************************************************************
-HEADER
-Font-sizes for headers are one 'size' smaller than normal font
-$font-size-lg  : 1.25rem    20px
-$font-size-base: 1rem       16px
-$font-size-sm  : .875rem;   14px
-$font-size-xs  : .75rem     12px
-************************************************************/
-/************************************************************
-BUTTON AND MODAL
+/***********************************************
+Button
+************************************************/
+/***********************************************
+Modal
+************************************************/
+/***********************************************
+Button And Modal
 Opacity for semi-transparent and transparent content
-************************************************************/
-/************************************************************
-SQUARE BUTTONS
-Dimentions for square buttons with only icons
-************************************************************/
-/************************************************************
-LABEL
-Font-sizes for labels are same size as header but incl a xxs-size
-************************************************************/
-/************************************************************
-CONTENT
-Unifies padding and font-size for content of modal, accordion, popup etc.
-Using same font-size and vertical/horizontal padding as buttons
-NOTE: For sm and xs y-padding = x-padding
-************************************************************/
-/************************************************************
-MARGIN-BOTTOM
-All elements in modal-windows get same margin-bottom
-************************************************************/
+************************************************/
 /************************************************************
 MIXIN
 ************************************************************/
 /************************************************************
-RIGHT-SIDE-ICON
-Add style to <i> to place it to the right and vertical center
-NOTE: Parent element MUST have @include vertical-align-center();
+PROPERTY-VARIANT
+Varients of different properties
 ************************************************************/
 /************************************************************
-FOCUS
-All elements get same outline when they have focus:
-No outline
-border-color = light blue
-************************************************************/
-/************************************************************
-CONTENT
-Unifies padding for modal, accordion, popup etc.
-************************************************************/
-/************************************************************
-CONTROL-CONTAINER
-Style for div with controls inside modal.
-Must have tabindex:"-1" to work with focus
-************************************************************/
-/************************************************************
-CONTROL BORDER-COLOR
-All control elements get same border-color when normal, hover, active and error
-************************************************************/
-/************************************************************
-CONTROL-COLORS
-Sets all color for text, background, border for normal, :hover, :focus,  :active and .active
-************************************************************/
-/************************************************************
-TYPE-COLOR
-Bg-color and color for different 'type' (warning, alert, info, error, success)
-Used in Noty and Modal
-************************************************************/
-/************************************************************
-HEADER AND TITLE BACKGROUND-COLOR AND COLOR
-Headers for modal, popover, popup etc.
-************************************************************/
-/************************************************************
-color-hover - Background-color and text-color for 'normal' and hover
-************************************************************/
-/************************************************************
-header-colors - Colors for headers
-************************************************************/
-/************************************************************
-title-color - create colors for headers for table and accordion etc.
-************************************************************/
-/************************************************************
-HEADER, TITLE, AND FOOTER PADDING AND FONT-SIZE
-Padding are set to button y-padding (moving text to the left)
-************************************************************/
-/************************************************************
-header-variant
-************************************************************/
-/************************************************************
-title-variant - as header but with same font-size as siblings
-************************************************************/
-/************************************************************
-footer-variant
-************************************************************/
-/************************************************************
-MARGIN-BOTTOM FOR ELEMENTS IN MODAL
-All elements in modal-windows get same margin-bottom
+HEADER and FOOTER-VARIANT
+Adjust padding and font-size for header and footer
 ************************************************************/
 /***********************************************
 Setting different _include_-variables to include
@@ -207,6 +194,30 @@ or exclude parts of the css
 /***********************************************
 COLORS AND STYLE
 ***********************************************/
+.mm-menu {
+  --mm-font-size: 1rem;
+  --mm-line-height: 2.375rem;
+  --mm-listitem-size: 2.375rem;
+  --mm-navbar-size: 2.375rem;
+  --mm-iconbar-size: 3.125rem;
+  --mm-color-border: var(--jb-structure-border-color);
+  --mm-color-text: #212529;
+  --mm-color-text-dimmed-alpha: 0.5;
+  --mm-color-text-dimmed: rgba( 33, 37, 41, var(--mm-color-text-dimmed-alpha) );
+  --mm-color-background: var(--bs-modal-bg);
+  --mm-item-opened-color: null;
+  --mm-item-opened-bg: null;
+  --mm-panel-opened-bg: rgba(0,0,0, 0.05);
+  --mm-shadow: 0 0 10px rgba(0, 0, 0, 0.3); }
+
+.mm-menu.mm-menu-sm {
+  --mm-font-size: 0.875rem;
+  --mm-line-height: 1.9375rem;
+  --mm-listitem-size: 1.9375rem;
+  --mm-navbar-size: 1.9375rem;
+  --mm-iconbar-size: 2.4375rem
+; }
+
 /***********************************************
 IMPORT MMENU SCSS
 ***********************************************/
@@ -221,20 +232,20 @@ IMPORT MMENU SCSS
  * http://creativecommons.org/licenses/by-nc/4.0/
  */
 :root {
-  --mm-line-height: 2.125rem;
-  --mm-listitem-size: 2.125rem;
-  --mm-navbar-size: 2.125rem;
+  --mm-line-height: 20px;
+  --mm-listitem-size: 44px;
+  --mm-navbar-size: 44px;
   --mm-offset-top: 0;
   --mm-offset-right: 0;
   --mm-offset-bottom: 0;
   --mm-offset-left: 0;
-  --mm-color-border: #ced4da;
+  --mm-color-border: rgba(0, 0, 0, 0.1);
   --mm-color-button: rgba(0, 0, 0, 0.3);
-  --mm-color-text: #515961;
+  --mm-color-text: rgba(0, 0, 0, 0.75);
   --mm-color-text-dimmed: rgba(0, 0, 0, 0.3);
-  --mm-color-background: #f8f9fa;
+  --mm-color-background: #f3f3f3;
   --mm-color-background-highlight: rgba(0, 0, 0, 0.05);
-  --mm-color-background-emphasis: #e9ecef;
+  --mm-color-background-emphasis: rgba(255, 255, 255, 0.4);
   --mm-shadow: 0 0 10px rgba(0, 0, 0, 0.3); }
 
 .mm-hidden {
@@ -245,14 +256,6 @@ IMPORT MMENU SCSS
   position: relative; }
 
 .mm-menu {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: #f8f9fa;
-  border-color: #ced4da;
-  color: #515961;
-  line-height: 2.125rem;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -281,9 +284,6 @@ IMPORT MMENU SCSS
     color: inherit; }
 
 .mm-panel {
-  background: #f8f9fa;
-  border-color: #ced4da;
-  color: #515961;
   z-index: 0;
   box-sizing: border-box;
   width: 100%;
@@ -295,8 +295,6 @@ IMPORT MMENU SCSS
   background: var(--mm-color-background);
   transform: translate3d(100%, 0, 0);
   transition: transform 0.4s ease; }
-  .mm-panel:after {
-    height: 2.125rem; }
   .mm-panel:not(.mm-hidden) {
     display: block; }
   .mm-panel:after {
@@ -322,12 +320,9 @@ IMPORT MMENU SCSS
     bottom: 0; }
 
 .mm-panel__content {
-  padding: 0.5rem 0.5rem 0; }
+  padding: 20px 20px 0; }
 
 .mm-panels {
-  background: #f8f9fa;
-  border-color: #ced4da;
-  color: #515961;
   position: relative;
   height: 100%;
   flex-grow: 1;
@@ -339,7 +334,7 @@ IMPORT MMENU SCSS
 .mm-listitem_vertical > .mm-panel {
   display: none;
   width: 100%;
-  padding: 0.25rem 0 0.25rem 0.25rem;
+  padding: 10px 0 10px 10px;
   transform: none !important; }
   .mm-listitem_vertical > .mm-panel:before, .mm-listitem_vertical > .mm-panel:after {
     content: none;
@@ -349,7 +344,6 @@ IMPORT MMENU SCSS
   display: block; }
 
 .mm-listitem_vertical > .mm-listitem__btn {
-  height: 2.125rem;
   height: var(--mm-listitem-size);
   bottom: auto; }
 
@@ -358,17 +352,16 @@ IMPORT MMENU SCSS
 
 .mm-listitem_opened > .mm-listitem__btn:after {
   transform: rotate(225deg);
-  right: 7px; }
+  right: 19px; }
 
 .mm-btn {
   flex-grow: 0;
   flex-shrink: 0;
   position: relative;
   box-sizing: border-box;
-  width: 2.125rem;
+  width: 50px;
   padding: 0; }
   .mm-btn:before, .mm-btn:after {
-    border: 2px solid rgba(0, 0, 0, 0.3);
     border: 2px solid var(--mm-color-button); }
 
 .mm-btn_prev:before, .mm-btn_next:after {
@@ -386,12 +379,12 @@ IMPORT MMENU SCSS
 
 .mm-btn_prev:before {
   transform: rotate(-45deg);
-  left: 11px;
+  left: 23px;
   right: auto; }
 
 .mm-btn_next:after {
   transform: rotate(135deg);
-  right: 11px;
+  right: 23px;
   left: auto; }
 
 .mm-btn_close:before, .mm-btn_close:after {
@@ -409,18 +402,14 @@ IMPORT MMENU SCSS
 .mm-btn_close:before {
   border-right: none;
   border-bottom: none;
-  right: 6px; }
+  right: 18px; }
 
 .mm-btn_close:after {
   border-left: none;
   border-top: none;
-  right: 13px; }
+  right: 25px; }
 
 .mm-navbar {
-  min-height: 2.125rem;
-  border-bottom: 1px solid #ced4da;
-  background: #f8f9fa;
-  color: rgba(0, 0, 0, 0.3);
   display: flex;
   min-height: var(--mm-navbar-size);
   border-bottom: 1px solid var(--mm-color-border);
@@ -429,8 +418,6 @@ IMPORT MMENU SCSS
   text-align: center;
   opacity: 1;
   transition: opacity 0.4s ease; }
-  .mm-navbar > * {
-    min-height: 2.125rem; }
   @supports (position: sticky) {
     .mm-navbar_sticky {
       position: sticky;
@@ -449,8 +436,8 @@ IMPORT MMENU SCSS
 .mm-navbar__title {
   flex: 1 1 50%;
   display: flex;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  padding-left: 20px;
+  padding-right: 20px;
   overflow: hidden; }
   .mm-navbar__title:not(:last-child) {
     padding-right: 0; }
@@ -461,7 +448,7 @@ IMPORT MMENU SCSS
   .mm-navbar__btn:not(.mm-hidden) + .mm-navbar__title {
     padding-left: 0; }
     .mm-navbar__btn:not(.mm-hidden) + .mm-navbar__title:last-child {
-      padding-right: 2.125rem; }
+      padding-right: 50px; }
 
 .mm-listview {
   list-style: none;
@@ -470,8 +457,6 @@ IMPORT MMENU SCSS
   margin: 0; }
 
 .mm-listitem {
-  color: #515961;
-  border-color: #ced4da;
   color: var(--mm-color-text);
   border-color: var(--mm-color-border);
   list-style: none;
@@ -488,7 +473,7 @@ IMPORT MMENU SCSS
     border-bottom-style: solid;
     display: block;
     position: absolute;
-    left: 8px;
+    left: 20px;
     right: 0;
     bottom: 0; }
   .mm-listitem a,
@@ -496,7 +481,6 @@ IMPORT MMENU SCSS
     text-decoration: none; }
 
 .mm-listitem__text, .mm-listitem__btn {
-  padding: 0rem;
   display: block;
   padding: calc((var(--mm-listitem-size) - var(--mm-line-height)) / 2);
   padding-left: 0;
@@ -507,8 +491,8 @@ IMPORT MMENU SCSS
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  padding-left: 8px;
-  padding-right: 0.25rem;
+  padding-left: 20px;
+  padding-right: 10px;
   flex-grow: 1;
   flex-basis: 10%; }
 
@@ -516,19 +500,17 @@ IMPORT MMENU SCSS
   background: rgba(3, 2, 1, 0);
   border-color: inherit;
   width: auto;
-  padding-right: 2.125rem;
+  padding-right: 50px;
   position: relative; }
   .mm-listitem__btn:not(.mm-listitem__text) {
     border-left-width: 1px;
     border-left-style: solid; }
 
 .mm-listitem_selected > .mm-listitem__text {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis); }
 
 .mm-listitem_opened > .mm-listitem__btn,
 .mm-listitem_opened > .mm-panel {
-  background: rgba(0, 0, 0, 0.05);
   background: var(--mm-color-background-highlight); }
 
 .mm-page {
@@ -834,9 +816,8 @@ IMPORT MMENU SCSS
   transition-property: width, min-width, max-width, transform; }
 
 .mm-counter {
-  color: rgba(0, 0, 0, 0.3);
   display: block;
-  padding-left: 0.5rem;
+  padding-left: 20px;
   float: right;
   text-align: right;
   color: var(--mm-color-text-dimmed); }
@@ -845,24 +826,18 @@ IMPORT MMENU SCSS
   display: none; }
 
 .mm-divider {
-  position: relative;
-  min-height: 2.125rem;
-  padding: -0.371875rem;
-  background: #f8f9fa;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   min-height: var(--mm-line-height);
   padding: calc( ((var(--mm-listitem-size) * 0.65) - var(--mm-line-height)) * 0.5);
-  padding-right: 0.25rem;
-  padding-left: 8px;
+  padding-right: 10px;
+  padding-left: 20px;
   font-size: 75%;
   text-transform: uppercase;
   background: var(--mm-color-background);
   opacity: 1;
   transition: opacity 0.4s ease; }
-  .mm-divider:before {
-    background: rgba(0, 0, 0, 0.05); }
   @supports (position: sticky) {
     .mm-divider {
       position: sticky;
@@ -892,25 +867,19 @@ IMPORT MMENU SCSS
   display: none !important; }
 
 :root {
-  --mm-iconbar-size: 2.75rem; }
+  --mm-iconbar-size: 50px; }
 
 .mm-menu_iconbar-left .mm-panels,
 .mm-menu_iconbar-left .mm-navbars_top,
 .mm-menu_iconbar-left .mm-navbars_bottom {
-  margin-left: 2.75rem;
   margin-left: var(--mm-iconbar-size); }
 
 .mm-menu_iconbar-right .mm-panels,
 .mm-menu_iconbar-right .mm-navbars_top,
 .mm-menu_iconbar-right .mm-navbars_bottom {
-  margin-right: 2.75rem;
   margin-right: var(--mm-iconbar-size); }
 
 .mm-iconbar {
-  width: 2.75rem;
-  border-color: #ced4da;
-  background: #f8f9fa;
-  color: rgba(0, 0, 0, 0.3);
   display: none;
   position: absolute;
   top: 0;
@@ -947,7 +916,7 @@ IMPORT MMENU SCSS
   .mm-iconbar__bottom > * {
     box-sizing: border-box;
     display: block;
-    padding: 0.53125rem 0; }
+    padding: 12.5px 0; }
   .mm-iconbar__top a,
   .mm-iconbar__top a:hover,
   .mm-iconbar__bottom a,
@@ -955,26 +924,21 @@ IMPORT MMENU SCSS
     text-decoration: none; }
 
 .mm-iconbar__tab_selected {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis); }
 
 :root {
-  --mm-iconpanel-size: 2.125rem; }
+  --mm-iconpanel-size: 50px; }
 
 .mm-panel_iconpanel-1 {
-  width: calc(100% - 2.125rem);
   width: calc(100% - (var(--mm-iconpanel-size) * 1)); }
 
 .mm-panel_iconpanel-2 {
-  width: calc(100% - 4.25rem);
   width: calc(100% - (var(--mm-iconpanel-size) * 2)); }
 
 .mm-panel_iconpanel-3 {
-  width: calc(100% - 6.375rem);
   width: calc(100% - (var(--mm-iconpanel-size) * 3)); }
 
 .mm-panel_iconpanel-first ~ .mm-panel {
-  width: calc(100% - 2.125rem);
   width: calc(100% - var(--mm-iconpanel-size)); }
 
 .mm-menu_iconpanel .mm-panels > .mm-panel {
@@ -995,7 +959,6 @@ IMPORT MMENU SCSS
 
 .mm-menu_keyboardfocus a:focus,
 .mm-menu_keyboardfocus.mm-menu_opened ~ .mm-wrapper__blocker a:focus {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis);
   outline: none; }
 
@@ -1020,7 +983,6 @@ IMPORT MMENU SCSS
   .mm-navbars_bottom .mm-navbar {
     border-bottom: none; }
     .mm-navbars_bottom .mm-navbar:first-child {
-      border-top: 1px solid #ced4da;
       border-top: 1px solid var(--mm-color-border); }
 
 .mm-btn:not(.mm-hidden) + .mm-navbar__searchfield .mm-searchfield__input {
@@ -1036,7 +998,7 @@ IMPORT MMENU SCSS
   flex: 1 1 50%;
   display: flex;
   justify-content: flex-start;
-  padding: 0 0.5rem;
+  padding: 0 20px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch; }
   .mm-navbar__breadcrumbs > * {
@@ -1052,18 +1014,12 @@ IMPORT MMENU SCSS
     padding-left: 0; }
 
 .mm-navbar_tabs > * {
-  padding: 0 0.25rem;
+  padding: 0 10px;
   border: 1px solid transparent; }
 
 .mm-navbar__tab_selected {
-  background: #f8f9fa;
-  color: #515961;
   background: var(--mm-color-background);
   color: var(--mm-color-text); }
-  .mm-navbar__tab_selected:not(:first-child) {
-    border-left-color: #ced4da; }
-  .mm-navbar__tab_selected:not(:last-child) {
-    border-right-color: #ced4da; }
   .mm-navbar__tab_selected:not(:first-child) {
     border-left-color: var(--mm-color-border); }
   .mm-navbar__tab_selected:not(:last-child) {
@@ -1073,56 +1029,41 @@ IMPORT MMENU SCSS
   border-bottom: none; }
 
 .mm-navbars_top .mm-navbar_tabs > * {
-  border-bottom-color: #ced4da;
   border-bottom-color: var(--mm-color-border); }
 
 .mm-navbars_top .mm-navbar__tab_selected {
-  border-top-color: #ced4da;
   border-top-color: var(--mm-color-border);
   border-bottom-color: transparent; }
 
 .mm-navbars_top.mm-navbars_has-tabs .mm-navbar {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis); }
 
 .mm-navbars_top.mm-navbars_has-tabs .mm-navbar_tabs ~ .mm-navbar {
-  background: #f8f9fa;
   background: var(--mm-color-background); }
 
 .mm-navbars_bottom .mm-navbar_tabs:first-child {
   border-top: none; }
 
 .mm-navbars_bottom .mm-navbar_tabs > * {
-  border-top-color: #ced4da;
   border-top-color: var(--mm-color-border); }
 
 .mm-navbars_bottom .mm-navbar__tab_selected {
-  border-bottom-color: #ced4da;
   border-bottom-color: var(--mm-color-border);
   border-top-color: transparent; }
 
 .mm-navbars_bottom.mm-navbars_has-tabs .mm-navbar {
-  background: #f8f9fa;
   background: var(--mm-color-background); }
 
 .mm-navbars_bottom.mm-navbars_has-tabs .mm-navbar_tabs,
 .mm-navbars_bottom.mm-navbars_has-tabs .mm-navbar_tabs ~ .mm-navbar {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis); }
 
 .mm-searchfield {
-  height: 2.125rem;
   display: flex;
   flex-grow: 1;
   height: var(--mm-navbar-size);
   padding: 0;
   overflow: hidden; }
-  .mm-searchfield input {
-    height: 1.4875rem;
-    line-height: 1.4875rem; }
-    .mm-searchfield input, .mm-searchfield input:hover, .mm-searchfield input:focus {
-      background: rgba(0, 0, 0, 0.05);
-      color: #515961; }
   .mm-searchfield input {
     display: block;
     width: 100%;
@@ -1131,7 +1072,7 @@ IMPORT MMENU SCSS
     min-height: unset;
     max-height: unset;
     margin: 0;
-    padding: 0 0.25rem;
+    padding: 0 10px;
     box-sizing: border-box;
     border: none !important;
     border-radius: 4px;
@@ -1153,12 +1094,11 @@ IMPORT MMENU SCSS
   position: relative;
   width: 100%;
   max-width: 100%;
-  padding: 0 0.25rem;
+  padding: 0 10px;
   box-sizing: border-box; }
 
 .mm-panel__noresultsmsg {
-  color: rgba(0, 0, 0, 0.3);
-  padding: 2.125rem 0;
+  padding: 50px 0;
   color: var(--mm-color-text-dimmed);
   text-align: center;
   font-size: 150%; }
@@ -1176,9 +1116,8 @@ IMPORT MMENU SCSS
   border-left: none !important; }
 
 .mm-searchfield__cancel {
-  line-height: 2.125rem;
   display: block;
-  padding-right: 0.25rem;
+  padding-right: 10px;
   margin-right: -100px;
   line-height: var(--mm-navbar-size);
   text-decoration: none;
@@ -1191,7 +1130,7 @@ IMPORT MMENU SCSS
   display: none; }
 
 .mm-listitem_nosubitems > .mm-listitem__text {
-  padding-right: 0.25rem; }
+  padding-right: 10px; }
 
 .mm-listitem_onlysubitems > .mm-listitem__text:not(.mm-listitem__btn) {
   z-index: -1;
@@ -1213,7 +1152,6 @@ IMPORT MMENU SCSS
   flex-direction: column;
   justify-content: space-evenly; }
   .mm-sectionindexer a {
-    color: rgba(0, 0, 0, 0.3);
     color: var(--mm-color-text-dimmed);
     line-height: 1;
     text-decoration: none;
@@ -1235,7 +1173,6 @@ IMPORT MMENU SCSS
 
 .mm-menu_selected-hover .mm-listitem__text:hover,
 .mm-menu_selected-hover .mm-listitem__btn:hover {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis); }
 
 .mm-menu_selected-parent .mm-panel_opened-parent .mm-listitem:not(.mm-listitem_selected-parent) > .mm-listitem__text {
@@ -1243,7 +1180,6 @@ IMPORT MMENU SCSS
 
 .mm-menu_selected-parent .mm-listitem_selected-parent > .mm-listitem__text,
 .mm-menu_selected-parent .mm-listitem_selected-parent > .mm-listitem__btn {
-  background: #e9ecef;
   background: var(--mm-color-background-emphasis); }
 
 .mm-menu_border-none .mm-listitem:after {
@@ -1370,21 +1306,15 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-listitem_vertical > .mm-panel {
   padding: 0 0 0 5px !important; }
 
+.mm-menu .mm-listitem_opened > .mm-listitem__btn {
+  color: var(--mm-item-opened-color);
+  background: var(--mm-item-opened-bg); }
+
 .mm-listitem {
-  font-size: 1rem;
-  min-height: 2.125rem; }
+  font-size: var(--mm-font-size);
+  min-height: var(--mm-line-height); }
   .mm-listitem .mm-listitem-content {
     line-height: 1.5 !important; }
-  .mm-menu-sm .mm-listitem {
-    font-size: 0.875rem;
-    min-height: 1.8125rem; }
-
-.mm-menu-sm {
-  --mm-line-height: 1.8125rem;
-  --mm-listitem-size: 1.8125rem;
-  --mm-navbar-size: 1.8125rem;
-  --mm-iconbar-size: 2.3125rem
-; }
 
 .mm-btn_prev:before, .mm-btn_next:after {
   --chevrolet-dim: 0.625rem;
@@ -1394,19 +1324,12 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
   .mm-listitem.mm-listitem_vertical .mm-btn_prev:before, .mm-listitem.mm-listitem_vertical .mm-btn_next:after {
     --chevrolet-dim: 0.3125rem; }
 
-.mm-menu-sm .mm-navbar__btn {
-  width: 1.8125rem; }
-
 .mm-iconbar .btn.btn-standard.square {
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 1.0625rem; }
-  .mm-iconbar .btn.btn-standard.square.btn-sm {
-    margin-bottom: 0.90625rem; }
+  margin-bottom: calc( var(--mm-listitem-size) / 2); }
 
 .mm-listitem__text {
   display: flex; }
   .mm-listitem__text > *:first-child {
     flex: 1; }
-  .mm-listitem__text.padding-right-none {
-    padding-right: 0 !important; }
