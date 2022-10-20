@@ -57,7 +57,6 @@
         this.type = this.type == 'check' ? 'checkbox' : this.type;
         this.hasCheckbox = (this.type == 'checkbox') || (this.type == 'radio');
 
-
         this.prev = null;
         this.next = null;
         this.first = null;
@@ -133,6 +132,9 @@
             //Add buttons from this.options.buttonList (if any) to content (once)
             var buttonList = this.options.buttonList || this.options.buttons;
             if (buttonList){
+                var buttonBarJustify = this.options.buttonJustify || this.parent.options.buttonJustify || 'center';
+
+
                 //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
                 var groupList = [],
                     currentList = [];
@@ -159,7 +161,7 @@
                         $.bsButtonBar({
                             small   : true,
                             buttons : list,
-                            justify : 'center'
+                            justify : buttonBarJustify
                         })
                     );
                 });
