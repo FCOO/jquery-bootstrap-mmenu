@@ -83,32 +83,32 @@ COMMON STYLE
     position: relative;
     display: block;
     width: 100%;
-    height: 0.25rem;
-    left: -0.0625rem;
+    height: 4px;
+    left: -1px;
     overflow: hidden;
     outline: none !important;
     box-sizing: content-box;
     background-color: transparent;
-    border: 0.0625rem solid #afb3bb;
-    border-bottom-left-radius: 0.125rem;
-    border-top-left-radius: 0.125rem;
-    border-bottom-right-radius: 0.125rem;
-    border-top-right-radius: 0.125rem; }
+    border: 1px solid #afb3bb;
+    border-bottom-left-radius: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-top-right-radius: 2px; }
     .base-slider-container .line .line-color {
       position: absolute;
       display: block;
       height: 100%; }
       .base-slider-container .line .line-color:first-child {
-        border-bottom-left-radius: 0.125rem;
-        border-top-left-radius: 0.125rem; }
+        border-bottom-left-radius: 2px;
+        border-top-left-radius: 2px; }
       .base-slider-container .line .line-color:last-child:not(:first-child) {
-        border-bottom-right-radius: 0.125rem;
-        border-top-right-radius: 0.125rem; }
+        border-bottom-right-radius: 2px;
+        border-top-right-radius: 2px; }
   .base-slider-container .handle {
     position: absolute;
     display: block;
     z-index: 10;
-    top: 1.270625rem;
+    top: 20.33px;
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-attachment: local;
@@ -118,20 +118,20 @@ COMMON STYLE
   .base-slider-container .handle.pin {
     position: absolute;
     z-index: 100;
-    height: 0.6428571429rem !important;
-    margin-top: -0.5142857143rem;
-    width: 1rem;
-    margin-left: -0.5rem;
-    font-size: 0.6428571429rem;
+    height: 10.2857142857px !important;
+    margin-top: -8.2285714286px;
+    width: 16px;
+    margin-left: -8px;
+    font-size: 10.2857142857px;
     text-align: center;
     background-image: none !important; }
   .base-slider-container .marker-outer {
     position: absolute;
-    top: 0rem;
+    top: 0px;
     z-index: 2;
     cursor: default;
     font-family: Arial, sans-serif;
-    font-size: 0.625rem; }
+    font-size: 10px; }
     .base-slider-container .marker-outer .marker {
       box-sizing: border-box;
       width: 100%;
@@ -145,33 +145,37 @@ COMMON STYLE
       left: 0;
       width: 0;
       height: 0;
-      margin-left: -0.1875rem;
+      margin-left: -3px;
       content: "";
       overflow: hidden;
-      border: 0.1875rem solid transparent;
+      border: 3px solid transparent;
       border-top-color: black; }
     .base-slider-container .marker-outer .marker-text {
       display: inline-block;
       cursor: inherit;
       box-sizing: border-box;
       line-height: 1.333;
-      padding: 0.0625rem 0.3125rem;
-      border: 0.0625rem solid transparent;
-      border-radius: 0.25rem;
+      padding: 1px 5px;
+      border: 1px solid transparent;
+      border-radius: 4px;
       white-space: nowrap;
       text-shadow: none; }
     .base-slider-container .marker-outer.min-max .marker-text {
       color: #555;
       background-color: #d1d6e0;
-      border: 0.0625rem solid #afb3bb;
-      border-radius: 0.25rem; }
+      border: 1px solid #afb3bb;
+      border-radius: 4px; }
     .base-slider-container .marker-outer.single-from-to .marker-text {
       color: #111; }
     .base-slider-container .marker-outer.single-from-to.frame .marker-text {
       background: white;
-      border: 0.0625rem solid black; }
-  html.mouse-hover .base-slider-container.active .marker-outer:hover.single-from-to.frame .marker-text, html.mouse-hover .base-slider-container.active .marker-outer:hover.min-max .marker-text, html.mouse-hover .base-slider-container.active .marker-outer.hover.single-from-to.frame .marker-text, html.mouse-hover .base-slider-container.active .marker-outer.hover.min-max .marker-text {
-    border-color: #007bff; }
+      border: 1px solid black; }
+
+.grid-canvas {
+  position: absolute;
+  bottom: 0;
+  z-index: 3;
+  cursor: default; }
 
 .grid {
   position: absolute;
@@ -179,94 +183,35 @@ COMMON STYLE
   left: 0;
   z-index: 2;
   width: 100%;
-  height: 1.5625rem;
+  height: 25px;
   cursor: default; }
-  .grid .grid-pol {
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    width: 0.0625rem;
-    height: 0.375rem;
-    background: #555555;
-    box-shadow: 1px 1px 1px 0px rgba(255, 255, 255, 0.75), -1px 1px 1px 0px rgba(255, 255, 255, 0.75); }
-    .grid .grid-pol.major {
-      height: 0.5625rem;
-      background: black; }
-  .grid .grid-label-outer {
-    position: absolute;
-    z-index: 2;
-    top: 0.5625rem;
-    height: 1rem; }
-    .grid .grid-label-outer .grid-label {
-      box-sizing: border-box;
-      width: 100%;
-      height: 100%;
-      margin-left: -50%;
-      padding: 0; }
-      .grid .grid-label-outer .grid-label .grid-label-text {
-        cursor: inherit;
-        display: inline-block;
-        box-sizing: border-box;
-        line-height: 1;
-        height: 100%;
-        padding: 0.125rem;
-        border: 0.0625rem solid transparent;
-        border-radius: 0.25rem; }
-        .grid .grid-label-outer .grid-label .grid-label-text.frame {
-          border-color: #afb3bb; }
   .grid.label-between-ticks {
-    height: 0.625rem; }
-    .grid.label-between-ticks .grid-label-outer {
-      top: 0;
-      height: 0.625rem; }
-      .grid.label-between-ticks .grid-label-outer .grid-label .grid-label-text {
-        padding: 0;
-        border-radius: 0;
-        border: 0; }
-  .grid .grid-label {
-    background-color: transparent;
-    left: 0;
-    white-space: nowrap;
-    text-align: center;
-    font-family: Arial, sans-serif;
-    font-size: 0.625rem;
-    line-height: 1;
-    font-weight: bold;
-    color: #000; }
-    .grid .grid-label.minor {
-      font-weight: normal;
-      color: #555555; }
-    .grid .grid-label.italic {
-      font-style: italic; }
+    height: 10px; }
   .grid .grid-color {
     position: absolute;
     z-index: 1;
     top: 0;
-    height: 0.5625rem;
-    font-size: 1.125rem;
+    height: 9px;
+    font-size: 18px;
     text-align: center;
-    line-height: 0.5625rem;
+    line-height: 9px;
     overflow: hidden; }
     .grid .grid-color.gt-max {
       left: 100%;
       width: 0;
       height: 0;
       border: 0 solid transparent;
-      border-bottom-width: 0.28125rem;
-      border-top-width: 0.28125rem;
-      border-left: 0.5625rem solid black; }
+      border-bottom-width: 4.5px;
+      border-top-width: 4.5px;
+      border-left: 9px solid black; }
     .grid .grid-color.lt-min {
-      left: -0.5625rem;
+      left: -9px;
       width: 0;
       height: 0;
       border: 0 solid transparent;
-      border-top-width: 0.28125rem;
-      border-bottom-width: 0.28125rem;
-      border-right: 0.5625rem solid black; }
-
-html.mouse-hover .base-slider-container.active:not(.dragging) .grid-label.clickable:hover .grid-label-text {
-  border-color: #007bff; }
+      border-top-width: 4.5px;
+      border-bottom-width: 4.5px;
+      border-right: 9px solid black; }
 
 .disabled {
   opacity: 0.4; }
@@ -297,32 +242,32 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.horizontal .line-background {
-    height: 2.770625rem; }
+    height: 44.33px; }
   .base-slider-container.horizontal .line {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.horizontal .handle {
     box-sizing: border-box;
-    width: 1rem;
-    height: 1.5rem;
-    margin-left: -0.5rem;
+    width: 16px;
+    height: 24px;
+    margin-left: -8px;
     background-image: url("images/handle.horizontal.svg"); }
   html.mouse-hover .base-slider-container.horizontal.active .handle:hover, html.mouse-hover .base-slider-container.horizontal.active .handle.hover {
     background-image: url("images/handle.horizontal.hover.svg"); }
   .base-slider-container.horizontal .pin {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.horizontal .grid {
-    top: 2.770625rem; }
+    top: 44.33px; }
   .base-slider-container.horizontal.ticks-on-line .grid {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.horizontal.ticks-on-line.no-marker .grid {
-    top: 0.5625rem; }
+    top: 9px; }
   .base-slider-container.horizontal.no-marker .line,
   .base-slider-container.horizontal.no-marker .pin {
-    top: 0.5625rem !important; }
+    top: 9px !important; }
   .base-slider-container.horizontal.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.horizontal.no-marker .grid {
-    top: 1.5rem; }
+    top: 24px; }
   .base-slider-container.horizontal.no-marker.has-pin {
     margin-top: 0; }
 
@@ -332,34 +277,34 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.vertical .line-background {
-    height: 2.270625rem; }
+    height: 36.33px; }
   .base-slider-container.vertical .line {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.vertical .handle {
     box-sizing: border-box;
-    width: 1.5rem;
-    height: 1rem;
-    margin-left: -0.75rem;
+    width: 24px;
+    height: 16px;
+    margin-left: -12px;
     background-image: url("images/handle.vertical.svg"); }
   html.mouse-hover .base-slider-container.vertical.active .handle:hover, html.mouse-hover .base-slider-container.vertical.active .handle.hover {
     background-image: url("images/handle.vertical.hover.svg"); }
   .base-slider-container.vertical .pin {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.vertical .grid {
-    top: 2.270625rem; }
+    top: 36.33px; }
   .base-slider-container.vertical.ticks-on-line .grid {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.vertical.ticks-on-line.no-marker .grid {
-    top: 0.3125rem; }
+    top: 5px; }
   .base-slider-container.vertical.no-marker .line,
   .base-slider-container.vertical.no-marker .pin {
-    top: 0.3125rem !important; }
+    top: 5px !important; }
   .base-slider-container.vertical.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.vertical.no-marker .grid {
-    top: 1rem; }
+    top: 16px; }
   .base-slider-container.vertical.no-marker.has-pin {
-    margin-top: 0.2017857143rem; }
+    margin-top: 3.2285714286px; }
 
 .base-slider-container.down {
   /****************************************************
@@ -367,32 +312,32 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.down .line-background {
-    height: 2.770625rem; }
+    height: 44.33px; }
   .base-slider-container.down .line {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.down .handle {
     box-sizing: border-box;
-    width: 1rem;
-    height: 1.5rem;
-    margin-left: -0.5rem;
+    width: 16px;
+    height: 24px;
+    margin-left: -8px;
     background-image: url("images/handle.down.svg"); }
   html.mouse-hover .base-slider-container.down.active .handle:hover, html.mouse-hover .base-slider-container.down.active .handle.hover {
     background-image: url("images/handle.down.hover.svg"); }
   .base-slider-container.down .pin {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.down .grid {
-    top: 2.770625rem; }
+    top: 44.33px; }
   .base-slider-container.down.ticks-on-line .grid {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.down.ticks-on-line.no-marker .grid {
-    top: 0.5625rem; }
+    top: 9px; }
   .base-slider-container.down.no-marker .line,
   .base-slider-container.down.no-marker .pin {
-    top: 0.5625rem !important; }
+    top: 9px !important; }
   .base-slider-container.down.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.down.no-marker .grid {
-    top: 1.5rem; }
+    top: 24px; }
   .base-slider-container.down.no-marker.has-pin {
     margin-top: 0; }
 
@@ -402,32 +347,32 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.up .line-background {
-    height: 2.770625rem; }
+    height: 44.33px; }
   .base-slider-container.up .line {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.up .handle {
     box-sizing: border-box;
-    width: 1rem;
-    height: 1.5rem;
-    margin-left: -0.5rem;
+    width: 16px;
+    height: 24px;
+    margin-left: -8px;
     background-image: url("images/handle.up.svg"); }
   html.mouse-hover .base-slider-container.up.active .handle:hover, html.mouse-hover .base-slider-container.up.active .handle.hover {
     background-image: url("images/handle.up.hover.svg"); }
   .base-slider-container.up .pin {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.up .grid {
-    top: 2.770625rem; }
+    top: 44.33px; }
   .base-slider-container.up.ticks-on-line .grid {
-    top: 1.833125rem; }
+    top: 29.33px; }
   .base-slider-container.up.ticks-on-line.no-marker .grid {
-    top: 0.5625rem; }
+    top: 9px; }
   .base-slider-container.up.no-marker .line,
   .base-slider-container.up.no-marker .pin {
-    top: 0.5625rem !important; }
+    top: 9px !important; }
   .base-slider-container.up.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.up.no-marker .grid {
-    top: 1.5rem; }
+    top: 24px; }
   .base-slider-container.up.no-marker.has-pin {
     margin-top: 0; }
 
@@ -437,34 +382,34 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.right .line-background {
-    height: 2.270625rem; }
+    height: 36.33px; }
   .base-slider-container.right .line {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.right .handle {
     box-sizing: border-box;
-    width: 1.5rem;
-    height: 1rem;
-    margin-left: -0.75rem;
+    width: 24px;
+    height: 16px;
+    margin-left: -12px;
     background-image: url("images/handle.right.svg"); }
   html.mouse-hover .base-slider-container.right.active .handle:hover, html.mouse-hover .base-slider-container.right.active .handle.hover {
     background-image: url("images/handle.right.hover.svg"); }
   .base-slider-container.right .pin {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.right .grid {
-    top: 2.270625rem; }
+    top: 36.33px; }
   .base-slider-container.right.ticks-on-line .grid {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.right.ticks-on-line.no-marker .grid {
-    top: 0.3125rem; }
+    top: 5px; }
   .base-slider-container.right.no-marker .line,
   .base-slider-container.right.no-marker .pin {
-    top: 0.3125rem !important; }
+    top: 5px !important; }
   .base-slider-container.right.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.right.no-marker .grid {
-    top: 1rem; }
+    top: 16px; }
   .base-slider-container.right.no-marker.has-pin {
-    margin-top: 0.2017857143rem; }
+    margin-top: 3.2285714286px; }
 
 .base-slider-container.left {
   /****************************************************
@@ -472,34 +417,34 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.left .line-background {
-    height: 2.270625rem; }
+    height: 36.33px; }
   .base-slider-container.left .line {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.left .handle {
     box-sizing: border-box;
-    width: 1.5rem;
-    height: 1rem;
-    margin-left: -0.75rem;
+    width: 24px;
+    height: 16px;
+    margin-left: -12px;
     background-image: url("images/handle.left.svg"); }
   html.mouse-hover .base-slider-container.left.active .handle:hover, html.mouse-hover .base-slider-container.left.active .handle.hover {
     background-image: url("images/handle.left.hover.svg"); }
   .base-slider-container.left .pin {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.left .grid {
-    top: 2.270625rem; }
+    top: 36.33px; }
   .base-slider-container.left.ticks-on-line .grid {
-    top: 1.583125rem; }
+    top: 25.33px; }
   .base-slider-container.left.ticks-on-line.no-marker .grid {
-    top: 0.3125rem; }
+    top: 5px; }
   .base-slider-container.left.no-marker .line,
   .base-slider-container.left.no-marker .pin {
-    top: 0.3125rem !important; }
+    top: 5px !important; }
   .base-slider-container.left.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.left.no-marker .grid {
-    top: 1rem; }
+    top: 16px; }
   .base-slider-container.left.no-marker.has-pin {
-    margin-top: 0.2017857143rem; }
+    margin-top: 3.2285714286px; }
 
 .base-slider-container.round {
   /****************************************************
@@ -507,34 +452,34 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.round .line-background {
-    height: 2.520625rem; }
+    height: 40.33px; }
   .base-slider-container.round .line {
-    top: 1.708125rem; }
+    top: 27.33px; }
   .base-slider-container.round .handle {
     box-sizing: border-box;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-left: -0.625rem;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
     background-image: url("images/handle.round.svg"); }
   html.mouse-hover .base-slider-container.round.active .handle:hover, html.mouse-hover .base-slider-container.round.active .handle.hover {
     background-image: url("images/handle.round.hover.svg"); }
   .base-slider-container.round .pin {
-    top: 1.708125rem; }
+    top: 27.33px; }
   .base-slider-container.round .grid {
-    top: 2.520625rem; }
+    top: 40.33px; }
   .base-slider-container.round.ticks-on-line .grid {
-    top: 1.708125rem; }
+    top: 27.33px; }
   .base-slider-container.round.ticks-on-line.no-marker .grid {
-    top: 0.4375rem; }
+    top: 7px; }
   .base-slider-container.round.no-marker .line,
   .base-slider-container.round.no-marker .pin {
-    top: 0.4375rem !important; }
+    top: 7px !important; }
   .base-slider-container.round.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.round.no-marker .grid {
-    top: 1.25rem; }
+    top: 20px; }
   .base-slider-container.round.no-marker.has-pin {
-    margin-top: 0.0767857143rem; }
+    margin-top: 1.2285714286px; }
 
 .base-slider-container.fixed {
   /****************************************************
@@ -542,32 +487,32 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.fixed .line-background {
-    height: 2.520625rem; }
+    height: 40.33px; }
   .base-slider-container.fixed .line {
-    top: 1.395625rem; }
+    top: 22.33px; }
   .base-slider-container.fixed .handle {
     box-sizing: border-box;
-    width: 0.8333333333rem;
-    height: 1.25rem;
-    margin-left: -0.4166666667rem;
+    width: 13.3333333333px;
+    height: 20px;
+    margin-left: -6.6666666667px;
     background-image: url("images/handle.fixed.svg"); }
   .base-slider-container.fixed .pin {
-    top: 1.395625rem; }
+    top: 22.33px; }
   .base-slider-container.fixed .grid {
-    top: 1.770625rem; }
+    top: 28.33px; }
   .base-slider-container.fixed.ticks-on-line .grid {
-    top: 1.395625rem; }
+    top: 22.33px; }
   .base-slider-container.fixed.ticks-on-line.no-marker .grid {
-    top: 0.125rem; }
+    top: 2px; }
   .base-slider-container.fixed.no-marker .line,
   .base-slider-container.fixed.no-marker .pin {
-    top: 0.125rem !important; }
+    top: 2px !important; }
   .base-slider-container.fixed.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.fixed.no-marker .grid {
-    top: 1.25rem; }
+    top: 20px; }
   .base-slider-container.fixed.no-marker.has-pin {
-    margin-top: 0.3892857143rem; }
+    margin-top: 6.2285714286px; }
 
 .base-slider-container.range {
   /****************************************************
@@ -575,40 +520,40 @@ STYLE FOR SPECIFIC TYPE
         Adjust all top-position by adding top-margin if the pin is heigher than the handle
         ****************************************************/ }
   .base-slider-container.range .line-background {
-    height: 1.645625rem; }
+    height: 26.33px; }
   .base-slider-container.range .line {
-    top: 1.270625rem; }
+    top: 20.33px; }
   .base-slider-container.range .handle {
     box-sizing: border-box;
-    width: 0.375rem;
-    height: 0.375rem;
-    margin-left: -0.1875rem; }
+    width: 6px;
+    height: 6px;
+    margin-left: -3px; }
     .base-slider-container.range .handle.from {
       background-image: url("images/handle.range.from.svg"); }
     .base-slider-container.range .handle.to {
       background-image: url("images/handle.range.to.svg"); }
   .base-slider-container.range .pin {
-    top: 1.270625rem; }
+    top: 20.33px; }
   .base-slider-container.range .grid {
-    top: 1.645625rem; }
+    top: 26.33px; }
   .base-slider-container.range.ticks-on-line .grid {
-    top: 1.270625rem; }
+    top: 20.33px; }
   .base-slider-container.range.ticks-on-line.no-marker .grid {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.range.no-marker .line,
   .base-slider-container.range.no-marker .pin {
-    top: 0rem !important; }
+    top: 0px !important; }
   .base-slider-container.range.no-marker .handle {
-    top: 0rem; }
+    top: 0px; }
   .base-slider-container.range.no-marker .grid {
-    top: 0.375rem; }
+    top: 6px; }
   .base-slider-container.range.no-marker.has-pin {
-    margin-top: 0.5142857143rem; }
+    margin-top: 8.2285714286px; }
 
 .base-slider-container {
-  width: calc(100% - 1.5rem);
-  margin-left: 0.75rem;
-  margin-right: 0.75rem; }
+  width: calc(100% - 24px);
+  margin-left: 12px;
+  margin-right: 12px; }
 
 @charset "UTF-8";
 /***********************************************
@@ -836,6 +781,9 @@ Accordion
 Card
 ***********************************************/
 /***********************************************
+Form
+***********************************************/
+/***********************************************
 Toast
 ***********************************************/
 /***********************************************
@@ -971,7 +919,7 @@ Opacity for semi-transparent and transparent content
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: var(--jb-structure-border-color);
-  --bs-border-color-translucent: var(--jb-container-border-color);
+  --bs-border-color-translucent: var(--jb-structure-border-color);
   --bs-border-radius: 0.375rem;
   --bs-border-radius-sm: 0.25rem;
   --bs-border-radius-lg: 0.5rem;
@@ -2446,7 +2394,7 @@ progress {
   color: #212529;
   background-color: #fff;
   background-clip: padding-box;
-  border: 1px solid #6c757d;
+  border: 1px solid #adb5bd;
   appearance: none;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
@@ -2460,7 +2408,7 @@ progress {
   .form-control:focus {
     color: #212529;
     background-color: #fff;
-    border-color: #7b838a;
+    border-color: #b5bcc4;
     outline: 0;
     box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25); }
   .form-control::-webkit-date-and-time-value {
@@ -2565,7 +2513,7 @@ textarea.form-control-lg {
   background-repeat: no-repeat;
   background-position: right 0.375rem center;
   background-size: 16px 12px;
-  border: 1px solid #6c757d;
+  border: 1px solid #adb5bd;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   appearance: none; }
@@ -2573,7 +2521,7 @@ textarea.form-control-lg {
     .form-select {
       transition: none; } }
   .form-select:focus {
-    border-color: #7b838a;
+    border-color: #b5bcc4;
     outline: 0;
     box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25); }
   .form-select[multiple], .form-select[size]:not([size="1"]) {
@@ -2626,7 +2574,7 @@ textarea.form-control-lg {
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
-  border: 1px solid #6c757d;
+  border: 1px solid #adb5bd;
   appearance: none;
   print-color-adjust: exact; }
   .form-check-input[type="checkbox"] {
@@ -2636,12 +2584,12 @@ textarea.form-control-lg {
   .form-check-input:active {
     filter: brightness(90%); }
   .form-check-input:focus {
-    border-color: #7b838a;
+    border-color: #b5bcc4;
     outline: 0;
     box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25); }
   .form-check-input:checked {
     background-color: dodgerblue;
-    border-color: #6c757d; }
+    border-color: #adb5bd; }
     .form-check-input:checked[type="checkbox"] {
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e"); }
     .form-check-input:checked[type="radio"] {
@@ -2671,7 +2619,7 @@ textarea.form-control-lg {
       .form-switch .form-check-input {
         transition: none; } }
     .form-switch .form-check-input:focus {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%237b838a'/%3e%3c/svg%3e"); }
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23b5bcc4'/%3e%3c/svg%3e"); }
     .form-switch .form-check-input:checked {
       background-position: right center;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e"); }
@@ -2848,7 +2796,7 @@ textarea.form-control-lg {
   text-align: center;
   white-space: nowrap;
   background-color: #e9ecef;
-  border: 1px solid #6c757d;
+  border: 1px solid #adb5bd;
   border-radius: 0.375rem; }
 
 .input-group-lg > .form-control,
@@ -2908,12 +2856,12 @@ textarea.form-control-lg {
   z-index: 5;
   display: none;
   max-width: 100%;
-  padding: 0.25rem 0.5rem;
+  padding: 0px 0px;
   margin-top: .1rem;
   font-size: 0.6875rem;
   color: #fff;
   background-color: rgba(25, 135, 84, 0.9);
-  border-radius: 0.375rem; }
+  border-radius: 0.0625rem; }
 
 .was-validated :valid ~ .valid-feedback,
 .was-validated :valid ~ .valid-tooltip,
@@ -2924,7 +2872,7 @@ textarea.form-control-lg {
 .was-validated .form-control:valid, .form-control.is-valid {
   border-color: #198754;
   padding-right: calc(1.5em + 0.75rem);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+  background-image: "";
   background-repeat: no-repeat;
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
@@ -2940,7 +2888,7 @@ textarea.form-control-lg {
   border-color: #198754; }
   .was-validated .form-select:valid:not([multiple]):not([size]), .was-validated .form-select:valid:not([multiple])[size="1"], .form-select.is-valid:not([multiple]):not([size]), .form-select.is-valid:not([multiple])[size="1"] {
     padding-right: 2.0625rem;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"), url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"), "";
     background-position: right 0.375rem center, center right 1.125rem;
     background-size: 16px 12px, calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
   .was-validated .form-select:valid:focus, .form-select.is-valid:focus {
@@ -2982,12 +2930,12 @@ textarea.form-control-lg {
   z-index: 5;
   display: none;
   max-width: 100%;
-  padding: 0.25rem 0.5rem;
+  padding: 0px 0px;
   margin-top: .1rem;
   font-size: 0.6875rem;
   color: #fff;
   background-color: rgba(220, 53, 69, 0.9);
-  border-radius: 0.375rem; }
+  border-radius: 0.0625rem; }
 
 .was-validated :invalid ~ .invalid-feedback,
 .was-validated :invalid ~ .invalid-tooltip,
@@ -2998,7 +2946,7 @@ textarea.form-control-lg {
 .was-validated .form-control:invalid, .form-control.is-invalid {
   border-color: #dc3545;
   padding-right: calc(1.5em + 0.75rem);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+  background-image: "";
   background-repeat: no-repeat;
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
@@ -3014,7 +2962,7 @@ textarea.form-control-lg {
   border-color: #dc3545; }
   .was-validated .form-select:invalid:not([multiple]):not([size]), .was-validated .form-select:invalid:not([multiple])[size="1"], .form-select.is-invalid:not([multiple]):not([size]), .form-select.is-invalid:not([multiple])[size="1"] {
     padding-right: 2.0625rem;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"), url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"), "";
     background-position: right 0.375rem center, center right 1.125rem;
     background-size: 16px 12px, calc(0.75em + 0.375rem) calc(0.75em + 0.375rem); }
   .was-validated .form-select:invalid:focus, .form-select.is-invalid:focus {
@@ -3078,10 +3026,14 @@ textarea.form-control-lg {
   @media (prefers-reduced-motion: reduce) {
     .btn {
       transition: none; } }
-  :not(.btn-check) + .btn:hover, .btn:first-child:hover {
+  .btn:hover {
     color: var(--bs-btn-hover-color);
     background-color: var(--bs-btn-hover-bg);
     border-color: var(--bs-btn-hover-border-color); }
+  .btn-check + .btn:hover {
+    color: var(--bs-btn-color);
+    background-color: var(--bs-btn-bg);
+    border-color: var(--bs-btn-border-color); }
   .btn:focus-visible {
     color: var(--bs-btn-hover-color);
     background-color: var(--bs-btn-hover-bg);
@@ -3389,7 +3341,7 @@ textarea.form-control-lg {
   --bs-btn-font-size: 1.25rem;
   --bs-btn-border-radius: 0.5rem; }
 
-.btn-sm, .btn-group-sm > .btn {
+.btn-sm, .btn-group-sm > .btn, .btn-bar-sm > .btn {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-font-size: 0.875rem;
@@ -3759,7 +3711,7 @@ textarea.form-control-lg {
   .dropstart .dropdown-toggle-split::before {
     margin-right: 0; }
 
-.btn-sm + .dropdown-toggle-split, .btn-group-sm > .btn + .dropdown-toggle-split {
+.btn-sm + .dropdown-toggle-split, .btn-group-sm > .btn + .dropdown-toggle-split, .btn-bar-sm > .btn + .dropdown-toggle-split {
   padding-right: 0.375rem;
   padding-left: 0.375rem; }
 
@@ -4397,7 +4349,7 @@ textarea.form-control-lg {
   --bs-accordion-btn-icon-transform: rotate(-180deg);
   --bs-accordion-btn-icon-transition: transform 0.2s ease-in-out;
   --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23373b3e'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
-  --bs-accordion-btn-focus-border-color: #7b838a;
+  --bs-accordion-btn-focus-border-color: #b5bcc4;
   --bs-accordion-btn-focus-box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25);
   --bs-accordion-body-padding-x: 0.375rem;
   --bs-accordion-body-padding-y: 0.375rem;
@@ -4558,11 +4510,11 @@ textarea.form-control-lg {
   .alert-warning .alert-link, .noty_theme__jquery-bootstrap.noty_type__warning .alert-link {
     color: #523e02; }
 
-.alert-danger, .noty_theme__jquery-bootstrap.noty_type__error {
+.alert-danger, form.form-validation .invalid-tooltip, .noty_theme__jquery-bootstrap.noty_type__error {
   --bs-alert-color: #842029;
   --bs-alert-bg: #f8d7da;
   --bs-alert-border-color: #f5c2c7; }
-  .alert-danger .alert-link, .noty_theme__jquery-bootstrap.noty_type__error .alert-link {
+  .alert-danger .alert-link, form.form-validation .invalid-tooltip .alert-link, .noty_theme__jquery-bootstrap.noty_type__error .alert-link {
     color: #6a1a21; }
 
 .alert-light, .noty_theme__jquery-bootstrap.noty_type__help {
@@ -4913,6 +4865,7 @@ textarea.form-control-lg {
     display: none; }
 
 .toast-container {
+  --bs-toast-zindex: 1090;
   position: absolute;
   z-index: var(--bs-toast-zindex);
   width: max-content;
@@ -4946,7 +4899,7 @@ textarea.form-control-lg {
   --bs-modal-margin: 0.5rem;
   --bs-modal-color: ;
   --bs-modal-bg: #fff;
-  --bs-modal-border-color: var(--bs-border-color-translucent);
+  --bs-modal-border-color: var(--jb-container-border-color);
   --bs-modal-border-width: 1px;
   --bs-modal-border-radius: 0.375rem;
   --bs-modal-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
@@ -5277,15 +5230,15 @@ textarea.form-control-lg {
   --bs-popover-font-size: 1rem;
   --bs-popover-bg: #fff;
   --bs-popover-border-width: 1px;
-  --bs-popover-border-color: var(--bs-border-color-translucent);
+  --bs-popover-border-color: var(--jb-container-border-color);
   --bs-popover-border-radius: 0.375rem;
   --bs-popover-inner-border-radius: calc(0.375rem - 1px);
   --bs-popover-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   --bs-popover-header-padding-x: 0.375rem;
   --bs-popover-header-padding-y: 0.375rem;
   --bs-popover-header-font-size: 1rem;
-  --bs-popover-header-color: ;
-  --bs-popover-header-bg: #e9ecef;
+  --bs-popover-header-color: var(jb-header-color);
+  --bs-popover-header-bg: var(--jb-header-bg);
   --bs-popover-body-padding-x: 0.375rem;
   --bs-popover-body-padding-y: 0.375rem;
   --bs-popover-body-color: #212529;
@@ -8924,6 +8877,13 @@ Varients of different properties
 HEADER and FOOTER-VARIANT
 Adjust padding and font-size for header and footer
 ************************************************************/
+/************************************************************
+BUTTON-VARIANT
+button-text-color-variant
+button-border-color-variant
+button-background-color-variant
+Adjust text-, border-, and background-color for a button
+************************************************************/
 /***********************************************
 ROOT
 ************************************************/
@@ -8937,11 +8897,27 @@ Contains global scss- and css-variable
 
 ************************************************************/
 :root {
+  --bs-modal-zindex: 1055;
+  --bs-modal-width: 500px;
+  --bs-modal-padding: 0.375rem 0.375rem;
+  --bs-modal-margin: 0.5rem;
+  --bs-modal-color: ;
+  --bs-modal-bg: #fff;
+  --bs-modal-border-color: var(--jb-container-border-color);
+  --bs-modal-border-width: 1px;
+  --bs-modal-border-radius: 0.375rem;
+  --bs-modal-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --bs-modal-inner-border-radius: calc(0.375rem - 1px);
   --bs-modal-header-padding-x: 0.375rem;
   --bs-modal-header-padding-y: 0.375rem;
   --bs-modal-header-padding: 0.375rem 0.375rem;
   --bs-modal-header-border-color: var(--bs-border-color);
   --bs-modal-header-border-width: 1px;
+  --bs-modal-title-line-height: 1.5;
+  --bs-modal-footer-gap: 0.5rem;
+  --bs-modal-footer-bg: ;
+  --bs-modal-footer-border-color: var(--bs-border-color);
+  --bs-modal-footer-border-width: 1px;
   --bs-input-font-size: 1rem;
   --bs-input-padding-x: 0.375rem;
   --bs-input-padding-y: 0.375rem;
@@ -8953,14 +8929,11 @@ Contains global scss- and css-variable
   --jb-inner-header-bg: #f0f2f4;
   --jb-footer-color: #212529;
   --jb-footer-bg: #f8f9fa;
-  --jb-icon-color: #6c757d;
-  --jb-icon-hover-color: #616971;
-  --jb-icon-active-color: #616971;
   --bs-footer-font-size: 0.875rem;
   --bs-footer-padding-y: 0.375rem;
   --bs-footer-padding-x: 0.375rem;
-  --jb-structure-border-color: #dee2e6;
-  --jb-container-border-color: #dee2e6; }
+  --jb-structure-border-color: #ced4da;
+  --jb-container-border-color: #212529; }
 
 /************************************************
 ADDITIONS AND ADJUSTMENTS TO FONTAWESOME
@@ -9464,10 +9437,14 @@ Bootstrap allready have the following classes
 .text-capitalize
 
 // Weight and italics
-
-.font-weight-normal
-.font-weight-bold
-.font-italic
+.fw-bold        Bold text
+.fw-bolder      Bolder weight text (relative to the parent element)
+.fw-semibold    Semibold weight text
+.fw-normal      Normal weight text
+.fw-light       Light weight text
+.fw-lighter     Lighter weight text (relative to the parent element)
+.fst-italic     Italic text
+.fst-normal     Text with normal font style>
 
 */
 .opacity-0 {
@@ -9541,15 +9518,10 @@ class="active" or "checked" when selected
 BUTTON
 ************************************************************/
 /************************************************************
-button-text-color-variant
-button-border-color-variant
-button-background-color-variant
-Adjust text-, border-, and background-color for a button
-************************************************************/
-/************************************************************
 Including size eXtra-Small .btn-xs and btn-group-xs as in Bootstrap 5
+Include btn-sizes when inside a btn-bar
 ************************************************************/
-.btn-xs, .btn-group-xs > .btn {
+.btn-xs, .btn-group-xs > .btn, .btn-bar-xs > .btn {
   --bs-btn-padding-y: 0.125rem;
   --bs-btn-padding-x: 0.25rem;
   --bs-btn-font-size: 0.75rem;
@@ -9579,25 +9551,25 @@ Also overwrite default bootstrap behaviour
 
 */
 .btn-jb {
-  --bs-btn-border-color: #6c757d;
-  --bs-btn-hover-border-color: #7b838a;
-  --bs-btn-active-border-color: #7b838a;
+  --bs-btn-border-color: #adb5bd;
+  --bs-btn-hover-border-color: #b5bcc4;
+  --bs-btn-active-border-color: #b5bcc4;
   --bs-btn-focus-shadow-rgb: 13, 110, 253; }
   .btn-jb.standard {
     --bs-btn-color: #212529;
     --bs-btn-bg: #f8f9fa;
-    --bs-btn-border-color: #6c757d;
+    --bs-btn-border-color: #adb5bd;
     --bs-btn-hover-color: #373b3e;
     --bs-btn-hover-bg: #dee2e6;
-    --bs-btn-hover-border-color: #7b838a;
-    --bs-btn-focus-shadow-rgb: 97, 105, 112;
+    --bs-btn-hover-border-color: #b5bcc4;
+    --bs-btn-focus-shadow-rgb: 152, 159, 167;
     --bs-btn-active-color: #373b3e;
     --bs-btn-active-bg: #ced4da;
-    --bs-btn-active-border-color: #7b838a;
+    --bs-btn-active-border-color: #b5bcc4;
     --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
     --bs-btn-disabled-color: #212529;
     --bs-btn-disabled-bg: #f8f9fa;
-    --bs-btn-disabled-border-color: #6c757d;
+    --bs-btn-disabled-border-color: #adb5bd;
     --bs-btn-focus-shadow-rgb: 13, 110, 253; }
   .btn-jb.primary {
     --bs-btn-color: #0d6efd;
@@ -9631,9 +9603,9 @@ Also overwrite default bootstrap behaviour
     --bs-btn-bg: none;
     --bs-btn-hover-bg: rgba( 222, 226, 230 , .10 );
     --bs-btn-active-bg: rgba( 206, 212, 218, .15 );
-    --bs-btn-border-color: rgba(108, 117, 125, 0.1);
-    --bs-btn-hover-border-color: rgba(108, 117, 125, 0.15);
-    --bs-btn-active-border-color: rgba(108, 117, 125, 0.2); }
+    --bs-btn-border-color: rgba(173, 181, 189, 0.1);
+    --bs-btn-hover-border-color: rgba(173, 181, 189, 0.15);
+    --bs-btn-active-border-color: rgba(173, 181, 189, 0.2); }
   .btn-jb.transparent-on-dark {
     --bs-btn-color: #fff;
     --bs-btn-hover-color: white;
@@ -9671,21 +9643,21 @@ Also overwrite default bootstrap behaviour
     width: var(--bs-btn-square-dimention); }
     .btn-jb.square:not(.big-square) {
       --bs-btn-square-dimention: 2.375rem; }
-      .btn-jb.square:not(.big-square).btn-sm, .btn-group-sm > .btn-jb.square.btn:not(.big-square) {
+      .btn-jb.square:not(.big-square).btn-sm, .btn-group-sm > .btn-jb.square.btn:not(.big-square), .btn-bar-sm > .btn-jb.square.btn:not(.big-square) {
         --bs-btn-square-dimention: 1.9375rem; }
-      .btn-jb.square:not(.big-square).btn-xs, .btn-group-xs > .btn-jb.square.btn:not(.big-square) {
+      .btn-jb.square:not(.big-square).btn-xs, .btn-group-xs > .btn-jb.square.btn:not(.big-square), .btn-bar-xs > .btn-jb.square.btn:not(.big-square) {
         --bs-btn-square-dimention: 1.5rem; }
     .btn-jb.square.big-square {
       --bs-btn-square-dimention: 3.25rem; }
-      .btn-jb.square.big-square.btn-sm, .btn-group-sm > .btn-jb.square.big-square.btn {
+      .btn-jb.square.big-square.btn-sm, .btn-group-sm > .btn-jb.square.big-square.btn, .btn-bar-sm > .btn-jb.square.big-square.btn {
         --bs-btn-square-dimention: 2.75rem; }
-      .btn-jb.square.big-square.btn-xs, .btn-group-xs > .btn-jb.square.big-square.btn {
+      .btn-jb.square.big-square.btn-xs, .btn-group-xs > .btn-jb.square.big-square.btn, .btn-bar-xs > .btn-jb.square.big-square.btn {
         --bs-btn-square-dimention: 2.1875rem; }
     .btn-jb.square.big-icon {
       --bs-btn-font-size: 1.625rem; }
-    .btn-jb.square.btn-sm.big-icon, .btn-group-sm > .btn-jb.square.big-icon.btn {
+    .btn-jb.square.btn-sm.big-icon, .btn-group-sm > .btn-jb.square.big-icon.btn, .btn-bar-sm > .btn-jb.square.big-icon.btn {
       --bs-btn-font-size: 1.375rem; }
-    .btn-jb.square.btn-xs.big-icon, .btn-group-xs > .btn-jb.square.big-icon.btn {
+    .btn-jb.square.btn-xs.big-icon, .btn-group-xs > .btn-jb.square.big-icon.btn, .btn-bar-xs > .btn-jb.square.big-icon.btn {
       --bs-btn-font-size: 1.1875rem; }
     .btn-jb.square > i.fa {
       width: 1.25em;
@@ -9743,16 +9715,43 @@ BUTTON-GROUP
 .btn-group-vertical .header-content-container {
   font-size: var(--bs-modal-content-font-size); }
 
-.btn-group-vertical .header-content-container {
-  width: 100%;
-  margin-bottom: 1px; }
+.btn-group .header-content, .btn-group-vertical .header-content {
+  color: var(--jb-inner-header-color);
+  background-color: var(--jb-inner-header-bg); }
+  .btn-group .header-content.header-main, .btn-group-vertical .header-content.header-main {
+    color: var(--jb-header-color);
+    background-color: var(--jb-header-bg); }
 
 .btn-group-vertical .btn.container-icon-and-text > i, .btn-group-vertical .btn.container-icon-and-text > .container-stacked-icons {
   width: 1.25em;
   text-align: center; }
 
-.btn-group-vertical + .btn-group-vertical {
-  margin-top: var(--bs-modal-header-padding-y); }
+.btn-group-vertical .header-content-container + .btn:not(.after-space),
+.btn-group-vertical .btn-group-vertical .btn:not(.after-space) {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0; }
+
+/*
+To have a space between two button-groups
+the button-group before the space gets class="after-space"
+*/
+.btn-group.space-after {
+  margin-right: var(--bs-modal-header-padding-x); }
+
+.btn-group-vertical.space-after {
+  margin-bottom: var(--bs-modal-header-padding-y); }
+
+/*
+To have a space between two buttons in a (vertical) button-group
+the button before the space gets class="after-space"
+*/
+.btn-group-vertical .space-after {
+  margin-bottom: var(--bs-modal-header-padding-y);
+  border-bottom-left-radius: var(--bs-btn-border-radius) !important;
+  border-bottom-right-radius: var(--bs-btn-border-radius) !important; }
+  .btn-group-vertical .space-after + .btn {
+    border-top-left-radius: var(--bs-btn-border-radius) !important;
+    border-top-right-radius: var(--bs-btn-border-radius) !important; }
 
 .btn-group-vertical.btn-group-sm {
   --bs-modal-content-font-size: 0.875rem;
@@ -9794,6 +9793,14 @@ MENU (BUTTON-GROUP)
   display: none; }
 
 /************************************************************
+BUTTON-BAR
+************************************************************/
+.btn-bar .btn {
+  min-width: var(--bs-btn-square-dimention); }
+  .btn-bar .btn:not(:first-child) {
+    margin-left: 2px; }
+
+/************************************************************
 btn-shadow and btn-shadow-sm
 classes to create "shadow-buttons" = invisible square buttons for correct spacing
 ************************************************************/
@@ -9811,6 +9818,13 @@ classes to create "shadow-buttons" = invisible square buttons for correct spacin
 .btn-shadow-sm {
   width: 1.9375rem;
   height: 1.9375rem; }
+
+/************************************************************
+btn-round-border
+classes to create force round border despise placement
+************************************************************/
+.btn-round-border {
+  border-radius: var(--bs-btn-border-radius) !important; }
 
 /************************************************************
 HEADER-FOOTER
@@ -9834,6 +9848,7 @@ HEADER-CONTENT
   color: var(--jb-header-color);
   background-color: var(--jb-header-bg);
   cursor: default;
+  pointer-events: none;
   /****************************************************
     List of icons inside a header are placed inside a container
     <div class="header-icon-container>
@@ -9842,7 +9857,8 @@ HEADER-CONTENT
     </div>
     ****************************************************/ }
   .header-content.clickable {
-    cursor: pointer; }
+    cursor: pointer;
+    pointer-events: inherit; }
   .header-content.header-content-smaller {
     font-size: var(--bs-footer-font-size);
     padding: var(--bs-footer-padding-y) var(--bs-footer-padding-x); }
@@ -9860,6 +9876,7 @@ HEADER-CONTENT
   .header-content .header-icon-container {
     display: flex;
     align-items: baseline;
+    pointer-events: initial;
     flex-shrink: 0;
     justify-content: space-between;
     margin-left: auto;
@@ -9875,13 +9892,12 @@ HEADER-CONTENT
       width: 1em;
       text-align: center;
       cursor: pointer;
-      color: var(--jb-icon-color); }
+      color: var(--jb-header-color);
+      border-radius: 50%; }
       .header-content .header-icon-container .header-icon.hidden {
         display: none; }
-      .header-content .header-icon-container .header-icon:hover {
-        color: var(--jb-icon-hover-color); }
-      .header-content .header-icon-container .header-icon:active {
-        color: var(--jb-icon-active-color); }
+      .header-content .header-icon-container .header-icon:hover, .header-content .header-icon-container .header-icon:active {
+        box-shadow: 0px 0px 3px 0px var(--jb-header-color); }
       .header-content .header-icon-container .header-icon.header-icon-warning .middle {
         font-size: .6em;
         position: relative;
@@ -9918,6 +9934,10 @@ POPOVER
 .popover .popover-body {
   --bs-popover-body-padding-y: 0;
   --bs-popover-body-padding-x: 0; }
+
+.popover .popover-footer {
+  border-bottom-right-radius: var(--bs-popover-inner-border-radius);
+  border-bottom-left-radius: var(--bs-popover-inner-border-radius); }
 
 .popover.popover-sm {
   --bs-popover-font-size: 0.875rem;
@@ -10006,7 +10026,7 @@ bsSelectList
   --bs-dropdown-border-radius: 0.375rem;
   --bs-dropdown-inner-border-radius: calc(0.375rem - 1px); }
   .select-list:focus-within {
-    border-color: #7b838a;
+    border-color: #b5bcc4;
     outline: 0;
     box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.25); }
   .modal-dialog-sm .select-list, .select-list.select-list-sm {
@@ -10457,7 +10477,7 @@ Style for input-group
   font-size: var(--bs-input-font-size); }
 
 .input-group-border {
-  border: 1px solid #6c757d;
+  border: 1px solid #adb5bd;
   border-radius: var(--bs-input-border-radius); }
   .input-group-border.input-group-border-dark {
     border-color: black; }
@@ -10527,42 +10547,45 @@ not-first child assuming the previous sibling element
 is next to it.
 In jquery-bootstrap the previous sibling
 can be the label => still need round left corners
+The selection in Bootstrap is not pretty => not pretty here
 ***********************************************/
-.input-group > .label-outside + * {
-  margin-left: initial !important;
+.input-group > .label-outside + *:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  margin-left: initial;
   border-top-left-radius: var(--bs-btn-border-radius) !important;
   border-bottom-left-radius: var(--bs-btn-border-radius) !important; }
 
 /************************************************************
-FORMVALIDATION
-Style for formValidation (via fcoo-form-validation)
+VALIDATION
+Adjust to css in
 input-group-container inside a <form class="form-validation"> gets special style for validation-state and messages
 ************************************************************/
-.modal-content.modal-has-warning {
-  border: 1px solid #dc3545; }
+form.form-validation input.form-control {
+  padding-right: var(--bs-input-padding-x) !important; }
 
-form.form-validation .input-group-container {
-  --bs-form-control-feedback-height: calc( var(--bs-input-font-size) + 2 * var(--bs-input-padding-y) );
-  padding-top: var(--bs-input-padding-y);
-  padding-bottom: var(--bs-form-control-feedback-height); }
-  form.form-validation .input-group-container .form-control-feedback {
-    line-height: 1;
-    padding-top: 0;
-    padding-bottom: 0; }
-  form.form-validation .input-group-container.has-warning {
-    padding-bottom: 0px; }
-  form.form-validation .input-group-container.no-validation {
-    padding-bottom: var(--bs-input-padding-y); }
-  form.form-validation .input-group-container .form-control-feedback {
-    height: var(--bs-form-control-feedback-height);
-    font-size: var(--bs-input-font-size);
-    color: #dc3545;
-    padding-left: var(--bs-input-padding-x);
-    vertical-align: top; }
-  form.form-validation .input-group-container.has-warning .form-control-feedback[data-fv-result="INVALID"] {
-    display: inline-block !important; }
-  form.form-validation .input-group-container.fv-do-not-validate {
-    visibility: hidden; }
+form.form-validation .invalid-tooltip {
+  color: var(--bs-alert-color);
+  background-color: var(--bs-alert-bg);
+  font-size: var(--bs-input-label-font-size);
+  --jb-invalid-tooltip-padding: 0.25rem 0.25rem;
+  padding: var(--jb-invalid-tooltip-padding);
+  --jb-invalid-tooltip-border-radius: 0.25rem;
+  border-radius: var(--jb-invalid-tooltip-border-radius);
+  --jb-invalid-tooltip-left: 0.375rem;
+  left: var(--jb-invalid-tooltip-left);
+  top: initial; }
+
+form.form-validation input.form-control:focus + .invalid-tooltip {
+  display: none; }
+
+.modal-dialog.modal-dialog-sm, form.form-sm, .input-group-container-sm, .input-group-sm {
+  --jb-invalid-tooltip-padding: 0.125rem 0.125rem;
+  --jb-invalid-tooltip-border-radius: 0.125rem;
+  --jb-invalid-tooltip-left: 0.25rem; }
+
+.modal-dialog.modal-dialog-sm, form.form-xs, .input-group-container-xs, .input-group-xs {
+  --jb-invalid-tooltip-padding: 0.0625rem 0.0625rem;
+  --jb-invalid-tooltip-border-radius: 0.0625rem;
+  --jb-invalid-tooltip-left: 0.125rem; }
 
 /************************************************************
 TABLE
@@ -10667,6 +10690,11 @@ Using Bootstrap Collapse to create accordion
 .accordion {
   --bs-accordion-font-size: 1rem;
   font-size: var(--bs-accordion-font-size); }
+  .accordion.no-transition .collapsing {
+    transition: height 0s ease; }
+    @media (prefers-reduced-motion: reduce) {
+      .accordion.no-transition .collapsing {
+        transition: none; } }
   .accordion .accordion-button,
   .accordion .accordion-body {
     font-size: var(--bs-accordion-font-size); }
@@ -10851,9 +10879,15 @@ Is a modification to Bootstrap modal-dialog-class
     animation-name: noty-flash;
     animation-iteration-count: 3;
     animation-duration: .5s; }
-  .modal-dialog.noty_bar.noty_theme__jquery-bootstrap .modal-body.noty_body {
+  .modal-dialog.noty_bar.noty_theme__jquery-bootstrap .modal-content {
     color: var(--bs-alert-color);
     background-color: var(--bs-alert-bg); }
+  .modal-dialog.noty_bar.noty_theme__jquery-bootstrap .header-content {
+    --jb-header-bg: rgba(0,0,0, .1);
+    --jb-header-color: var(--bs-alert-color); }
+  .modal-dialog.noty_bar.noty_theme__jquery-bootstrap .modal-body.noty_body {
+    color: inherit;
+    background-color: transparent; }
     .modal-dialog.noty_bar.noty_theme__jquery-bootstrap .modal-body.noty_body * {
       white-space: pre-wrap;
       word-break: break-word;

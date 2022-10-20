@@ -123,37 +123,53 @@
 
             var content = clone(this.options.content || this.options);
 
+            content = $.isArray(content) ? content : [content];
+
+            //If first content-item is the text => make it full-width inside a div
+            var firstContent = content[0];
+            if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
+                content[0] = $('<div/>')._bsAddHtml(firstContent);
+
             //Add buttons from this.options.buttonList (if any) to content (once)
             var buttonList = this.options.buttonList || this.options.buttons;
             if (buttonList){
-                //Adjust button-options
-                buttonList.forEach( function( options, index ){
-                    options.small = true;
-                    options.type = options.type || 'button';
-                    if (!index)
-                        options.class = (options.class || '') + ' ml-0 ms-0'; //Margin-left = 0 Bootstrap 4 / Bootstrap 5
+                //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
+                var groupList = [],
+                    currentList = [];
 
+                buttonList.forEach( function(buttonOptions){
+                    if (buttonOptions.isFirstButton && currentList.length){
+                        groupList.push( currentList );
+                        currentList = [];
+                    }
+
+                    currentList.push( buttonOptions );
+
+                    if (buttonOptions.isLastButton){
+                        groupList.push( currentList );
+                        currentList = [];
+                    }
                 });
 
-                //Add div with buttons
-                content = $.isArray(content) ? content : [content];
-                content.push(
-                    $('<div/>')
-                        .addClass('justify-content-start modal-footer')
-                        .css({
-                            'padding'   : 0,
-                            'border-top': 'none'
+                if (currentList.length)
+                    groupList.push( currentList );
+
+                groupList.forEach( function( list ){
+                    content.push(
+                        $.bsButtonBar({
+                            small   : true,
+                            buttons : list,
+                            justify : 'center'
                         })
-                        ._bsAppendContent( buttonList )
-                );
+                    );
+                });
             }
 
 
-            if (this.first || !this.hasCheckbox){
+            if (this.first || !this.hasCheckbox)
                 this.$content
                     .toggleClass('mm-listitem-content', this.type == 'text')
                     ._bsAddHtml(content);
-            }
             else {
                 this.checkbox = $.bsCheckbox({
                     id          : this.id,
@@ -168,6 +184,9 @@
 
                 //Set flex shrink to 0 for input-element
                 this.checkbox.find('input').addClass('flex-shrink-0');
+
+                //widrh = 100% for container label
+                this.checkbox.find('label').addClass('w-100');
 
                 this.setState(this.state);
 
