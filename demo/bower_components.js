@@ -55441,10 +55441,10 @@ module.exports = g;
         options =
             $._bsAdjustOptions( options, {
                 fullWidthClass  : 'w-100',
-                fullWidth       : true
+                fullWidth       : true,
+                class           : 'm-0 p-0 d-flex flex-row flex-nowrap justify-content-'+(options.justify || options.align || 'center'),
             }, {
                 baseClass   : 'btn-bar',
-                class       : 'm-0 p-0 d-flex flex-row flex-nowrap justify-content-'+(options.justify || options.align || 'center'),
                 vertical    : false,
                 center      : true,
                 useTouchSize: true,

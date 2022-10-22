@@ -200,8 +200,33 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 
 .mm-listitem__text {
     display: flex;
+    flex-wrap: wrap;
     &  > *:first-child {
         flex: 1;
     }
 }
+
+.button-bar-container {
+    padding: 0;
+    margin : 0;
+    &:last-child {
+        margin-bottom: 2px;
+    }
+
+    &.padding-left {
+        //padding-left for container with buttons = 1em for radio/check-box and .5em fr margin for label
+        padding-left: 1.5em;
+    }
+    &.padding-right {
+        //padding-left for container with buttons = 1em for radio/check-box and .5em fr margin for label
+        padding-right: $button-square-dimension;
+
+        .mm-menu-sm & {
+            padding-right: $button-square-dimension-sm;
+        }
+    }
+}
+
+
+
 

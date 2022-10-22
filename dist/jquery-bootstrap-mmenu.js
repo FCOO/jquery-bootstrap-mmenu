@@ -112,13 +112,12 @@
         createLi: function(owner){
             owner = owner || this;
 
-            this.$li      = $('<li/>');
+            this.$li = $('<li/>');
             this.$li.attr('id', this.liId);
 
             this.liElem   = this.$li.get(0);
-            this.$outer   = $('<span/>').appendTo(this.$li);
+            var $outer    = this.$outer = $('<span/>').appendTo(this.$li);
             this.$content = $('<div/>').appendTo(this.$outer);
-
 
             var content = clone(this.options.content || this.options);
 
@@ -128,45 +127,6 @@
             var firstContent = content[0];
             if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
                 content[0] = $('<div/>')._bsAddHtml(firstContent);
-
-            //Add buttons from this.options.buttonList (if any) to content (once)
-            var buttonList = this.options.buttonList || this.options.buttons;
-            if (buttonList){
-                var buttonBarJustify = this.options.buttonJustify || this.parent.options.buttonJustify || 'center';
-
-
-                //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
-                var groupList = [],
-                    currentList = [];
-
-                buttonList.forEach( function(buttonOptions){
-                    if (buttonOptions.isFirstButton && currentList.length){
-                        groupList.push( currentList );
-                        currentList = [];
-                    }
-
-                    currentList.push( buttonOptions );
-
-                    if (buttonOptions.isLastButton){
-                        groupList.push( currentList );
-                        currentList = [];
-                    }
-                });
-
-                if (currentList.length)
-                    groupList.push( currentList );
-
-                groupList.forEach( function( list ){
-                    content.push(
-                        $.bsButtonBar({
-                            small   : true,
-                            buttons : list,
-                            justify : buttonBarJustify
-                        })
-                    );
-                });
-            }
-
 
             if (this.first || !this.hasCheckbox)
                 this.$content
@@ -229,6 +189,47 @@
                 }
             }
 
+            //Add buttons from this.options.buttonList (if any)
+            var buttonList = this.options.buttonList || this.options.buttons,
+                groupList = [],
+                buttonBarJustify = this.options.buttonJustify || this.parent.options.buttonJustify || 'center',
+                paddingClass = '';
+
+            if (this.hasCheckbox)
+                paddingClass = paddingClass + ' padding-left';
+            if (this.$favoriteButton)
+                paddingClass = paddingClass + ' padding-right';
+
+
+            if (buttonList){
+                //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
+                var currentList = [];
+
+                buttonList.forEach( function(buttonOptions){
+                    if (buttonOptions.isFirstButton && currentList.length){
+                        groupList.push( currentList );
+                        currentList = [];
+                    }
+
+                    currentList.push( buttonOptions );
+
+                    if (buttonOptions.isLastButton){
+                        groupList.push( currentList );
+                        currentList = [];
+                    }
+                });
+                if (currentList.length)
+                    groupList.push( currentList );
+
+                groupList.forEach( function( list ){
+                    $.bsButtonBar({
+                        small   : true,
+                        buttons : list,
+                        class   : 'button-bar-container ' + paddingClass + ' d-flex flex-row flex-nowrap justify-content-'+buttonBarJustify
+                    }).appendTo($outer);
+                });
+
+            }
         },
 
         /***********************************

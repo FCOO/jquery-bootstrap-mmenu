@@ -27,7 +27,7 @@
 </head>
 
 <body>
-    <div id="menu" style="width:400px; margin-left:30px"></div>
+    <div id="menu" style="width:350px; margin-left:30px"></div>
 
     <script src="bower_components.js"></script>
     <script src="../src/jquery-bootstrap-mmenu-item.js"></script>
@@ -99,10 +99,10 @@
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>'),
                                     //$('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
                                 ],
-                                buttonJustify: 'around',
+                                //buttonJustify: 'around',
                                 buttonList: [
                                     {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
-                                    {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }, isLastButton: true},
+                                    {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }, _isLastButton: true},
                                     {icon: 'fa-home', text: {da: '3. knap', en:'3. Button'}, onClick: function(){ console.log('Klik på En 3. Knap'); }}
                                 ]
                             }, {
@@ -111,14 +111,27 @@
                                 content: [
                                     {icon: 'fa-map', text:  {da: '2: Navigation', en:'2: Navigation'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
+                                ],
+                                noFavoriteButton: true,
+                                buttonList: [
+                                    {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
+                                    {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }},
+                                    {icon: 'fa-home', text: {da: '3. knap', en:'3. Button'}, onClick: function(){ console.log('Klik på En 3. Knap'); }}
                                 ]
+
                             }, {
                                 id: 'sealvl3',
-                                type:'radio', 
+                                //type:'radio', 
                                 content: [
                                     {text: {da: '3: Noget andet', en:'3: Something else'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
                                 ],
+                                buttonList: [
+                                    {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
+                                    {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }},
+                                    {icon: 'fa-home', text: {da: '3. knap', en:'3. Button'}, onClick: function(){ console.log('Klik på En 3. Knap'); }}
+                                ]
+
                         }]
                     }]
                 }]

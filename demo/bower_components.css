@@ -9622,7 +9622,7 @@ Also overwrite default bootstrap behaviour
   .btn-jb.no-shadow {
     box-shadow: none !important; }
   .btn-jb.min-width {
-    min-width: 5em; }
+    min-width: 5em !important; }
   .btn-jb > i.fa {
     min-width: 1em;
     text-align: left; }

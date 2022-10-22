@@ -1340,6 +1340,19 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
   margin-bottom: calc( var(--mm-listitem-size) / 2); }
 
 .mm-listitem__text {
-  display: flex; }
+  display: flex;
+  flex-wrap: wrap; }
   .mm-listitem__text > *:first-child {
     flex: 1; }
+
+.button-bar-container {
+  padding: 0;
+  margin: 0; }
+  .button-bar-container:last-child {
+    margin-bottom: 2px; }
+  .button-bar-container.padding-left {
+    padding-left: 1.5em; }
+  .button-bar-container.padding-right {
+    padding-right: 2.375rem; }
+    .mm-menu-sm .button-bar-container.padding-right {
+      padding-right: 1.9375rem; }
