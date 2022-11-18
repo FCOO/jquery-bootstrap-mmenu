@@ -99,12 +99,10 @@ COLORS AND STYLE
     --mm-font-size    : #{$jb-font-size};
 
     // sizes
-    --mm-line-height    : #{$button-square-dimension};
+    --mm-line-height    : #{$button-square-dimension};  //Default = #{$mm_lineHeight}; and $mm_lineHeight: 20px;
     --mm-listitem-size  : #{$button-square-dimension};
     --mm-navbar-size    : #{$button-square-dimension};
     --mm-iconbar-size   : #{$button-square-dimension + 2 * $jb-padding-x};
-
-
 
     // colors
     --mm-color-border     : var(--jb-structure-border-color);
@@ -125,6 +123,8 @@ COLORS AND STYLE
 
     //	misc
     --mm-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+
+    --chevrolet-dim: 0.625rem; // = 10px
 }
 
 //Size small - Adjust size when in no-touch-mode
@@ -135,6 +135,8 @@ COLORS AND STYLE
     --mm-listitem-size  : #{$button-square-dimension-sm};
     --mm-navbar-size    : #{$button-square-dimension-sm};
     --mm-iconbar-size   : #{$button-square-dimension-sm + 2 * $jb-padding-x-sm}
+
+    --chevrolet-dim     : 0.3125rem; // = 5px
 }
 
 /***********************************************
@@ -146,11 +148,38 @@ IMPORT MMENU SCSS
 /***********************************************
 ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 ***********************************************/
+//.mm-listitem__text = No sub-menus
 .mm-listitem__text {
+    .mm-menu & {
+        padding-left : $jb-padding-y;
+        padding-right: $jb-padding-y;
+    }
+    .mm-menu-sm & {
+        padding-left : $jb-padding-y-sm;
+        padding-right: $jb-padding-y-sm;
+    }
 }
 
+//Adjust padding-right to be equal jb-padding
 .mm-listitem__btn {
-};
+    .mm-menu & {
+        padding-left : $jb-padding-y;
+        padding-right: calc(1.4 * var(--chevrolet-dim));
+    }
+    .mm-menu-sm & {
+        padding-left : $jb-padding-y-sm;
+    }
+}
+
+//Set bottom line left = padding-left
+.mm-listitem:after {
+    .mm-menu & {
+        left : $jb-padding-y;
+    }
+    .mm-menu-sm & {
+        left : $jb-padding-y-sm;
+    }
+}
 
 //Only padding-left for sub-menus
 .mm-listitem_vertical > .mm-panel {
@@ -166,6 +195,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 }
 
 
+
 //Adjust font-size and height
 .mm-listitem {
     font-size : var(--mm-font-size);
@@ -178,15 +208,9 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 
 //Adjust chevrolet arrow on right side
 .mm-btn_prev:before, .mm-btn_next:after {
-    --chevrolet-dim: 0.625rem; // = 10px
-
     width : var(--chevrolet-dim) !important;
     height: var(--chevrolet-dim) !important;
-    right : var(--chevrolet-dim) !important;
-
-    .mm-listitem.mm-listitem_vertical & {
-        --chevrolet-dim: 0.3125rem; // = 5px
-    }
+    right : calc(.5 * var(--chevrolet-dim)) !important;
 }
 
 //Buttons inside icon-bar on left side
