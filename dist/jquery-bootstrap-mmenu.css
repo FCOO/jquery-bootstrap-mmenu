@@ -1329,7 +1329,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 
 .mm-menu .mm-listitem__btn {
   padding-left: 0.375rem;
-  padding-right: calc(1.4 * var(--chevrolet-dim)); }
+  padding-right: calc(2.8 * var(--chevrolet-dim)); }
 
 .mm-menu-sm .mm-listitem__btn {
   padding-left: 0.25rem; }
@@ -1356,7 +1356,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-btn_prev:before, .mm-btn_next:after {
   width: var(--chevrolet-dim) !important;
   height: var(--chevrolet-dim) !important;
-  right: calc(.5 * var(--chevrolet-dim)) !important; }
+  right: var(--chevrolet-dim) !important; }
 
 .mm-iconbar .btn.btn-standard.square {
   margin-left: auto;

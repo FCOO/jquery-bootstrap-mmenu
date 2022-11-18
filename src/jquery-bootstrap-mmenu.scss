@@ -164,7 +164,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-listitem__btn {
     .mm-menu & {
         padding-left : $jb-padding-y;
-        padding-right: calc(1.4 * var(--chevrolet-dim));
+        padding-right: calc(2.8 * var(--chevrolet-dim));
     }
     .mm-menu-sm & {
         padding-left : $jb-padding-y-sm;
@@ -210,7 +210,7 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-btn_prev:before, .mm-btn_next:after {
     width : var(--chevrolet-dim) !important;
     height: var(--chevrolet-dim) !important;
-    right : calc(.5 * var(--chevrolet-dim)) !important;
+    right : var(--chevrolet-dim) !important;
 }
 
 //Buttons inside icon-bar on left side
