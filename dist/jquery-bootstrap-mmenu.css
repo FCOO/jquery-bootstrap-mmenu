@@ -231,9 +231,8 @@ COLORS AND STYLE
   --mm-line-height: 1.9375rem;
   --mm-listitem-size: 1.9375rem;
   --mm-navbar-size: 1.9375rem;
-  --mm-iconbar-size: 2.4375rem
-
-    --chevrolet-dim     : 0.3125rem; }
+  --mm-iconbar-size: 2.4375rem;
+  --chevrolet-dim: 0.3125rem; }
 
 /***********************************************
 IMPORT MMENU SCSS
