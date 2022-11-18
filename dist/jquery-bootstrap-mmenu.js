@@ -4,7 +4,7 @@
 
 ****************************************************************************/
 
-(function ($/*, i18next, window, document, undefined*/) {
+(function ($, Mmenu/*, i18next, window, document, undefined*/) {
     "use strict";
 
     //clone( elem ) return a cloned copy of elem
@@ -29,6 +29,28 @@
                         result = elem;
         return result;
     }
+
+
+
+    /************************************************
+    Overwrite _initNavbar to add content that are translated correct
+    ************************************************/
+    Mmenu.prototype._initNavbar = function (_initNavbar) {
+        return function(panel){
+            _initNavbar.call(this, panel);
+
+            var parentLiId = panel['mmParent'] ? panel['mmParent'].getAttribute('id') : null,
+                bsMenu = this.conf.bsMenu,
+                parentItem = parentLiId ? bsMenu._getItem(parentLiId, bsMenu, true) : null;
+            if (parentItem)
+                $(panel).find('.mm-navbar__title')
+                    .empty()
+                    ._bsAddHtml({
+                        icon: parentItem.options.icon,
+                        text: parentItem.options.text
+                    });
+        };
+    }(Mmenu.prototype._initNavbar);
 
     /************************************************
     BsMmenuItem
@@ -521,14 +543,7 @@
 
     };
 
-
-    /******************************************
-    Initialize/ready
-    *******************************************/
-    $(function() {
-
-    });
-}(jQuery/*, this.i18next, this, document*/));
+}(jQuery, this.Mmenu/*, this.i18next, this, document*/));
 ;
 /****************************************************************************
     jquery-bootstrap-mmenu.js,
@@ -540,7 +555,7 @@
 
 ****************************************************************************/
 
-(function ($, i18next, window/*, document, undefined*/) {
+(function ($, Mmenu, i18next, window/*, document, undefined*/) {
     "use strict";
 
     //Create $.BSMMENU = record with const etc.
@@ -606,7 +621,6 @@
         }
     };
 
-
     /************************************************
     BsMmenu
     options = {
@@ -638,7 +652,7 @@
 
                 navbar    : {
                     add   : !!window.bsIsTouch || !!options.title,
-                    title : options.title || ' '
+                    title : options.title || ' ',
                 },
 /* mangler
                 backButton: {
@@ -778,11 +792,12 @@
                     };
             }
 
-            this.mmenu = new window.Mmenu($elem.get(0), this.mmenuOptions, this.configuration );
+            this.configuration.bsMenu = this;
+            this.mmenu = new Mmenu($elem.get(0), this.mmenuOptions, this.configuration );
 
             this.panel = $elem.find('#'+this.ulId).get(0);
-
             this.api = this.mmenu.API;
+
             $elem.data('bsMmenu', this.mmenu);
 
             return this;
@@ -791,14 +806,15 @@
         /**********************************
         _getItem
         **********************************/
-        _getItem: function(id, parent){
+        _getItem: function(id, parent, findByLiId){
             var item = parent.first,
                 result = null;
             while (item){
-                if (item.id == id)
+                if ( (!findByLiId && (item.id   == id) ) ||
+                     ( findByLiId && (item.liId == id) ) )
                     result = item;
                 else
-                    result = this._getItem(id, item);
+                    result = this._getItem(id, item, findByLiId);
 
                 if (result)
                     item = null;
@@ -811,8 +827,8 @@
         /**********************************
         getItem
         **********************************/
-        getItem: function(id){
-            return this._getItem(id, this);
+        getItem: function(id, findByLiId){
+            return this._getItem(id, this, findByLiId);
         },
 
         /**********************************
@@ -886,4 +902,4 @@
     $(function() {
 
     });
-}(jQuery, this.i18next, this, document));
+}(jQuery, this.Mmenu, this.i18next, this, document));

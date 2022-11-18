@@ -38,8 +38,13 @@
 
 
         i18next.init();
-        i18next.changeLanguage('en');
+        i18next.changeLanguage('da');
         i18next.options.fallbackLng = i18next.language == 'da' ? 'en' : 'da';
+
+setTimeout( function(){
+    i18next.changeLanguage('en');
+    $("*").localize();
+}, 2000);
 
 
         var menu = {
@@ -139,8 +144,8 @@
             
 
 
-//HER        var m = $.bsMmenu( menu).create($('#menu'));
         var m = $.bsMmenu(menu, {offCanvas: false}).create($('#menu'));
+
 
 //        i18next.changeLanguage('da');
 

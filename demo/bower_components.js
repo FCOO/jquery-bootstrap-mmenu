@@ -30836,6 +30836,11 @@ jquery-base-slider-public.js
 
         _cbxSet: function( selected, dontCallOnChange, semiSelected, semiSelectedValue ){
             var options = this.data('cbx_options');
+
+            //Allow selected to be a function
+            if (typeof selected === "function")
+                selected = selected();
+
             options.selected = !!selected;
 
             var $elements = options.selector ? this.children( options.selector ) : this;
@@ -40035,7 +40040,6 @@ return index;
     https://github.com/FCOO
 
 ****************************************************************************/
-
 (function ($, window, document/*, undefined*/) {
     "use strict";
 
@@ -40048,27 +40052,40 @@ return index;
     //Create namespace
     var ns = window.JqueryScrollContainer = window.JqueryScrollContainer || {};
 
-    var scrollbarWidth = null;
-    window.getScrollbarWidth = function() {
-        if (scrollbarWidth === null){
-            if (typeof document === 'undefined')
-                return 0;
-
-            var body = document.body,
-                box = document.createElement('div'),
-                boxStyle = box.style;
-
-            box.className       = 'jq-scroll-default';
-            boxStyle.position   = 'fixed';
-            boxStyle.left       = 0;
-            boxStyle.visibility = 'hidden';
-            boxStyle.overflowY  = 'scroll';
-            body.appendChild(box);
-            scrollbarWidth = box.getBoundingClientRect().right;
-            body.removeChild(box);
+    //Calc the scrollbar-width when the document is loaded
+    var getScrollbarWidth = window.getScrollbarWidth = function() {
+        if (typeof document === 'undefined'){
+            window.setTimeout( getScrollbarWidth, 1000 );
+            return;
         }
+
+        var body = document.body,
+            box = document.createElement('div'),
+            boxStyle = box.style;
+
+        box.className       = 'jq-scroll-default';
+        boxStyle.position   = 'fixed';
+        boxStyle.left       = 0;
+        boxStyle.visibility = 'hidden';
+        boxStyle.overflowY  = 'scroll';
+        body.appendChild(box);
+        var scrollbarWidth = box.getBoundingClientRect().right;
+        body.removeChild(box);
+
+        //Update to css-var for scrollbars
+        var root = document.querySelector(':root');
+        root.style.setProperty('--jsc-scroll-size', scrollbarWidth+'px');
+        if (scrollbarWidth > 0){
+            root.style.setProperty('--jsc-scroll-padding'     , scrollbarWidth+'px');
+            root.style.setProperty('--jsc-scroll-auto-padding', '0px');
+        }
+
         return scrollbarWidth;
     };
+
+    //Called when document is laoded
+    $(getScrollbarWidth);
+
 
     //Extend $.fn with scrollIntoView
     $.fn.extend({
@@ -40159,7 +40176,7 @@ return index;
         this.addClass('jq-scroll-default');
 
         if (isVertical && options.paddingLeft)
-            this.css('padding-left', window.getScrollbarWidth()+'px' );
+            this.addClass('jq-scroll-padding-left');
 
         //Update scroll-shadow when scrolling
         if (!isBoth)
@@ -47945,7 +47962,7 @@ return index;
 }).call(this);
 ;
 //! moment-timezone.js
-//! version : 0.5.38
+//! version : 0.5.39
 //! Copyright (c) JS Foundation and other contributors
 //! license : MIT
 //! github.com/moment/moment-timezone
@@ -47975,7 +47992,7 @@ return index;
 	// 	return moment;
 	// }
 
-	var VERSION = "0.5.38",
+	var VERSION = "0.5.39",
 		zones = {},
 		links = {},
 		countries = {},
@@ -48637,7 +48654,7 @@ return index;
 	}
 
 	loadData({
-		"version": "2022e",
+		"version": "2022f",
 		"zones": [
 			"Africa/Abidjan|GMT|0|0||48e5",
 			"Africa/Nairobi|EAT|-30|0||47e5",
@@ -48658,14 +48675,14 @@ return index;
 			"America/Fortaleza|-03|30|0||34e5",
 			"America/Asuncion|-03 -04|30 40|01010101010101010101010|1T0r0 1fB0 19X0 1ip0 17b0 1ip0 17b0 1ip0 19X0 1fB0 19X0 1fB0 19X0 1fB0 19X0 1ip0 17b0 1ip0 17b0 1ip0 19X0 1fB0|28e5",
 			"America/Panama|EST|50|0||15e5",
-			"America/Mexico_City|CST CDT|60 50|01010101010101010101010|1T3k0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0|20e6",
+			"America/Mexico_City|CST CDT|60 50|0101010101010|1T3k0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|20e6",
 			"America/Managua|CST|60|0||22e5",
 			"America/Caracas|-04|40|0||29e5",
 			"America/Lima|-05|50|0||11e6",
 			"America/Denver|MST MDT|70 60|01010101010101010101010|1SSV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|26e5",
 			"America/Campo_Grande|-03 -04|30 40|010101|1SKr0 1zd0 On0 1HB0 FX0|77e4",
 			"America/Chicago|CST CDT|60 50|01010101010101010101010|1SSU0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|92e5",
-			"America/Chihuahua|MST MDT|70 60|01010101010101010101010|1T3l0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1lb0 14p0 1nX0|81e4",
+			"America/Chihuahua|MST MDT CST|70 60 60|0101010101012|1T3l0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|81e4",
 			"America/Phoenix|MST|70|0||42e5",
 			"America/Whitehorse|PST PDT MST|80 70 70|010101012|1SSW0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1z90|23e3",
 			"America/New_York|EST EDT|50 40|01010101010101010101010|1SST0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|21e6",
@@ -48674,9 +48691,11 @@ return index;
 			"America/Godthab|-03 -02|30 20|01010101010101010101010|1T0p0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|17e3",
 			"America/Grand_Turk|AST EDT EST|40 40 50|012121212121212121212|1Vkv0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|37e2",
 			"America/Havana|CST CDT|50 40|01010101010101010101010|1SSR0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0|21e5",
+			"America/Mazatlan|MST MDT|70 60|0101010101010|1T3l0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|44e4",
 			"America/Metlakatla|AKST AKDT PST|90 80 80|010120101010101010101010|1SSX0 1zb0 Op0 1zb0 uM0 jB0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|14e2",
 			"America/Miquelon|-03 -02|30 20|01010101010101010101010|1SSR0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|61e2",
 			"America/Noronha|-02|20|0||30e2",
+			"America/Ojinaga|MST MDT CST|70 60 60|0101010101012|1SSV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0|23e3",
 			"America/Santiago|-03 -04|30 40|01010101010101010101010|1Tk30 Ap0 1Nb0 Ap0 1zb0 11B0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 11B0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|62e5",
 			"America/Sao_Paulo|-02 -03|20 30|010101|1SKq0 1zd0 On0 1HB0 FX0|20e6",
 			"Atlantic/Azores|-01 +00|10 0|01010101010101010101010|1T0p0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|25e4",
@@ -48749,7 +48768,7 @@ return index;
 			"MET|MET MEST|-10 -20|01010101010101010101010|1T0p0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|",
 			"Pacific/Chatham|+1345 +1245|-dJ -cJ|01010101010101010101010|1T320 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1io0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00|600",
 			"Pacific/Apia|+14 +13|-e0 -d0|0101010101|1T320 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00 1fA0|37e3",
-			"Pacific/Fiji|+13 +12|-d0 -c0|010101010101010101010|1Swe0 1VA0 s00 1VA0 s00 20o0 pc0 2hc0 bc0 4q00 pc0 20o0 pc0 20o0 pc0 20o0 s00 1VA0 s00 20o0|88e4",
+			"Pacific/Fiji|+13 +12|-d0 -c0|0101010101|1Swe0 1VA0 s00 1VA0 s00 20o0 pc0 2hc0 bc0|88e4",
 			"Pacific/Guam|ChST|-a0|0||17e4",
 			"Pacific/Marquesas|-0930|9u|0||86e2",
 			"Pacific/Pago_Pago|SST|b0|0||37e2",
@@ -48849,13 +48868,10 @@ return index;
 			"America/Chicago|Canada/Central",
 			"America/Chicago|US/Central",
 			"America/Chicago|US/Indiana-Starke",
-			"America/Chihuahua|America/Mazatlan",
-			"America/Chihuahua|Mexico/BajaSur",
 			"America/Denver|America/Boise",
 			"America/Denver|America/Cambridge_Bay",
 			"America/Denver|America/Edmonton",
 			"America/Denver|America/Inuvik",
-			"America/Denver|America/Ojinaga",
 			"America/Denver|America/Shiprock",
 			"America/Denver|America/Yellowknife",
 			"America/Denver|Canada/Mountain",
@@ -48926,6 +48942,7 @@ return index;
 			"America/Managua|America/Swift_Current",
 			"America/Managua|America/Tegucigalpa",
 			"America/Managua|Canada/Saskatchewan",
+			"America/Mazatlan|Mexico/BajaSur",
 			"America/Mexico_City|America/Bahia_Banderas",
 			"America/Mexico_City|America/Merida",
 			"America/Mexico_City|America/Monterrey",
@@ -49274,7 +49291,7 @@ return index;
 			"BW|Africa/Maputo Africa/Gaborone",
 			"BY|Europe/Minsk",
 			"BZ|America/Belize",
-			"CA|America/St_Johns America/Halifax America/Glace_Bay America/Moncton America/Goose_Bay America/Toronto America/Nipigon America/Thunder_Bay America/Iqaluit America/Pangnirtung America/Winnipeg America/Rainy_River America/Resolute America/Rankin_Inlet America/Regina America/Swift_Current America/Edmonton America/Cambridge_Bay America/Yellowknife America/Inuvik America/Dawson_Creek America/Fort_Nelson America/Whitehorse America/Dawson America/Vancouver America/Panama America/Puerto_Rico America/Phoenix America/Blanc-Sablon America/Atikokan America/Creston",
+			"CA|America/St_Johns America/Halifax America/Glace_Bay America/Moncton America/Goose_Bay America/Toronto America/Iqaluit America/Pangnirtung America/Winnipeg America/Resolute America/Rankin_Inlet America/Regina America/Swift_Current America/Edmonton America/Cambridge_Bay America/Yellowknife America/Inuvik America/Dawson_Creek America/Fort_Nelson America/Whitehorse America/Dawson America/Vancouver America/Panama America/Puerto_Rico America/Phoenix America/Blanc-Sablon America/Atikokan America/Creston",
 			"CC|Asia/Yangon Indian/Cocos",
 			"CD|Africa/Maputo Africa/Lagos Africa/Kinshasa Africa/Lubumbashi",
 			"CF|Africa/Lagos Africa/Bangui",
@@ -54624,6 +54641,7 @@ module.exports = g;
                 addBorder         = false,
                 buildInsideParent = false,
                 noPadding         = false,
+                isButtonType      = false,
                 noValidation      = false;
 
 
@@ -54633,17 +54651,16 @@ module.exports = g;
                     options[id] = parentOptions[id];
             });
 
-
             var hasPreOrPost = options.prepend || options.before || options.append || options.after;
 
             if (options.type){
                 var type = options.type.toLowerCase();
                 switch (type){
-                    case 'button'                : buildFunc = $.bsButton;                  break;
+                    case 'button'                : buildFunc = $.bsButton;                  isButtonType = true; break;
 
-                    case 'checkboxbutton'        : buildFunc = $.bsCheckboxButton;          break;
-                    case 'standardcheckboxbutton': buildFunc = $.bsStandardCheckboxButton;  break;
-                    case 'iconcheckboxbutton'    : buildFunc = $.bsIconCheckboxButton;      break;
+                    case 'checkboxbutton'        : buildFunc = $.bsCheckboxButton;          isButtonType = true; break;
+                    case 'standardcheckboxbutton': buildFunc = $.bsStandardCheckboxButton;  isButtonType = true; break;
+                    case 'iconcheckboxbutton'    : buildFunc = $.bsIconCheckboxButton;      isButtonType = true; break;
 
                     case 'buttongroup'           : buildFunc = $.bsButtonGroup;             insideFormGroup = true; break;
 
@@ -54652,6 +54669,7 @@ module.exports = g;
                     case 'select'           :   buildFunc = $.bsSelect;             insideFormGroup = true; break;
 
                     case 'selectlist'       :   buildFunc = $.bsSelectList;         break;
+                    case 'selectbutton'     :   buildFunc = $.bsSelectButton;       isButtonType = true; break;
 
                     case 'radiobuttongroup' :   buildFunc = $.bsRadioButtonGroup;   addBorder = true; insideFormGroup = true; break;
                     case 'checkbox'         :   buildFunc = $.bsCheckbox;           insideFormGroup = true; noPadding = true; break;
@@ -54668,7 +54686,6 @@ module.exports = g;
                     case 'conpacttext'      :   buildFunc = buildCompactText;
                                                 options.noLabel = true; options.noVerticalPadding = true;
                                                 insideFormGroup = true; addBorder = true; noValidation = true; break;
-
                     case 'text'             :
                     case 'textarea'         :
                     case 'textbox'          :   insideFormGroup = true;
@@ -54700,6 +54717,14 @@ module.exports = g;
                     default                 :   buildFunc = $.fn._bsAddHtml;        noPadding = true; buildInsideParent = true;
                 }
             }
+
+
+            //Button'ish elemnts get inside a formgroup if there are label or border
+            if (isButtonType)
+                if ((options.label && !options.noLabel) || options.border){
+                    addBorder = true;
+                    insideFormGroup = true;
+                }
 
             if (options.lineBefore || options.lineAfter)
                 insideFormGroup = true;
@@ -54979,6 +55004,8 @@ module.exports = g;
                 $contentContainer =
                     $('<div/>')
                         .addClass('accordion-body')
+                        .toggleClass('no-vertical-padding', !!opt.noVerticalPadding)
+                        .toggleClass('no-horizontal-padding', !!opt.noHorizontalPadding)
                         .appendTo( $outer );
 
             //Add footer
@@ -55077,6 +55104,7 @@ module.exports = g;
                 selected            : 'selected',
                 noBorder            : 'no-border',
                 focus               : 'init_focus',
+                truncate            : 'text-truncate',
                 fullWidth           : 'w-100'
             };
 
@@ -55212,7 +55240,7 @@ module.exports = g;
 
 
         var icon = [
-                options.type == 'radio' ?
+                ((options.type == 'radio') || options.isRadio || options.radio) ?
                     //Radio-button icons
                     [
                         'fas fa-circle standard-checkbox-checked-color icon-show-for-checked',              //"Blue"/"Semi-selected-orange" background
@@ -55348,6 +55376,9 @@ module.exports = g;
 
         if (options.border)
             result.addClass('btn-group-border');
+
+        if (options.noRoundBorder)
+            result.addClass('btn-group-no-round-border');
 
         if (options.attr)
             result.attr( options.attr );
@@ -55896,7 +55927,10 @@ module.exports = g;
                 case 'standardcheckboxbutton':
                 case 'iconcheckboxbutton'    : $elem._cbxSet(value, true, isSemiSelected, semiSelectedValue); break;
 
-                case 'selectlist'      : this.getRadioGroup().setSelected(value); break;
+                case 'selectlist'  : this.getRadioGroup().setSelected(value); break;
+
+                case 'selectbutton': $elem._bsSelectButton_setValue( value ); break;
+
                 case 'radiobuttongroup': this.getRadioGroup().setSelected(value, false, isSemiSelected, semiSelectedValue); break;
 
                 case 'slider'    :
@@ -55915,7 +55949,8 @@ module.exports = g;
             var result;
             switch (this.options.type || 'input'){
                 case 'input'            : result = '';    break;
-                case 'select'           : result = null;  break;
+                case 'select'           :
+                case 'selectbutton'     : result = null;  break;
 
                 case 'checkbox'              :
                 case 'checkboxbutton'        :
@@ -55970,6 +56005,9 @@ module.exports = g;
 
                 case 'selectlist'       : result = this.getRadioGroup().getSelected();  break;
                 case 'radiobuttongroup' : result = this.getRadioGroup().getSelected();  break;
+
+                case 'selectbutton'     : result = $elem._bsSelectButton_getValue(); break;
+
 
                 case 'slider'    :
                 case 'timeslider': result = this._getSliderValue();              break;
@@ -56061,7 +56099,7 @@ module.exports = g;
         this.inputs = {};
 
         var typeList = ['button', 'checkboxbutton', 'standardcheckboxbutton', 'iconcheckboxbutton',
-                        'input', 'select', 'selectlist', 'radiobuttongroup', 'checkbox', 'radio', 'table', 'slider', 'timeslider', 'hidden', 'inputgroup', 'formControlGroup'],
+                        'input', 'select', 'selectlist', 'selectbutton', 'radiobuttongroup', 'checkbox', 'radio', 'table', 'slider', 'timeslider', 'hidden', 'inputgroup', 'formControlGroup'],
 
             //semiSelectedValueTypes = {TYPE_ID:TYPE} TYPE_ID = the types that accept a semi-selected value. TYPE = the $.type result that detect if the value of a element is semi-selected
             semiSelectedValueTypes = {
@@ -56985,8 +57023,11 @@ options
             itemOptions.small = options.small;
 
             switch (itemOptions.type){
-                case 'button':
-                    $item = $.bsButton($.extend(itemOptions, {returnFromClick: true}));
+                case 'button'                :
+                case 'checkboxbutton'        :
+                case 'standardcheckboxbutton':
+                case 'iconcheckboxbutton'    :
+                    $item = $._anyBsButton($.extend(itemOptions, {returnFromClick: true}));
                     isItemWithSpaceAfter = true;
                     break;
 
@@ -57116,7 +57157,10 @@ options
 
     var zindexAllwaysOnTop  = 9999,
         modalBackdropLevels = 0,
-        $modalBackdrop = null;
+
+        $modalBackdrop_current = null,
+        $modalBackdrop = null,
+        $modalTransparentBackdrop = null;
 
     /******************************************************
     $.fn._setModalBackdropZIndex
@@ -57137,20 +57181,30 @@ options
     $._addModalBackdropLevel
     Move the backdrop up in z-index
     ******************************************************/
-    $._addModalBackdropLevel = function(){
+    function addAnyModalBackdropLevel( $modalBD, transparent ){
         modalBackdropLevels++;
 
-        if (!$modalBackdrop)
-            $modalBackdrop =
+        if (!$modalBD)
+            $modalBD =
                 $('<div/>')
                     .append( $('<i/>')._bsAddHtml({icon:'fa-spinner fa-spin'}) )
                     .addClass('global-backdrop')
+                    .toggleClass('transparent', !!transparent)
                     .appendTo( $('body') );
 
-        $modalBackdrop
+        $modalBD
             ._setModalBackdropZIndex( -1 )
             .removeClass('hidden')
             .addClass('show');
+
+        return $modalBD;
+    }
+
+    $._addModalBackdropLevel = function(transparent){
+        if (transparent)
+            $modalBackdrop_current = $modalTransparentBackdrop = addAnyModalBackdropLevel($modalTransparentBackdrop, true);
+        else
+            $modalBackdrop_current = $modalBackdrop = addAnyModalBackdropLevel($modalBackdrop);
     };
 
     /******************************************************
@@ -57158,17 +57212,23 @@ options
     Move the backdrop down in z-index
     ******************************************************/
     $._removeModalBackdropLevel = function( noDelay ){
+        var isTransparentBD = ($modalBackdrop_current === $modalTransparentBackdrop);
+
         modalBackdropLevels--;
 
-        $modalBackdrop._setModalBackdropZIndex( -1 );
-        if (!modalBackdropLevels){
-            $modalBackdrop
+        $modalBackdrop_current._setModalBackdropZIndex( -1 );
+        if (!modalBackdropLevels || isTransparentBD){
+            $modalBackdrop_current
                 .removeClass('show');
-            if (noDelay)
-                $modalBackdrop.addClass('hidden');
+            if (noDelay || isTransparentBD)
+                $modalBackdrop_current.addClass('hidden');
             else
-                window.setTimeout( function(){ $modalBackdrop.addClass('hidden'); }, 2000 );
+                window.setTimeout( function(){ $modalBackdrop_current.addClass('hidden'); }, 2000 );
         }
+
+        if ($modalBackdrop_current === $modalTransparentBackdrop)
+            $modalBackdrop_current = $modalBackdrop;
+
     };
 
 
@@ -57734,7 +57794,7 @@ jquery-bootstrap-modal-promise.js
         currentModal = this;
 
         //Move up the backdrop
-        $._addModalBackdropLevel();
+        $._addModalBackdropLevel(this.bsModal.transparentBackground);
 
         //Add layer for noty on the modal
         $._bsNotyAddLayer();
@@ -58051,6 +58111,8 @@ jquery-bootstrap-modal-promise.js
         //this.bsModal contains all created elements
         this.bsModal = {};
         this.bsModal.onChange = options.onChange || null;
+
+        this.bsModal.transparentBackground = !!options.transparentBackground;
 
         //bsModal.cssHeight and bsModal.cssWidth = [size] of { width or height options}
         this.bsModal.cssHeight = {};
@@ -58597,7 +58659,6 @@ jquery-bootstrap-modal-promise.js
         $result.onClose = options.onClose;
 
         //Create as modal and adds methods - only allow close by esc for non-static modal (typical a non-form)
-// HER>         $result.modal({
         new bootstrap.Modal($result, {
            //Name       Value                                   Type                Default Description
            backdrop :   options.static ? "static" : true,   //  boolean or 'static' true	Includes a modal-backdrop element. Alternatively, specify static for a backdrop which doesn't close the modal on click.
@@ -59532,10 +59593,21 @@ jquery-bootstrap-modal-promise.js
             $option.prop('label', text);
     }
 
+
+    function bsSelect_onChange( event ){
+        var $select = $(event.target),
+            selectedIndex = $select.get(0).selectedIndex,
+            options = $select.data('bsOptions'),
+            selectedItem = options.optionList[selectedIndex];
+
+        if (options.onChange)
+            $.proxy(options.onChange, options.context)(selectedItem.id, true, $select);
+    }
+
     var selectboxId = 0;
     $.bsSelect = $.bsSelectBox = $.bsSelectbox = function( options ){
 
-        options.items = options.items || options.list;
+        //options.items = options.items || options.list;
         options.list = options.list || options.items;
 
         options =
@@ -59552,6 +59624,8 @@ jquery-bootstrap-modal-promise.js
                     ._bsAddBaseClassAndSize( options )
                     ._bsAddIdAndName( options );
 
+
+        options.optionList = [];
         $.each( options.list, function( index, itemOptions ){
             var $option =
                     itemOptions.id ?
@@ -59562,11 +59636,20 @@ jquery-bootstrap-modal-promise.js
 
             $option
                 .addClass('jb-option')
+                .addClass(itemOptions.textClass)
+                .toggleClass('text-center', !!itemOptions.center)
                 .data('jb-text', itemOptions.text)
                 .appendTo($select);
 
+            if (itemOptions.id)
+                options.optionList.push( itemOptions );
+
             setOptionText( $option );
         });
+
+
+        $select.data('bsOptions', options);
+        $select.on('change', bsSelect_onChange);
 
         //wrap inside a label (if any)
         var $result = options.label ? $select._wrapLabel({ label: options.label }) : $select;
@@ -59577,6 +59660,115 @@ jquery-bootstrap-modal-promise.js
     };
 
 }(jQuery, this.i18next, this, document));
+;
+/****************************************************************************
+	jquery-bootstrap-selectbutton.js,
+
+    bsSelectButton( options ) - create a button that opens a modal with a selectlist
+
+****************************************************************************/
+
+(function ($/*, window, document, undefined*/) {
+	"use strict";
+
+    var selectButtonId = 0;
+    $.bsSelectButton = $.bsSelectbutton = function( options ){
+
+        options.id      = options.id || '_bsSelectButton'+ selectButtonId++,
+        options.text    = options.text || {da:'Vælg...', en:'Select...'};
+        options.onClick = $.fn._bsSelectButton_onClick;
+        options.list    = options.list || options.items;
+        options._class  = (options._class || '') + ' text-truncate btn-select';
+        delete options.items;
+
+        var $result = $.bsButton( options );
+
+        options = $result.data('bsButton_options');
+        options.context = $result,
+        $result.data('bsButton_options', options);
+
+        if (options.selectedId)
+            $result._bsSelectButton_setValue(options.selectedId);
+
+        return $result;
+    };
+
+    /**************************************************
+    Methods for bsSelectButton
+    **************************************************/
+    $.fn._bsSelectButton_setValue = function( value ){
+        var options = this.data('bsButton_options'),
+            selectedItem;
+
+        options.selectedId = value;
+        this.data('bsButton_options', options);
+
+        options.list.forEach( function(item){
+            if (item.id == value)
+                selectedItem = item;
+        });
+
+        if (selectedItem){
+            this
+                .empty()
+                ._bsAddHtml(
+                    $.extend(true,
+                        {textClass: 'text-truncate'},
+                        selectedItem
+                    )
+                );
+
+            if (options.onChange)
+                $.proxy(options.onChange, options.context)(value);
+        }
+
+        return this;
+    };
+
+    $.fn._bsSelectButton_getValue = function(){
+        return this.data('bsButton_options').selectedId;
+    };
+
+    var $selectButton_Modal = null;
+    $.fn._bsSelectButton_onClick = function( /*id, selected, $button*/ ){
+        var options    = this.data('bsButton_options'),
+            selectedId = options.selectedId,
+            list       = $.extend(true, {}, options).list;
+
+        list.forEach(function(item){
+            item.selected = item.id ? item.id == selectedId : false;
+        });
+
+        if ($selectButton_Modal)
+            $selectButton_Modal.remove();
+
+        $selectButton_Modal = $.bsModal({
+            noHeader    : true,
+            closeButton : false,
+            clickable   : true,
+            transparentBackground: true,
+            scroll      : list.length > 5,
+            content: {
+                type         : 'selectlist',
+                allowReselect: true,
+                list         : list,
+                onChange     : $.fn._bsSelectButton_onChange,
+                context      : this,
+                truncate     : true
+            },
+            show: true
+        });
+    };
+
+    /**************************************************
+    **************************************************/
+    $.fn._bsSelectButton_onChange = function( id ){
+        this._bsSelectButton_setValue( id );
+        if ($selectButton_Modal)
+            $selectButton_Modal.close();
+    };
+
+}(jQuery, this, document));
 ;
 /****************************************************************************
 	jquery-bootstrap-selectlist.js,
@@ -59624,7 +59816,8 @@ jquery-bootstrap-modal-promise.js
             var isItem = (itemOptions.id != undefined ),
                 $item = $(isItem ? '<a/>' : '<div/>')
                             .addClass( isItem ? 'dropdown-item' : 'dropdown-header' )
-                            .addClass( options.center ? 'text-center' : '')
+                            .toggleClass( 'text-center',   !!options.center )
+                            .toggleClass( 'text-truncate', !!options.truncate )
                             ._bsAddHtml( itemOptions, false, false, true )
                             .appendTo( $result );
 
@@ -59823,8 +60016,8 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
     $.BSASMODAL.BSTABLE = function( modalOptions = {}){
         var showHeader = this.find('.no-header').length == 0,
             _this      = this,
-            $tableWithHeader,
-            $result, $thead, count;
+            $result,
+            count;
 
         if (showHeader){
             //Clone the header and place them in fixed-body of the modal. Hide the original header by padding the table
@@ -59836,12 +60029,12 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                 _this.sortBy( columnIndex );
             });
 
-            $tableWithHeader =
+            this.$tableWithHeader =
                 $('<table/>')
                     ._bsAddBaseClassAndSize( this.data(dataTableId) )
                     .addClass('table-with-header')
                     .append( this.$theadClone );
-            $thead = this.find('thead');
+            this.$thead = this.find('thead');
             count  = 20;
         }
 
@@ -59850,14 +60043,14 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                             flexWidth        : true,
                             noVerticalPadding: true,
                             content          : this,
-                            fixedContent     : $tableWithHeader
+                            fixedContent     : this.$tableWithHeader
                         })
                       );
 
         if (showHeader){
             //Using timeout to wait for the browser to update DOM and get height of the header
-            var setHeaderHeight = this.setHeaderHeight = function(){
-                    var height = $tableWithHeader.outerHeight();
+            var setHeaderHeight = function(){
+                    var height = _this.$tableWithHeader.outerHeight();
                     if (height <= 0){
                         count--;
                         if (count){
@@ -59867,23 +60060,14 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                         }
                     }
 
-                    _this.css('margin-top', -height+'px');
-                    setHeaderWidth();
+                    _this.setHeaderWidthAndHeight();
 
                     //Only set header-height once
                     $result.off('shown.bs.modal.table', setHeaderHeight );
-                },
-
-                setHeaderWidth = function(){
-                    $thead.find('th').each(function( index, th ){
-                        _this.$theadClone.find('th:nth-child(' + (index+1) + ')')
-                            .width( $(th).width()+'px' );
-                    });
-                    $tableWithHeader.width( _this.width()+'px' );
                 };
 
             $result.on('shown.bs.modal.table', setHeaderHeight );
-            $thead.resize( setHeaderWidth );
+            this.$thead.resize( $.proxy(this.setHeaderWidthAndHeight, this) );
         }
 
         return $result;
@@ -59910,7 +60094,6 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             if (options.selectable)
                 $tr.attr('id', rowContent.id || 'rowId_'+rowId++);
 
-//HER            var lastSortBy = this.lastSortBy || {};
             var _this = this;
             $.each( options.columns, function( index, columnOptions ){
                 var content = rowContent[columnOptions.id],
@@ -60028,6 +60211,26 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
         },
 
         /**********************************************************
+        setHeaderWidthAndHeight - Set the width of headers in the cloned table and adjust margin-top
+        **********************************************************/
+        setHeaderWidthAndHeight: function(){
+            var _this   = this,
+                options = _this.data(dataTableId);
+
+            if (options.showHeader){
+                this.$thead.find('th').each(function( index, th ){
+                    _this.$theadClone.find('th:nth-child(' + (index+1) + ')')
+                        .width( $(th).width()+'px' );
+                });
+                this.$tableWithHeader.width( this.width()+'px' );
+
+                //Set the margin-top of the table to hide its own header
+                var headerHeight = _this.$tableWithHeader.outerHeight();
+                this.css('margin-top', -headerHeight + 'px');
+            }
+        },
+
+        /**********************************************************
         sortBy - Sort the table
         **********************************************************/
         sortBy: function( idOrIndex, dir ){
@@ -60139,6 +60342,10 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                     }
                 });
             }
+
+            //Re-calc and update width and height of headers
+            this.setHeaderWidthAndHeight();
+
         },
 
         /**********************************************************
@@ -60148,8 +60355,7 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             this.find('tbody tr').removeClass('filter-out');
             if (!dontSort)
                 this._resort();
-            if (this.setHeaderHeight)
-                this.setHeaderHeight();
+            this.setHeaderWidthAndHeight();
             return this;
         },
 
@@ -60193,8 +60399,8 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             //Sort table again
             this._resort();
 
-            if (this.setHeaderHeight)
-                this.setHeaderHeight();
+            this.setHeaderWidthAndHeight();
+
             return this;
         }
     }; //end of bsTable_prototype = {

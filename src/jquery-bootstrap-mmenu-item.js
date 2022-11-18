@@ -4,7 +4,7 @@
 
 ****************************************************************************/
 
-(function ($/*, i18next, window, document, undefined*/) {
+(function ($, Mmenu/*, i18next, window, document, undefined*/) {
     "use strict";
 
     //clone( elem ) return a cloned copy of elem
@@ -29,6 +29,28 @@
                         result = elem;
         return result;
     }
+
+
+
+    /************************************************
+    Overwrite _initNavbar to add content that are translated correct
+    ************************************************/
+    Mmenu.prototype._initNavbar = function (_initNavbar) {
+        return function(panel){
+            _initNavbar.call(this, panel);
+
+            var parentLiId = panel['mmParent'] ? panel['mmParent'].getAttribute('id') : null,
+                bsMenu = this.conf.bsMenu,
+                parentItem = parentLiId ? bsMenu._getItem(parentLiId, bsMenu, true) : null;
+            if (parentItem)
+                $(panel).find('.mm-navbar__title')
+                    .empty()
+                    ._bsAddHtml({
+                        icon: parentItem.options.icon,
+                        text: parentItem.options.text
+                    });
+        };
+    }(Mmenu.prototype._initNavbar);
 
     /************************************************
     BsMmenuItem
@@ -521,11 +543,4 @@
 
     };
 
-
-    /******************************************
-    Initialize/ready
-    *******************************************/
-    $(function() {
-
-    });
-}(jQuery/*, this.i18next, this, document*/));
+}(jQuery, this.Mmenu/*, this.i18next, this, document*/));
