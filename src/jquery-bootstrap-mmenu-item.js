@@ -30,6 +30,7 @@
         return result;
     }
 
+    function emptyFunction(){}
 
 
     /************************************************
@@ -149,6 +150,13 @@
             var firstContent = content[0];
             if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
                 content[0] = $('<div/>')._bsAddHtml(firstContent);
+
+
+            //To prevent empty menu-items to open the sub-menu of its 'nearest' sibling (Bug in mmenu?) an empty click is added
+            var list = this.options.list || this.options.items || this.options.itemList || [];
+            if (!list.length)
+                this.$li.on('click', emptyFunction);
+
 
             if (this.first || !this.hasCheckbox)
                 this.$content
