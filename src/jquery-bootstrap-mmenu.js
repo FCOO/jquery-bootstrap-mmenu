@@ -85,6 +85,7 @@
         inclBar    : BOOLEAN, if true a bar top-right with buttons from items with options.addToBar = true and favorites (optional) and close-all (if barCloseAll=true)
         barCloseAll: BOOLEAN, if true a top-bar button is added that closes all open submenus
 
+        adjustIcon  : function(icon): retur icon (optional). Adjust the icon of each menu-items
 
     ************************************************/
     $.BsMmenu = function(options = {}, mmenuOptions = {}, configuration = {}){

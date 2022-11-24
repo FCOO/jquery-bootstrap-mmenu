@@ -146,8 +146,15 @@
 
             content = $.isArray(content) ? content : [content];
 
-            //If first content-item is the text => make it full-width inside a div
-            var firstContent = content[0];
+            //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(iron) is given
+            var firstContent = content[0],
+                adjustIcon = this.menu.options.adjustIcon;
+
+                if (firstContent && firstContent.icon && adjustIcon)
+                firstContent.icon = adjustIcon(firstContent.icon);
+
+
+
             if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
                 content[0] = $('<div/>')._bsAddHtml(firstContent);
 

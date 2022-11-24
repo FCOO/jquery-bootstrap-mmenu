@@ -59,6 +59,10 @@ setTimeout( function(){
                 onChange: function(id, state, item){
                     console.log('GLOBAL onChange', id, state, item);
                 },
+                adjustIcon  : function(icon){
+                    return icon;
+                },                        
+
                 list: [{
                     icon: 'fa fa-map',
                     text: {da:'Første', en:'First'},
