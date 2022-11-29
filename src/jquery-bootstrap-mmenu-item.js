@@ -142,22 +142,21 @@
             var $outer    = this.$outer = $('<span/>').appendTo(this.$li);
             this.$content = $('<div/>').appendTo(this.$outer);
 
-            var content = clone(this.options.content || this.options);
 
-            content = $.isArray(content) ? content : [content];
-
-            //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(iron) is given
-            var firstContent = content[0],
+            var originalContent = this.options.content || this.options,
                 adjustIcon = this.menu.options.adjustIcon;
 
-                if (firstContent && firstContent.icon && adjustIcon)
-                firstContent.icon = adjustIcon(firstContent.icon);
+            if (originalContent && originalContent.icon && adjustIcon)
+                originalContent.icon = adjustIcon(originalContent.icon);
 
+            var content = clone(originalContent);
+            content = $.isArray(content) ? content : [content];
 
+            //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(icon) is given
+            var firstContent = content[0];
 
             if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
                 content[0] = $('<div/>')._bsAddHtml(firstContent);
-
 
             //To prevent empty menu-items to open the sub-menu of its 'nearest' sibling (Bug in mmenu?) an empty click is added
             var list = this.options.list || this.options.items || this.options.itemList || [];
