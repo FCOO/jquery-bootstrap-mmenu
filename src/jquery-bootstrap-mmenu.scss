@@ -114,9 +114,12 @@ COLORS AND STYLE
     //Same bg as Bootstrap modal
     --mm-color-background   : var(--bs-modal-bg);
 
-    //Open item. Possible to have different colors than panel
+    //Open/Closed item. Possible to have different colors than panel
     --mm-item-opened-color  : null;
     --mm-item-opened-bg     : null;
+
+    --mm-item-closed-color  : null;
+    --mm-item-closed-bg     : null;
 
     //Open panel
     --mm-panel-opened-bg    : rgba(0,0,0, 0.05);
@@ -186,11 +189,16 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     padding: 0 0 0 5px !important;
 }
 
-//Overwrite standard to have different background and tex-color for open items
+//Overwrite standard to have different background and text-color for open items and non-opend items
 .mm-menu {
     .mm-listitem_opened > .mm-listitem__btn{
         color       : var(--mm-item-opened-color);
         background  : var(--mm-item-opened-bg);
+    }
+
+    .mm-listitem:not(.mm-listitem_opened) > .mm-listitem__btn {
+        color       : var(--mm-item-closed-color);
+        background  : var(--mm-item-closed-bg);
     }
 }
 
@@ -250,7 +258,6 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
         }
     }
 }
-
 
 
 

@@ -48,6 +48,7 @@ See https://getbootstrap.com/docs/5.2/customize/options/ for description
 ************************************************/
 /**/
 /**/
+/**/
 /***********************************************
 OPACITY
 ************************************************/
@@ -222,6 +223,8 @@ COLORS AND STYLE
   --mm-color-background: var(--bs-modal-bg);
   --mm-item-opened-color: null;
   --mm-item-opened-bg: null;
+  --mm-item-closed-color: null;
+  --mm-item-closed-bg: null;
   --mm-panel-opened-bg: rgba(0,0,0, 0.05);
   --mm-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   --chevrolet-dim: 0.625rem; }
@@ -1346,6 +1349,10 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-menu .mm-listitem_opened > .mm-listitem__btn {
   color: var(--mm-item-opened-color);
   background: var(--mm-item-opened-bg); }
+
+.mm-menu .mm-listitem:not(.mm-listitem_opened) > .mm-listitem__btn {
+  color: var(--mm-item-closed-color);
+  background: var(--mm-item-closed-bg); }
 
 .mm-listitem {
   font-size: var(--mm-font-size);

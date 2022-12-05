@@ -747,6 +747,7 @@ See https://getbootstrap.com/docs/5.2/customize/options/ for description
 ************************************************/
 /**/
 /**/
+/**/
 /***********************************************
 OPACITY
 ************************************************/
@@ -10170,7 +10171,7 @@ div.modal-dialog {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  --bs-modal-content-font-size: $jb-font-size;
+  --bs-modal-content-font-size: 1rem;
   font-size: var(--bs-modal-content-font-size);
   margin: 0 auto;
   min-height: 100%;
@@ -10665,6 +10666,7 @@ Adjustmernt to Bootstrap table
   --bs-table-cell-padding-y: 0.375rem;
   --bs-table-cell-padding: 0.375rem;
   word-break: normal;
+  margin-bottom: 0;
   /*************************************
     Header
     *************************************/
