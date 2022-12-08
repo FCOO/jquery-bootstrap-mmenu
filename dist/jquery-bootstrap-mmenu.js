@@ -395,6 +395,22 @@
         },
 
         /***********************************
+        _getParentIndex
+        Get the index of the item in its parents list
+        ***********************************/
+        _getParentIndex: function(){
+            var result = -1;
+            if (this.parent){
+                var nextItem = this.parent.first;
+                while (nextItem){
+                    result++;
+                    nextItem = nextItem === this ? null : nextItem.next;
+                }
+            }
+            return result;
+        },
+
+        /***********************************
         _updateElement
         Insert this.$li in DOM
         ***********************************/
