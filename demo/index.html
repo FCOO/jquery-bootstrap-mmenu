@@ -11,7 +11,7 @@
 
     <link  href="bower_components.css" rel="stylesheet">    
     <link  href="../src/jquery-bootstrap-mmenu.css" rel="stylesheet">
-    <link  href="css/all.css" rel="stylesheet">
+    <link  href="fcoo-fontawesome.css" rel="stylesheet">
 
 
     <style>
@@ -64,6 +64,15 @@ setTimeout( function(){
                 },
                 onChange: function(id, state, item){
                     console.log('GLOBAL onChange', id, state, item);
+                },
+                reset: {
+                    promise: function( resolve ){
+                        if (confirm('reset'))
+                            resolve( true );
+                    },
+                    finally: function(){
+                        console.log('after reset');
+                    },
                 },
                 adjustIcon  : function(icon){
                     return icon;

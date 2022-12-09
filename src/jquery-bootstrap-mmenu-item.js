@@ -4,7 +4,7 @@
 
 ****************************************************************************/
 
-(function ($, Mmenu/*, i18next, window, document, undefined*/) {
+(function ($, Mmenu, i18next, window, document, undefined) {
     "use strict";
 
     //clone( elem ) return a cloned copy of elem
@@ -365,6 +365,29 @@
 
             return this;
         },
+
+
+        /***********************************
+        _reset
+        Reset/unselect self and all sub-menus
+        ***********************************/
+        _reset: function(){
+            if (this.hasCheckbox && this.state){
+                //Use special reset-state if given
+                var resetState = this.menu.options.reset.resetState;
+                if (resetState !== undefined)
+                    this.state = resetState;
+                this._onClick();
+            }
+
+            var menuItem = this.first;
+            while (menuItem){
+                menuItem._reset();
+                menuItem = menuItem.next;
+            }
+        },
+
+
 
 
         /***********************************

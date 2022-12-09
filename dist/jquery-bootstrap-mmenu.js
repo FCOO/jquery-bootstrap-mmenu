@@ -4,7 +4,7 @@
 
 ****************************************************************************/
 
-(function ($, Mmenu/*, i18next, window, document, undefined*/) {
+(function ($, Mmenu, i18next, window, document, undefined) {
     "use strict";
 
     //clone( elem ) return a cloned copy of elem
@@ -368,6 +368,29 @@
 
 
         /***********************************
+        _reset
+        Reset/unselect self and all sub-menus
+        ***********************************/
+        _reset: function(){
+            if (this.hasCheckbox && this.state){
+                //Use special reset-state if given
+                var resetState = this.menu.options.reset.resetState;
+                if (resetState !== undefined)
+                    this.state = resetState;
+                this._onClick();
+            }
+
+            var menuItem = this.first;
+            while (menuItem){
+                menuItem._reset();
+                menuItem = menuItem.next;
+            }
+        },
+
+
+
+
+        /***********************************
         _createUl
         ***********************************/
         _createUl: function(){
@@ -659,10 +682,19 @@
             add   : function(id) - called when menu-item with id is added to favorites
             remove: function(id) - called when menu-item with id is removed from favorites
         }
-        inclBar    : BOOLEAN, if true a bar top-right with buttons from items with options.addToBar = true and favorites (optional) and close-all (if barCloseAll=true)
+        inclBar    : BOOLEAN, if true a bar top-right with buttons from items with options.addToBar = true and favorites (optional) and close-all (if barCloseAll=true) and reset (if options.reset is given)
         barCloseAll: BOOLEAN, if true a top-bar button is added that closes all open submenus
 
         adjustIcon  : function(icon): retur icon (optional). Adjust the icon of each menu-items
+
+        reset : NULL, true, false or {
+            position  : STRING "top" or "bottom". Default = "top"
+            icon      : STRING
+            title     : STRING
+            promise   : FUNCTION( resolve: function(clossAll:BOOLEAN) ) functions tha calls resolve(true/false) if all selected menu-items are to be unselected
+            resetState: Object to be used when resetting an item with options.onChange instead of options.onClick
+            finally   : FUNCTION( bsMenu ) (optional). Called after all menu-items are unselected
+        }
 
     ************************************************/
     $.BsMmenu = function(options = {}, mmenuOptions = {}, configuration = {}){
@@ -708,6 +740,8 @@
 
         this.menu = this;
 
+        this.favoriteId = '____FAVORITES___';
+
         //Craete ul to hold the menu
         this._createUl();
 
@@ -724,7 +758,7 @@
 
             //Add menu-item with favorites
             this.favoritesItem = $.bsMmenuItem({
-                id      : '____FAVORITES___',
+                id      : this.favoriteId,
                 icon    : [['fas text-checked fa-star fa-fw', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star fa-fw']],
                 text    : {da: 'Favoritter', en: 'Favorites'},
                 addToBar: true,
@@ -784,13 +818,14 @@
         create
         **********************************/
         create: function($elem){
+            var buttonList;
             this._createUl();
             this.$ul.appendTo($elem);
 
             $elem.addClass( $._bsGetSizeClass({baseClass: 'mm-menu', useTouchSize: true}) );
 
             if (this.options.inclBar){
-                var buttonList = [];
+                buttonList = [];
                 if (this.options.barCloseAll)
                     buttonList.push( $.bsButton({
                         icon   : 'fa-home',
@@ -821,6 +856,32 @@
                         top: buttonList,
                         //bottom: []ELEMENT
                     };
+            }
+
+
+            //Add button to reset all selected menu-items (if any)
+            if (this.options.reset){
+                var resetOptions = this.options.reset = $.extend({
+                        position  : "top",
+                        icon      : 'fa fa-rotate-left',
+                        title     : {da:'Nulstil', en:'Reset'},
+                        promise   : function( resolve ){ resolve(); },
+//                        resetState: false,
+                        finally   : function(){}
+                    }, this.options.reset === true ? {} : this.options.reset),
+
+                    iconbar = this.mmenuOptions.iconbar = this.mmenuOptions.iconbar || {use: true};
+
+                buttonList = iconbar[resetOptions.position] = iconbar[resetOptions.position] || [];
+                buttonList.push(
+                    $.bsButton({
+                        icon    : resetOptions.icon,
+                        title   : resetOptions.title,
+                        square  : true,
+                        tagName : 'div',
+                        onClick : $.proxy(this.reset, this)
+                    }).get(0)
+                );
             }
 
             this.configuration.bsMenu = this;
@@ -870,6 +931,27 @@
             if (item)
                 item.remove();
             return item;
+        },
+
+        /**********************************
+        reset
+        **********************************/
+        reset: function(){
+            if (this.options.reset.promise)
+                this.options.reset.promise( $.proxy(this._reset_resolve, this) );
+        },
+
+        _reset_resolve: function( closeAll ){
+            var menuItem = this.first;
+            while (menuItem){
+                if (menuItem.id != this.favoriteId)
+                    menuItem._reset();
+                menuItem = menuItem.next;
+            }
+            if (closeAll)
+                this.closeAll();
+
+            this.options.reset.finally(this);
         },
 
         /**********************************
