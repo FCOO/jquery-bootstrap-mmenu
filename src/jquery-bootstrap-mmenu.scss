@@ -99,9 +99,10 @@ COLORS AND STYLE
     --mm-font-size    : #{$jb-font-size};
 
     // sizes
-    --mm-line-height    : #{$button-square-dimension};  //Default = #{$mm_lineHeight}; and $mm_lineHeight: 20px;
-    --mm-listitem-size  : #{$button-square-dimension};
-    --mm-navbar-size    : #{$button-square-dimension};
+    $line-height: #{$button-square-dimension + 2 * $jb-padding-y};
+    --mm-line-height    : #{$line-height}; //Default = #{$mm_lineHeight}; and $mm_lineHeight: 20px;
+    --mm-listitem-size  : #{$line-height};
+    --mm-navbar-size    : #{$line-height};
     --mm-iconbar-size   : #{$button-square-dimension + 2 * $jb-padding-x};
 
     // colors
@@ -134,9 +135,11 @@ COLORS AND STYLE
 .mm-menu.mm-menu-sm {
     --mm-font-size      : #{$jb-font-size-sm};
 
-    --mm-line-height    : #{$button-square-dimension-sm};
-    --mm-listitem-size  : #{$button-square-dimension-sm};
-    --mm-navbar-size    : #{$button-square-dimension-sm};
+    $line-height-sm: #{$button-square-dimension-sm + 2 * $jb-padding-y-sm};
+
+    --mm-line-height    : #{$line-height-sm};
+    --mm-listitem-size  : #{$line-height-sm};
+    --mm-navbar-size    : #{$line-height-sm};
     --mm-iconbar-size   : #{$button-square-dimension-sm + 2 * $jb-padding-x-sm};
 
     --chevrolet-dim     : 0.3125rem; // = 5px
@@ -223,10 +226,11 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 
 //Buttons inside icon-bar on left side
 .mm-iconbar {
-    .btn.btn-standard.square {
+    .btn.standard.square {
         margin-left  : auto;
         margin-right : auto;
-        margin-bottom: calc( var(--mm-listitem-size) / 2 );
+// HER>         margin-bottom: calc( var(--mm-listitem-size) / 2 );
+        margin-bottom: calc( (var(--mm-listitem-size) - var(--bs-btn-square-dimention)) / 2 );
     }
 }
 

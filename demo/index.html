@@ -66,6 +66,7 @@ setTimeout( function(){
                     console.log('GLOBAL onChange', id, state, item);
                 },
                 reset: {
+                    position: 'bottom',
                     promise: function( resolve ){
                         if (confirm('reset'))
                             resolve( true );

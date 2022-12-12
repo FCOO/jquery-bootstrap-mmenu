@@ -212,9 +212,9 @@ COLORS AND STYLE
 ***********************************************/
 .mm-menu {
   --mm-font-size: 1rem;
-  --mm-line-height: 2.375rem;
-  --mm-listitem-size: 2.375rem;
-  --mm-navbar-size: 2.375rem;
+  --mm-line-height: 3.125rem;
+  --mm-listitem-size: 3.125rem;
+  --mm-navbar-size: 3.125rem;
   --mm-iconbar-size: 3.125rem;
   --mm-color-border: var(--jb-structure-border-color);
   --mm-color-text: #212529;
@@ -231,9 +231,9 @@ COLORS AND STYLE
 
 .mm-menu.mm-menu-sm {
   --mm-font-size: 0.875rem;
-  --mm-line-height: 1.9375rem;
-  --mm-listitem-size: 1.9375rem;
-  --mm-navbar-size: 1.9375rem;
+  --mm-line-height: 2.4375rem;
+  --mm-listitem-size: 2.4375rem;
+  --mm-navbar-size: 2.4375rem;
   --mm-iconbar-size: 2.4375rem;
   --chevrolet-dim: 0.3125rem; }
 
@@ -1365,10 +1365,10 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
   height: var(--chevrolet-dim) !important;
   right: var(--chevrolet-dim) !important; }
 
-.mm-iconbar .btn.btn-standard.square {
+.mm-iconbar .btn.standard.square {
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: calc( var(--mm-listitem-size) / 2); }
+  margin-bottom: calc( (var(--mm-listitem-size) - var(--bs-btn-square-dimention)) / 2); }
 
 .mm-listitem__text {
   display: flex;
