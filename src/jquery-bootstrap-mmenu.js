@@ -105,6 +105,9 @@
         this.first = null;
         this.last = null;
 
+        this.favoriteIcon       = ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star'];
+        this.removeFavoriteIcon = [[$.FONTAWESOME_PREFIX_STANDARD + ' fa-star fa-fw', $.FONTAWESOME_STANDARD + " fa-slash fa-fw"]];
+
         this.ulId = 'bsmm_ul_0';
 
         //Setting and adjusting mmenuOptions = the options for Mmenu
@@ -360,6 +363,20 @@
         closeAll: function(){
             this.api.closeAllPanels();
         },
+
+        /**********************************
+        favoriteRemoveAll
+        **********************************/
+        favoriteRemoveAll: function(){
+            var item = this.favoritesItem ? this.favoritesItem.first : null;
+            while (item){
+                var nextItem = item.next;
+                item.menuItem.toggleFavorite(false);
+                item = nextItem;
+            }
+        },
+
+
 
         /**********************************
         _updateFavorites

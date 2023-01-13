@@ -196,7 +196,7 @@
                     this.$favoriteButton =
                        $.bsIconCheckboxButton({
                             id          : this.id,
-                            icon        : ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star'],
+                            icon        : this.menu.favoriteIcon,
                             title       : {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
                             transparent : true,
                             square      : true,
@@ -216,7 +216,7 @@
                 if (this.options.removeFavoriteButton){
                     $.bsButton({
                         id          : this.id,
-                        icon        : [[$.FONTAWESOME_PREFIX_STANDARD + ' fa-star fa-fw', $.FONTAWESOME_STANDARD + " fa-slash fa-fw"]],
+                        icon        : this.menu.removeFavoriteIcon,
                         title       : {da:'Fjern fra Favoritter', en:'Remove from Favorites'},
                         transparent : true,
                         square      : true,
@@ -509,6 +509,7 @@
                     favoriteOptions.content = clone(favoriteOptions.content);
 
                     this.favoriteItem = $.bsMmenuItem(favoriteOptions, this.menu.favoritesItem, this);
+                    this.favoriteItem.menuItem  = this;
                     this.favoriteItem._updateElement();
                     this.favoriteCheckbox = this.favoriteItem.checkbox;
                 }
@@ -707,6 +708,9 @@
         this.next = null;
         this.first = null;
         this.last = null;
+
+        this.favoriteIcon       = ['', 'fas text-checked fa-star', $.FONTAWESOME_PREFIX_STANDARD + ' fa-star'];
+        this.removeFavoriteIcon = [[$.FONTAWESOME_PREFIX_STANDARD + ' fa-star fa-fw', $.FONTAWESOME_STANDARD + " fa-slash fa-fw"]];
 
         this.ulId = 'bsmm_ul_0';
 
@@ -963,6 +967,20 @@
         closeAll: function(){
             this.api.closeAllPanels();
         },
+
+        /**********************************
+        favoriteRemoveAll
+        **********************************/
+        favoriteRemoveAll: function(){
+            var item = this.favoritesItem ? this.favoritesItem.first : null;
+            while (item){
+                var nextItem = item.next;
+                item.menuItem.toggleFavorite(false);
+                item = nextItem;
+            }
+        },
+
+
 
         /**********************************
         _updateFavorites
