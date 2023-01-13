@@ -1376,6 +1376,9 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
   .mm-listitem__text > *:first-child {
     flex: 1; }
 
+a.btn.mm-favorite-icons {
+  height: var(--mm-line-height); }
+
 .button-bar-container {
   padding: 0;
   margin: 0; }

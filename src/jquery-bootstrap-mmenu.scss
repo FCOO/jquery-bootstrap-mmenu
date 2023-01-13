@@ -242,6 +242,11 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     }
 }
 
+//favorite icons to the right gets line-height
+a.btn.mm-favorite-icons {
+    height: var(--mm-line-height);
+}
+
 .button-bar-container {
     padding: 0;
     margin : 0;

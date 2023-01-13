@@ -140,7 +140,9 @@
 
             this.liElem   = this.$li.get(0);
             var $outer    = this.$outer = $('<span/>').appendTo(this.$li);
-            this.$content = $('<div/>').appendTo(this.$outer);
+            this.$content = $('<div/>')
+                                .addClass('d-flex align-items-center')
+                                .appendTo(this.$outer);
 
 
             var originalContent = this.options.content || this.options,
@@ -199,7 +201,7 @@
                             transparent : true,
                             square      : true,
                             noBorder    : true,
-                            class       :'flex-shrink-0',
+                            class       :'flex-shrink-0 mm-favorite-icons',
                             selected    : inFavorites,
                             onChange    : $.proxy(this._toggleFavorite, this)
                         }).appendTo(this.$outer);
@@ -219,6 +221,7 @@
                         transparent : true,
                         square      : true,
                         noBorder    : true,
+                        class       :'flex-shrink-0 mm-favorite-icons',
                         onClick     : $.proxy(owner._toggleFavorite, owner)
                     }).appendTo(this.$outer);
                     this.$outer.addClass('pe-0');

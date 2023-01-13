@@ -1,5 +1,5 @@
 /*!
- * jQuery JavaScript Library v3.6.1
+ * jQuery JavaScript Library v3.6.3
  * https://jquery.com/
  *
  * Includes Sizzle.js
@@ -9,7 +9,7 @@
  * Released under the MIT license
  * https://jquery.org/license
  *
- * Date: 2022-08-26T17:52Z
+ * Date: 2022-12-20T21:28Z
  */
 ( function( global, factory ) {
 
@@ -151,7 +151,7 @@ function toType( obj ) {
 
 
 var
-	version = "3.6.1",
+	version = "3.6.3",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -522,14 +522,14 @@ function isArrayLike( obj ) {
 }
 var Sizzle =
 /*!
- * Sizzle CSS Selector Engine v2.3.6
+ * Sizzle CSS Selector Engine v2.3.9
  * https://sizzlejs.com/
  *
  * Copyright JS Foundation and other contributors
  * Released under the MIT license
  * https://js.foundation/
  *
- * Date: 2021-02-16
+ * Date: 2022-12-19
  */
 ( function( window ) {
 var i,
@@ -879,6 +879,27 @@ function Sizzle( selector, context, results, seed ) {
 				}
 
 				try {
+
+					// `qSA` may not throw for unrecognized parts using forgiving parsing:
+					// https://drafts.csswg.org/selectors/#forgiving-selector
+					// like the `:has()` pseudo-class:
+					// https://drafts.csswg.org/selectors/#relational
+					// `CSS.supports` is still expected to return `false` then:
+					// https://drafts.csswg.org/css-conditional-4/#typedef-supports-selector-fn
+					// https://drafts.csswg.org/css-conditional-4/#dfn-support-selector
+					if ( support.cssSupportsSelector &&
+
+						// eslint-disable-next-line no-undef
+						!CSS.supports( "selector(:is(" + newSelector + "))" ) ) {
+
+						// Support: IE 11+
+						// Throw to get to the same code path as an error directly in qSA.
+						// Note: once we only support browser supporting
+						// `CSS.supports('selector(...)')`, we can most likely drop
+						// the `try-catch`. IE doesn't implement the API.
+						throw new Error();
+					}
+
 					push.apply( results,
 						newContext.querySelectorAll( newSelector )
 					);
@@ -1174,6 +1195,31 @@ setDocument = Sizzle.setDocument = function( node ) {
 			!el.querySelectorAll( ":scope fieldset div" ).length;
 	} );
 
+	// Support: Chrome 105+, Firefox 104+, Safari 15.4+
+	// Make sure forgiving mode is not used in `CSS.supports( "selector(...)" )`.
+	//
+	// `:is()` uses a forgiving selector list as an argument and is widely
+	// implemented, so it's a good one to test against.
+	support.cssSupportsSelector = assert( function() {
+		/* eslint-disable no-undef */
+
+		return CSS.supports( "selector(*)" ) &&
+
+			// Support: Firefox 78-81 only
+			// In old Firefox, `:is()` didn't use forgiving parsing. In that case,
+			// fail this test as there's no selector to test against that.
+			// `CSS.supports` uses unforgiving parsing
+			document.querySelectorAll( ":is(:jqfake)" ) &&
+
+			// `*` is needed as Safari & newer Chrome implemented something in between
+			// for `:has()` - it throws in `qSA` if it only contains an unsupported
+			// argument but multiple ones, one of which is supported, are fine.
+			// We want to play safe in case `:is()` gets the same treatment.
+			!CSS.supports( "selector(:is(*,:jqfake))" );
+
+		/* eslint-enable */
+	} );
+
 	/* Attributes
 	---------------------------------------------------------------------- */
 
@@ -1440,6 +1486,17 @@ setDocument = Sizzle.setDocument = function( node ) {
 		} );
 	}
 
+	if ( !support.cssSupportsSelector ) {
+
+		// Support: Chrome 105+, Safari 15.4+
+		// `:has()` uses a forgiving selector list as an argument so our regular
+		// `try-catch` mechanism fails to catch `:has()` with arguments not supported
+		// natively like `:has(:contains("Foo"))`. Where supported & spec-compliant,
+		// we now use `CSS.supports("selector(:is(SELECTOR_TO_BE_TESTED))")`, but
+		// outside that we mark `:has` as buggy.
+		rbuggyQSA.push( ":has" );
+	}
+
 	rbuggyQSA = rbuggyQSA.length && new RegExp( rbuggyQSA.join( "|" ) );
 	rbuggyMatches = rbuggyMatches.length && new RegExp( rbuggyMatches.join( "|" ) );
 
@@ -1452,7 +1509,14 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// As in, an element does not contain itself
 	contains = hasCompare || rnative.test( docElem.contains ) ?
 		function( a, b ) {
-			var adown = a.nodeType === 9 ? a.documentElement : a,
+
+			// Support: IE <9 only
+			// IE doesn't have `contains` on `document` so we need to check for
+			// `documentElement` presence.
+			// We need to fall back to `a` when `documentElement` is missing
+			// as `ownerDocument` of elements within `<template/>` may have
+			// a null one - a default behavior of all modern browsers.
+			var adown = a.nodeType === 9 && a.documentElement || a,
 				bup = b && b.parentNode;
 			return a === bup || !!( bup && bup.nodeType === 1 && (
 				adown.contains ?
@@ -2242,7 +2306,7 @@ Expr = Sizzle.selectors = {
 			return elem.nodeName.toLowerCase() === "input" &&
 				elem.type === "text" &&
 
-				// Support: IE<8
+				// Support: IE <10 only
 				// New HTML5 attribute values (e.g., "search") appear with elem.type === "text"
 				( ( attr = elem.getAttribute( "type" ) ) == null ||
 					attr.toLowerCase() === "text" );
@@ -6608,17 +6672,37 @@ function curCSS( elem, name, computed ) {
 	//   .css('filter') (IE 9 only, trac-12537)
 	//   .css('--customProperty) (gh-3144)
 	if ( computed ) {
+
+		// Support: IE <=9 - 11+
+		// IE only supports `"float"` in `getPropertyValue`; in computed styles
+		// it's only available as `"cssFloat"`. We no longer modify properties
+		// sent to `.css()` apart from camelCasing, so we need to check both.
+		// Normally, this would create difference in behavior: if
+		// `getPropertyValue` returns an empty string, the value returned
+		// by `.css()` would be `undefined`. This is usually the case for
+		// disconnected elements. However, in IE even disconnected elements
+		// with no styles return `"none"` for `getPropertyValue( "float" )`
 		ret = computed.getPropertyValue( name ) || computed[ name ];
 
-		// trim whitespace for custom property (issue gh-4926)
-		if ( isCustomProp ) {
+		if ( isCustomProp && ret ) {
 
-			// rtrim treats U+000D CARRIAGE RETURN and U+000C FORM FEED
+			// Support: Firefox 105+, Chrome <=105+
+			// Spec requires trimming whitespace for custom properties (gh-4926).
+			// Firefox only trims leading whitespace. Chrome just collapses
+			// both leading & trailing whitespace to a single space.
+			//
+			// Fall back to `undefined` if empty string returned.
+			// This collapses a missing definition with property defined
+			// and set to an empty string but there's no standard API
+			// allowing us to differentiate them without a performance penalty
+			// and returning `undefined` aligns with older jQuery.
+			//
+			// rtrimCSS treats U+000D CARRIAGE RETURN and U+000C FORM FEED
 			// as whitespace while CSS does not, but this is not a problem
 			// because CSS preprocessing replaces them with U+000A LINE FEED
 			// (which *is* CSS whitespace)
 			// https://www.w3.org/TR/css-syntax-3/#input-preprocessing
-			ret = ret.replace( rtrimCSS, "$1" );
+			ret = ret.replace( rtrimCSS, "$1" ) || undefined;
 		}
 
 		if ( ret === "" && !isAttached( elem ) ) {
@@ -19808,6 +19892,7 @@ return jQuery;
         while (match = this.nestingRegexp.exec(str)) {
           var formatters = [];
           clonedOptions = _objectSpread$3({}, options);
+          clonedOptions = clonedOptions.replace && typeof clonedOptions.replace !== 'string' ? clonedOptions.replace : clonedOptions;
           clonedOptions.applyPostProcessor = false;
           delete clonedOptions.defaultValue;
           var doReduce = false;
@@ -20152,7 +20237,7 @@ return jQuery;
           return;
         }
         this.readingCalls++;
-        return this.backend[fcName](lng, ns, function (err, data) {
+        var resolver = function resolver(err, data) {
           _this3.readingCalls--;
           if (_this3.waitingReads.length > 0) {
             var next = _this3.waitingReads.shift();
@@ -20165,7 +20250,24 @@ return jQuery;
             return;
           }
           callback(err, data);
-        });
+        };
+        var fc = this.backend[fcName].bind(this.backend);
+        if (fc.length === 2) {
+          try {
+            var r = fc(lng, ns);
+            if (r && typeof r.then === 'function') {
+              r.then(function (data) {
+                return resolver(null, data);
+              })["catch"](resolver);
+            } else {
+              resolver(null, r);
+            }
+          } catch (err) {
+            resolver(err);
+          }
+          return;
+        }
+        return fc(lng, ns, resolver);
       }
     }, {
       key: "prepareLoading",
@@ -20218,15 +20320,38 @@ return jQuery;
       key: "saveMissing",
       value: function saveMissing(languages, namespace, key, fallbackValue, isUpdate) {
         var options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
+        var clb = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : function () {};
         if (this.services.utils && this.services.utils.hasLoadedNamespace && !this.services.utils.hasLoadedNamespace(namespace)) {
           this.logger.warn("did not save key \"".concat(key, "\" as the namespace \"").concat(namespace, "\" was not yet loaded"), 'This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!');
           return;
         }
         if (key === undefined || key === null || key === '') return;
         if (this.backend && this.backend.create) {
-          this.backend.create(languages, namespace, key, fallbackValue, null, _objectSpread$1(_objectSpread$1({}, options), {}, {
+          var opts = _objectSpread$1(_objectSpread$1({}, options), {}, {
             isUpdate: isUpdate
-          }));
+          });
+          var fc = this.backend.create.bind(this.backend);
+          if (fc.length < 6) {
+            try {
+              var r;
+              if (fc.length === 5) {
+                r = fc(languages, namespace, key, fallbackValue, opts);
+              } else {
+                r = fc(languages, namespace, key, fallbackValue);
+              }
+              if (r && typeof r.then === 'function') {
+                r.then(function (data) {
+                  return clb(null, data);
+                })["catch"](clb);
+              } else {
+                clb(null, r);
+              }
+            } catch (err) {
+              clb(err);
+            }
+          } else {
+            fc(languages, namespace, key, fallbackValue, clb, opts);
+          }
         }
         if (!languages || !languages[0]) return;
         this.store.addResource(languages[0], namespace, key, fallbackValue);
@@ -20426,7 +20551,7 @@ return jQuery;
           });
           if (this.modules.languageDetector) {
             s.languageDetector = createClassOnDemand(this.modules.languageDetector);
-            s.languageDetector.init(s, this.options.detection, this.options);
+            if (s.languageDetector.init) s.languageDetector.init(s, this.options.detection, this.options);
           }
           if (this.modules.i18nFormat) {
             s.i18nFormat = createClassOnDemand(this.modules.i18nFormat);
@@ -20619,7 +20744,7 @@ return jQuery;
               setLngProps(l);
             }
             if (!_this4.translator.language) _this4.translator.changeLanguage(l);
-            if (_this4.services.languageDetector) _this4.services.languageDetector.cacheUserLanguage(l);
+            if (_this4.services.languageDetector && _this4.services.languageDetector.cacheUserLanguage) _this4.services.languageDetector.cacheUserLanguage(l);
           }
           _this4.loadResources(l, function (err) {
             done(err, l);
@@ -20628,7 +20753,11 @@ return jQuery;
         if (!lng && this.services.languageDetector && !this.services.languageDetector.async) {
           setLng(this.services.languageDetector.detect());
         } else if (!lng && this.services.languageDetector && this.services.languageDetector.async) {
-          this.services.languageDetector.detect(setLng);
+          if (this.services.languageDetector.detect.length === 0) {
+            this.services.languageDetector.detect().then(setLng);
+          } else {
+            this.services.languageDetector.detect(setLng);
+          }
         } else {
           setLng(lng);
         }
@@ -20653,7 +20782,14 @@ return jQuery;
           options.ns = options.ns || fixedT.ns;
           options.keyPrefix = options.keyPrefix || keyPrefix || fixedT.keyPrefix;
           var keySeparator = _this5.options.keySeparator || '.';
-          var resultKey = options.keyPrefix ? "".concat(options.keyPrefix).concat(keySeparator).concat(key) : key;
+          var resultKey;
+          if (options.keyPrefix && Array.isArray(key)) {
+            resultKey = key.map(function (k) {
+              return "".concat(options.keyPrefix).concat(keySeparator).concat(k);
+            });
+          } else {
+            resultKey = options.keyPrefix ? "".concat(options.keyPrefix).concat(keySeparator).concat(key) : key;
+          }
           return _this5.t(resultKey, options);
         };
         if (typeof lng === 'string') {
@@ -20757,7 +20893,8 @@ return jQuery;
         if (!lng) lng = this.resolvedLanguage || (this.languages && this.languages.length > 0 ? this.languages[0] : this.language);
         if (!lng) return 'rtl';
         var rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ug', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam', 'ckb'];
-        return rtlLngs.indexOf(this.services.languageUtils.getLanguagePartFromCode(lng)) > -1 || lng.toLowerCase().indexOf('-arab') > 1 ? 'rtl' : 'ltr';
+        var languageUtils = this.services && this.services.languageUtils || new LanguageUtil(get());
+        return rtlLngs.indexOf(languageUtils.getLanguagePartFromCode(lng)) > -1 || lng.toLowerCase().indexOf('-arab') > 1 ? 'rtl' : 'ltr';
       }
     }, {
       key: "cloneInstance",
@@ -47543,7 +47680,7 @@ return index;
 }).call(this);
 ;
 //! moment-timezone.js
-//! version : 0.5.39
+//! version : 0.5.40
 //! Copyright (c) JS Foundation and other contributors
 //! license : MIT
 //! github.com/moment/moment-timezone
@@ -47573,7 +47710,7 @@ return index;
 	// 	return moment;
 	// }
 
-	var VERSION = "0.5.39",
+	var VERSION = "0.5.40",
 		zones = {},
 		links = {},
 		countries = {},
@@ -48235,7 +48372,7 @@ return index;
 	}
 
 	loadData({
-		"version": "2022f",
+		"version": "2022g",
 		"zones": [
 			"Africa/Abidjan|GMT|0|0||48e5",
 			"Africa/Nairobi|EAT|-30|0||47e5",
@@ -48264,19 +48401,20 @@ return index;
 			"America/Campo_Grande|-03 -04|30 40|010101|1SKr0 1zd0 On0 1HB0 FX0|77e4",
 			"America/Chicago|CST CDT|60 50|01010101010101010101010|1SSU0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|92e5",
 			"America/Chihuahua|MST MDT CST|70 60 60|0101010101012|1T3l0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|81e4",
+			"America/Ciudad_Juarez|MST MDT CST|70 60 60|010101010101201010101010|1SSV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0 cm0 EP0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|",
 			"America/Phoenix|MST|70|0||42e5",
 			"America/Whitehorse|PST PDT MST|80 70 70|010101012|1SSW0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1z90|23e3",
 			"America/New_York|EST EDT|50 40|01010101010101010101010|1SST0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|21e6",
 			"America/Los_Angeles|PST PDT|80 70|01010101010101010101010|1SSW0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|15e6",
 			"America/Halifax|AST ADT|40 30|01010101010101010101010|1SSS0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|39e4",
-			"America/Godthab|-03 -02|30 20|01010101010101010101010|1T0p0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|17e3",
+			"America/Godthab|-03 -02|30 20|01010101010101|1T0p0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0|17e3",
 			"America/Grand_Turk|AST EDT EST|40 40 50|012121212121212121212|1Vkv0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|37e2",
 			"America/Havana|CST CDT|50 40|01010101010101010101010|1SSR0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0|21e5",
 			"America/Mazatlan|MST MDT|70 60|0101010101010|1T3l0 1nX0 11B0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|44e4",
 			"America/Metlakatla|AKST AKDT PST|90 80 80|010120101010101010101010|1SSX0 1zb0 Op0 1zb0 uM0 jB0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|14e2",
 			"America/Miquelon|-03 -02|30 20|01010101010101010101010|1SSR0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|61e2",
 			"America/Noronha|-02|20|0||30e2",
-			"America/Ojinaga|MST MDT CST|70 60 60|0101010101012|1SSV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0|23e3",
+			"America/Ojinaga|MST MDT CST CDT|70 60 60 50|01010101010123232323232|1SSV0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0 Rc0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0|23e3",
 			"America/Santiago|-03 -04|30 40|01010101010101010101010|1Tk30 Ap0 1Nb0 Ap0 1zb0 11B0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 11B0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|62e5",
 			"America/Sao_Paulo|-02 -03|20 30|010101|1SKq0 1zd0 On0 1HB0 FX0|20e6",
 			"Atlantic/Azores|-01 +00|10 0|01010101010101010101010|1T0p0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0|25e4",
@@ -48872,7 +49010,7 @@ return index;
 			"BW|Africa/Maputo Africa/Gaborone",
 			"BY|Europe/Minsk",
 			"BZ|America/Belize",
-			"CA|America/St_Johns America/Halifax America/Glace_Bay America/Moncton America/Goose_Bay America/Toronto America/Iqaluit America/Pangnirtung America/Winnipeg America/Resolute America/Rankin_Inlet America/Regina America/Swift_Current America/Edmonton America/Cambridge_Bay America/Yellowknife America/Inuvik America/Dawson_Creek America/Fort_Nelson America/Whitehorse America/Dawson America/Vancouver America/Panama America/Puerto_Rico America/Phoenix America/Blanc-Sablon America/Atikokan America/Creston",
+			"CA|America/St_Johns America/Halifax America/Glace_Bay America/Moncton America/Goose_Bay America/Toronto America/Iqaluit America/Winnipeg America/Resolute America/Rankin_Inlet America/Regina America/Swift_Current America/Edmonton America/Cambridge_Bay America/Yellowknife America/Inuvik America/Dawson_Creek America/Fort_Nelson America/Whitehorse America/Dawson America/Vancouver America/Panama America/Puerto_Rico America/Phoenix America/Blanc-Sablon America/Atikokan America/Creston",
 			"CC|Asia/Yangon Indian/Cocos",
 			"CD|Africa/Maputo Africa/Lagos Africa/Kinshasa Africa/Lubumbashi",
 			"CF|Africa/Lagos Africa/Bangui",
@@ -48990,7 +49128,7 @@ return index;
 			"MU|Indian/Mauritius",
 			"MV|Indian/Maldives",
 			"MW|Africa/Maputo Africa/Blantyre",
-			"MX|America/Mexico_City America/Cancun America/Merida America/Monterrey America/Matamoros America/Mazatlan America/Chihuahua America/Ojinaga America/Hermosillo America/Tijuana America/Bahia_Banderas",
+			"MX|America/Mexico_City America/Cancun America/Merida America/Monterrey America/Matamoros America/Chihuahua America/Ciudad_Juarez America/Ojinaga America/Mazatlan America/Bahia_Banderas America/Hermosillo America/Tijuana",
 			"MY|Asia/Kuching Asia/Singapore Asia/Kuala_Lumpur",
 			"MZ|Africa/Maputo",
 			"NA|Africa/Windhoek",
@@ -54242,6 +54380,8 @@ module.exports = g;
                     case 'checkboxbutton'        : buildFunc = $.bsCheckboxButton;          isButtonType = true; break;
                     case 'standardcheckboxbutton': buildFunc = $.bsStandardCheckboxButton;  isButtonType = true; break;
                     case 'iconcheckboxbutton'    : buildFunc = $.bsIconCheckboxButton;      isButtonType = true; break;
+                    case 'bigiconbutton'         : buildFunc = $.bsBigIconButton;           isButtonType = true; break;
+
 
                     case 'buttongroup'           : buildFunc = $.bsButtonGroup;             insideFormGroup = true; break;
 
@@ -54876,6 +55016,70 @@ module.exports = g;
 
 
     /**********************************************************
+    bsBigIconButton( options ) - create a big button with a large icon to the left
+    and text and sub-text to the right
+    options:
+        icon   : STRING
+        text   : STRING or {LANG: STRING}
+        subtext: {LANG: STRING} or []{LANG: STRING}|STRING
+        subtextSeparator: STRING - use to join subtext if it is an array
+        big    : BOOLEAN
+        bold   : BOOLEAN
+    **********************************************************/
+    $._bsBigIconButtonContent = function( options ){
+        var big = !!options.big,
+            separator = options.subtextSeparator || '',
+            content = [],
+            subtext;
+
+        content.push(
+            $('<div/>')
+                ._bsAddHtml({icon: options.icon})
+                .addClass((big ? 'fa-2x' : '') + ' align-self-center flex-shrink-0 text-center')
+                .width('1.75em')
+        );
+
+        //Create subtext. It can be an array of STRING or {LANG: STRING}
+        if (options.subtext){
+            var subtextArray = $.isArray(options.subtext) ? options.subtext : [options.subtext];
+            subtext = {};
+
+            $.each( subtextArray, function(index, next_subtext){
+                $.each($._bsAdjustText( next_subtext ), function(lang, text){
+                    subtext[lang] = subtext[lang] || '';
+                    if (subtext[lang] && text)
+                        subtext[lang] += separator;
+                    subtext[lang] += text;
+                });
+            });
+        }
+
+        content.push(
+            $('<div/>')
+                .addClass('flex-grow-1 no-margin-children d-flex flex-column justify-content-center')
+                .css('min-height', options.minHeight ? options.minHeight : big ? '3em' : '2em')
+                ._bsAddHtml([
+                    {text: options.text,  textClass: 'text-center' + (options.bold ? ' fw-bold' : '') + (big ? ' font-size-larger' : '' )},
+                    options.subtext ? {text: subtext, textClass: 'text-center text-wrap '             + (big ? '' : ' font-size-smaller')} : null
+                ])
+        );
+
+        return content;
+    };
+
+
+    $.bsBigIconButton = function( options ){
+        return $.bsButton({
+            class       : 'w-100 d-flex',
+            content     : $._bsBigIconButtonContent( options ),
+            allowContent: true,
+            onClick     : options.onClick
+        });
+
+    };
+
+
+    /**********************************************************
     _anyBsButton( options )
     Create a specific variant of bs-buttons based on options.type
     **********************************************************/
@@ -54888,6 +55092,7 @@ module.exports = g;
             case 'checkboxbutton'        : constructor = $.bsCheckboxButton; break;
             case 'standardcheckboxbutton': constructor = $.bsStandardCheckboxButton; break;
             case 'iconcheckboxbutton'    : constructor = $.bsIconCheckboxButton; break;
+            case 'bigiconbutton'         : constructor = $.bsBigIconButton; break;
             default                      : constructor = $.bsButton;
         }
         return constructor(options);
@@ -55069,6 +55274,8 @@ module.exports = g;
 
         return result;
     };
+
+
 
 
 }(jQuery, this, document));
@@ -57608,8 +57815,7 @@ jquery-bootstrap-modal-promise.js
                 $('<div/>')
                     .addClass('modal-body-fixed')
                     .addClass(className || '')
-.toggleClass(scrollbarClass, !!options._fixedContentHasScrollClass )
-//.addClass(scrollbarClass )
+                    .toggleClass(scrollbarClass, !!options._fixedContentHasScrollClass )
                     .toggleClass('py-0',                        !!fixedOptions.noVerticalPadding)
                     .toggleClass('pt-0',                        !!fixedOptions.noTopPadding)
                     .toggleClass('pb-0',                        !!fixedOptions.noBottomPadding)
