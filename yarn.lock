@@ -4218,10 +4218,10 @@ grunt-eslint@^22.0.0:
     chalk "^2.1.0"
     eslint "^6.0.1"
 
-grunt-fcoo-grunt-plugin@^6.4.0:
-  version "6.4.2"
-  resolved "https://registry.yarnpkg.com/grunt-fcoo-grunt-plugin/-/grunt-fcoo-grunt-plugin-6.4.2.tgz#841f61eb71b9a544fc24906e528066ddf3d089ce"
-  integrity sha512-t5apX6Q+vbVRUVep92K716pg72TfVVs1uDj+sNrO7tdkMBXCi2oktPynweaIZzbjgeS8mBxGQ4Dcw7wFLuWcig==
+grunt-fcoo-grunt-plugin@^6.7.0:
+  version "6.7.0"
+  resolved "https://registry.yarnpkg.com/grunt-fcoo-grunt-plugin/-/grunt-fcoo-grunt-plugin-6.7.0.tgz#000b9c6847e419f7657a027daf7c95f6fd6bb503"
+  integrity sha512-Wm5NI79ERzPX9XIx7oz7m7680ncaVSo9M1bAFjfrOG2Xwi5BwfyE4/ZlE6SocZ9jwQotObRBXOVMLXzT2EF2AQ==
   dependencies:
     "@babel/core" "^7.11.6"
     "@babel/preset-env" "^7.11.5"

@@ -1,6 +1,6 @@
 {
   "name": "jquery-bootstrap-mmenu",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "homepage": "https://github.com/FCOO/jquery-bootstrap-mmenu",
   "authors": [
     "Niels Holt"
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "jquery": "latest",
-    "jquery-bootstrap": "fcoo/jquery-bootstrap#^3.7.0",
+    "jquery-bootstrap": "fcoo/jquery-bootstrap#^3.22.0",
     "mmenu-js": "FrDH/mmenu-js#^8.5.24"
   },
   "devDependencies": {

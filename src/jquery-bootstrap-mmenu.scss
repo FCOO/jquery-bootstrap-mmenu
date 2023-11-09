@@ -27,33 +27,32 @@ Setting different _include_-variables to include
 or exclude parts of the css
 ***********************************************/
 //STYLING
-    $mm_IE11Fallbacks       : false; //Whether or not to include support for Internet Explorer 11 throughout the entire CSS framework.
+$mm_IE11Fallbacks       : false;    //Whether or not to include support for Internet Explorer 11 throughout the entire CSS framework.
 
-$mm_include_vertical    : true; //Whether or not to include CSS for vertical submenus throughout the entire CSS framework.
+$mm_include_vertical    : true;     //Whether or not to include CSS for vertical submenus throughout the entire CSS framework.
 
-    $mm_include_rtl         : false;    //Whether or not to include CSS for RTL support throughout the entire CSS framework.
-
+$mm_include_rtl         : false;    //Whether or not to include CSS for RTL support throughout the entire CSS framework.
 
 //EXTENTIONS
 $mm_include_borderstyle : true;     //Whether or not to include CSS for the borderStyle extension throughout the entire CSS framework.
 
 $mm_include_effects     : true;     //Whether or not to include CSS for the effects extension throughout the entire CSS framework.
 
-    $mm_include_fullscreen  : false;    //Whether or not to include CSS for the fullscreen extension throughout the entire CSS framework.
+$mm_include_fullscreen  : false;    //Whether or not to include CSS for the fullscreen extension throughout the entire CSS framework.
 
-    $mm_include_listview    : false;    //Whether or not to include CSS for the listview extension throughout the entire CSS framework.
+$mm_include_listview    : false;    //Whether or not to include CSS for the listview extension throughout the entire CSS framework.
 
 $mm_include_multiline   : true;     //Whether or not to include CSS for the multiline extension throughout the entire CSS framework.
 
-    $mm_include_pagedim     : false;    //Whether or not to include CSS for the pageDim extension throughout the entire CSS framework.
+$mm_include_pagedim     : false;    //Whether or not to include CSS for the pageDim extension throughout the entire CSS framework.
 
-    $mm_include_popup       : false;    //Whether or not to include CSS for the popup extension throughout the entire CSS framework.
+$mm_include_popup       : false;    //Whether or not to include CSS for the popup extension throughout the entire CSS framework.
 
 $mm_include_positioning : true;     //Whether or not to include CSS for the positioning extension throughout the entire CSS framework.
 
-    $mm_include_shadows     : false;    //Whether or not to include CSS for the shadowns extension throughout the entire CSS framework.
+$mm_include_shadows     : false;    //Whether or not to include CSS for the shadowns extension throughout the entire CSS framework.
 
-    $mm_include_themes      : false;    //Whether or not to include CSS for the themes extension throughout the entire CSS framework.
+$mm_include_themes      : false;    //Whether or not to include CSS for the themes extension throughout the entire CSS framework.
 
 
 //ADD-ONS
@@ -63,13 +62,13 @@ $mm_include_counters    : true;     //Whether or not to include CSS for the coun
 
 $mm_include_dividers    : true;     //Whether or not to include CSS for the dividers add-on throughout the entire CSS framework.
 
-    $mm_include_drag        : false;    //Whether or not to include CSS for the drag add-on throughout the entire CSS framework.
+$mm_include_drag        : false;    //Whether or not to include CSS for the drag add-on throughout the entire CSS framework.
 
-    $mm_include_dropdown    : false;    //Whether or not to include CSS for the dropdown add-on throughout the entire CSS framework.
+$mm_include_dropdown    : false;    //Whether or not to include CSS for the dropdown add-on throughout the entire CSS framework.
 
 $mm_include_iconbar     : true;     //Whether or not to include CSS for the iconbar add-on throughout the entire CSS framework.
 
-    $mm_include_iconpanels  : false;    //Whether or not to include CSS for the iconPanels add-on throughout the entire CSS framework.
+$mm_include_iconpanels  : false;    //Whether or not to include CSS for the iconPanels add-on throughout the entire CSS framework.
 
 $mm_include_keyboardnavigation: true;//Whether or not to include CSS for the keyboardNavigation add-on throughout the entire CSS framework.
 
@@ -81,15 +80,15 @@ $mm_include_sectionindexer: true;   //Whether or not to include CSS for the sect
 
 $mm_include_setselected : true;     //Whether or not to include CSS for the setSelected add-on throughout the entire CSS framework.
 
-    $mm_include_sidebar     : false;    //Whether or not to include CSS for the sidebar add-on throughout the entire CSS framework.
+$mm_include_sidebar     : false;    //Whether or not to include CSS for the sidebar add-on throughout the entire CSS framework.
 
 
 //Toggles - https://mmenujs.com/docs/addons/toggles.html
-    $mm_include_toggles     : false; //Whether or not to include CSS for toggles throughout the entire CSS framework.
+$mm_include_toggles     : false; //Whether or not to include CSS for toggles throughout the entire CSS framework.
 
-    $mm_include_checks      : false; //Whether or not to include CSS for checks throughout the entire CSS framework.
+$mm_include_checks      : false; //Whether or not to include CSS for checks throughout the entire CSS framework.
 
-    $mm_opt_screenreader    : false;
+$mm_opt_screenreader    : false;
 
 /***********************************************
 COLORS AND STYLE
@@ -224,12 +223,13 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     right : var(--chevrolet-dim) !important;
 }
 
+
 //Buttons inside icon-bar on left side
 .mm-iconbar {
     .btn.standard.square {
+        display      : inline-flex;
         margin-left  : auto;
         margin-right : auto;
-// HER>         margin-bottom: calc( var(--mm-listitem-size) / 2 );
         margin-bottom: calc( (var(--mm-listitem-size) - var(--bs-btn-square-dimention)) / 2 );
     }
 }
@@ -267,6 +267,7 @@ a.btn.mm-favorite-icons {
         }
     }
 }
+
 
 
 
