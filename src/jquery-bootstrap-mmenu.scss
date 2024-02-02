@@ -269,5 +269,11 @@ a.btn.mm-favorite-icons {
 }
 
 
+//Menu-items with only buttons do not have min-height
+.mm-listitem.only-buttons {
+    --mm-line-height: 0;
 
-
+    .mm-listitem__text {
+        padding-right: 0;
+    }
+}

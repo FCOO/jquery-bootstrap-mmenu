@@ -13481,6 +13481,59 @@ NOTE: remove ".css" from file in @import to include code
 @import 'sliding_exits/slideOutRight.css';
 @import 'sliding_exits/slideOutUp.css';
 */
+/************************************************************
+COMMON
+
+Common classes for differnet elements
+************************************************************/
+.min-width-1em {
+  min-width: 1em !important;
+}
+
+.min-width-2em {
+  min-width: 2em !important;
+}
+
+.min-width-3em {
+  min-width: 3em !important;
+}
+
+.min-width-4em {
+  min-width: 4em !important;
+}
+
+.min-width-5em {
+  min-width: 5em !important;
+}
+
+.min-width-6em {
+  min-width: 6em !important;
+}
+
+.min-width-7em {
+  min-width: 7em !important;
+}
+
+.min-width-8em {
+  min-width: 8em !important;
+}
+
+.min-width-9em {
+  min-width: 9em !important;
+}
+
+.min-width-10em {
+  min-width: 10em !important;
+}
+
+.min-width-11em {
+  min-width: 11em !important;
+}
+
+.min-width-12em {
+  min-width: 12em !important;
+}
+
 /************************************************
 STYLE FOR DIFFERENT ELEMENTS
 *************************************************/
@@ -14462,10 +14515,13 @@ div.modal-dialog.modal-flex-width.modal-mega-width {
 div.modal-dialog.modal-max-width:not(.modal-full-screen) {
   width: calc(100% - 20px);
 }
+div.modal-dialog.modal-full-width:not(.modal-full-screen) {
+  width: 100%;
+}
 div.modal-dialog.modal-full-screen {
   width: 100%;
 }
-div.modal-dialog.modal-full-screen .modal-content {
+div.modal-dialog.modal-full-screen:not(.modal-full-screen-with-border) .modal-content {
   border: none;
   border-radius: 0px;
 }
@@ -15048,6 +15104,11 @@ TABLE
 Adjustmernt to Bootstrap table
 ************************************************************/
 .table.jb-table {
+  /*******************************************************
+  For some (unknown) reason the height of the table needs
+  to be 1px to allow height=100% of elements inside td
+  ********************************************************/
+  height: 1px;
   /*******************************************************
   For some (unknown) reason the padding and font-size of
   table cells are not set using var(...)

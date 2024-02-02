@@ -60,7 +60,7 @@
     MENUITEMOPTIONS = {
         id: STRING
 
-        type: STRING    = none, "text", "checkbox", or "radio". "text" is only for no-child items
+        type: STRING    = none, "text", "button", "checkbox", or "radio". "text" is only for no-child items
         state: true, false or STRING/NUMBER/OBJECT: true: selected, false:unselected, other:semi-selected
 
         addToBar: BOOLEAN, if true a squire button is added to the bar that closes all other menus and open this one
@@ -79,6 +79,11 @@
         this.type = (options.type || '').toLowerCase();
         this.type = this.type == 'check' ? 'checkbox' : this.type;
         this.hasCheckbox = (this.type == 'checkbox') || (this.type == 'radio');
+
+        this.type = ['button', 'buttons', 'buttonlist'].includes(this.type) ? 'buttons' : this.type;
+        this.isButtons = this.type == 'buttons';
+        this.buttonPaddingLeft  = this.isButtons && options.buttonPaddingLeft;
+        this.buttonPaddingRight = this.isButtons && options.buttonPaddingRight;
 
         this.prev = null;
         this.next = null;
@@ -133,100 +138,105 @@
         createLi
         ***********************************/
         createLi: function(owner){
+            var content;
             owner = owner || this;
 
             this.$li = $('<li/>');
             this.$li.attr('id', this.liId);
+            this.$li.toggleClass('only-buttons', this.isButtons);
+
 
             this.liElem   = this.$li.get(0);
             var $outer    = this.$outer = $('<span/>').appendTo(this.$li);
-            this.$content = $('<div/>')
-                                .addClass('d-flex align-items-center')
-                                .appendTo(this.$outer);
 
+            if (!this.isButtons){
+                this.$content = $('<div/>')
+                                    .addClass('d-flex align-items-center')
+                                    .appendTo(this.$outer);
 
-            var originalContent = this.options.content || this.options,
-                adjustIcon = this.menu.options.adjustIcon;
+                var originalContent = this.options.content || this.options,
+                    adjustIcon = this.menu.options.adjustIcon;
 
-            if (originalContent && originalContent.icon && adjustIcon)
-                originalContent.icon = adjustIcon(originalContent.icon);
+                if (originalContent && originalContent.icon && adjustIcon)
+                    originalContent.icon = adjustIcon(originalContent.icon);
 
-            var content = clone(originalContent);
-            content = $.isArray(content) ? content : [content];
+                content = clone(originalContent);
+                content = $.isArray(content) ? content : [content];
 
-            //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(icon) is given
-            var firstContent = content[0];
+                //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(icon) is given
+                var firstContent = content[0];
 
-            if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
-                content[0] = $('<div/>')._bsAddHtml(firstContent);
+                if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
+                    content[0] = $('<div/>')._bsAddHtml(firstContent);
 
-            //To prevent empty menu-items to open the sub-menu of its 'nearest' sibling (Bug in mmenu?) an empty click is added
-            var list = this.options.list || this.options.items || this.options.itemList || [];
-            if (!list.length)
-                this.$li.on('click', emptyFunction);
+                //To prevent empty menu-items to open the sub-menu of its 'nearest' sibling (Bug in mmenu?) an empty click is added
+                var list = this.options.list || this.options.items || this.options.itemList || [];
+                if (!list.length)
+                    this.$li.on('click', emptyFunction);
 
+                if (this.first || !this.hasCheckbox){
+                    this.$content
+                        .toggleClass('mm-listitem-content', this.type == 'text')
+                        ._bsAddHtml(content);
+                }
+                else {
+                    this.checkbox = $.bsCheckbox({
+                        id          : this.id,
+                        type        : this.type,
+                        multiLines  : true,
+                        icon        : this.options.icon,
+                        text        : this.options.text,
+                        content     : content,
+                        onClick     : $.proxy(owner._onClick, owner)
+                    })
+                    .appendTo( this.$content );
 
-            if (this.first || !this.hasCheckbox)
-                this.$content
-                    .toggleClass('mm-listitem-content', this.type == 'text')
-                    ._bsAddHtml(content);
-            else {
-                this.checkbox = $.bsCheckbox({
-                    id          : this.id,
-                    type        : this.type,
-                    multiLines  : true,
-                    icon        : this.options.icon,
-                    text        : this.options.text,
-                    content     : content,
-                    onClick     : $.proxy(owner._onClick, owner)
-                })
-                .appendTo( this.$content );
+                    //Set flex shrink to 0 for input-element
+                    this.checkbox.find('input').addClass('flex-shrink-0');
 
-                //Set flex shrink to 0 for input-element
-                this.checkbox.find('input').addClass('flex-shrink-0');
+                    //width = 100% for container label
+                    this.checkbox.find('label').addClass('w-100');
 
-                //widrh = 100% for container label
-                this.checkbox.find('label').addClass('w-100');
+                    this.setState(this.state);
 
-                this.setState(this.state);
+                    //Add button to toggle favorites
+                    if (this.menu.options.favorites && !this.options.noFavoriteButton){
+                        var inFavorites = this.menu.options.favorites.get(this.id);
+                        this.$favoriteButton =
+                           $.bsIconCheckboxButton({
+                                id          : this.id,
+                                icon        : this.menu.favoriteIcon,
+                                title       : {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
+                                transparent : true,
+                                square      : true,
+                                noBorder    : true,
+                                class       :'flex-shrink-0 mm-favorite-icons',
+                                selected    : inFavorites,
+                                onChange    : $.proxy(this._toggleFavorite, this)
+                            }).appendTo(this.$outer);
 
-                //Add button to toggle favorites
-                if (this.menu.options.favorites && !this.options.noFavoriteButton){
-                    var inFavorites = this.menu.options.favorites.get(this.id);
-                    this.$favoriteButton =
-                       $.bsIconCheckboxButton({
+                        this.$outer.addClass('pe-0');
+
+                        if (inFavorites)
+                            this.toggleFavorite(inFavorites);
+                    }
+
+                    //Add button to remove from Favorites
+                    if (this.options.removeFavoriteButton){
+                        $.bsButton({
                             id          : this.id,
-                            icon        : this.menu.favoriteIcon,
-                            title       : {da:'Tilføj til/fjern fra Favoritter', en:'Add to/Remove from Favorites'},
+                            icon        : this.menu.removeFavoriteIcon,
+                            title       : {da:'Fjern fra Favoritter', en:'Remove from Favorites'},
                             transparent : true,
-                            square      : true,
+                        square      : true,
                             noBorder    : true,
                             class       :'flex-shrink-0 mm-favorite-icons',
-                            selected    : inFavorites,
-                            onChange    : $.proxy(this._toggleFavorite, this)
+                            onClick     : $.proxy(owner._toggleFavorite, owner)
                         }).appendTo(this.$outer);
-
-                    this.$outer.addClass('pe-0');
-
-                    if (inFavorites)
-                        this.toggleFavorite(inFavorites);
+                        this.$outer.addClass('pe-0');
+                    }
                 }
-
-                //Add button to remove from Favorites
-                if (this.options.removeFavoriteButton){
-                    $.bsButton({
-                        id          : this.id,
-                        icon        : this.menu.removeFavoriteIcon,
-                        title       : {da:'Fjern fra Favoritter', en:'Remove from Favorites'},
-                        transparent : true,
-                        square      : true,
-                        noBorder    : true,
-                        class       :'flex-shrink-0 mm-favorite-icons',
-                        onClick     : $.proxy(owner._toggleFavorite, owner)
-                    }).appendTo(this.$outer);
-                    this.$outer.addClass('pe-0');
-                }
-            }
+            }   //end of if (!this.isButtons){
 
             //Add buttons from this.options.buttonList (if any)
             var buttonList = this.options.buttonList || this.options.buttons,
@@ -234,9 +244,9 @@
                 buttonBarJustify = this.options.buttonJustify || this.parent.options.buttonJustify || 'center',
                 paddingClass = '';
 
-            if (this.hasCheckbox)
+            if (this.hasCheckbox || this.buttonPaddingLeft)
                 paddingClass = paddingClass + ' padding-left';
-            if (this.$favoriteButton)
+            if (this.$favoriteButton || this.buttonPaddingRight)
                 paddingClass = paddingClass + ' padding-right';
 
 
@@ -262,9 +272,10 @@
 
                 groupList.forEach( function( list ){
                     $.bsButtonBar({
-                        small   : true,
-                        buttons : list,
-                        class   : 'button-bar-container ' + paddingClass + ' d-flex flex-row flex-nowrap justify-content-'+buttonBarJustify
+                        small          : true,
+                        buttons        : list,
+                        class          : 'button-bar-container ' + paddingClass + ' d-flex flex-row flex-nowrap justify-content-'+buttonBarJustify,
+                        buttonFullWidth: true,
                     }).appendTo($outer);
                 });
 

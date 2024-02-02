@@ -1629,3 +1629,10 @@ a.btn.mm-favorite-icons {
 .mm-menu-sm .button-bar-container.padding-right {
   padding-right: 1.9375rem;
 }
+
+.mm-listitem.only-buttons {
+  --mm-line-height: 0;
+}
+.mm-listitem.only-buttons .mm-listitem__text {
+  padding-right: 0;
+}
