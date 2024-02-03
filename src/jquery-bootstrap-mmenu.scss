@@ -273,7 +273,7 @@ a.btn.mm-favorite-icons {
 .mm-listitem.only-buttons {
     --mm-line-height: 0;
 
-    .mm-listitem__text {
+    &.no-padding-right .mm-listitem__text {
         padding-right: 0;
     }
 }

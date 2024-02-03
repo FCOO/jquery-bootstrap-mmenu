@@ -141,9 +141,10 @@
             var content;
             owner = owner || this;
 
-            this.$li = $('<li/>');
-            this.$li.attr('id', this.liId);
-            this.$li.toggleClass('only-buttons', this.isButtons);
+            this.$li = $('<li/>')
+                .attr('id', this.liId)
+                .toggleClass('only-buttons', !!this.isButtons)
+                .toggleClass('no-padding-right', !!this.isButtons && !!this.buttonPaddingRight);
 
 
             this.liElem   = this.$li.get(0);
