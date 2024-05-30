@@ -10717,8 +10717,8 @@ return jQuery;
 
 ;
 /*!
-  * Bootstrap v5.3.2 (https://getbootstrap.com/)
-  * Copyright 2011-2023 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
+  * Bootstrap v5.3.3 (https://getbootstrap.com/)
+  * Copyright 2011-2024 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
   */
 (function (global, factory) {
@@ -10928,7 +10928,6 @@ return jQuery;
   const reflow = element => {
     element.offsetHeight; // eslint-disable-line no-unused-expressions
   };
-
   const getjQuery = () => {
     if (window.jQuery && !document.body.hasAttribute('data-bs-no-jquery')) {
       return window.jQuery;
@@ -11366,7 +11365,7 @@ return jQuery;
    * Constants
    */
 
-  const VERSION = '5.3.2';
+  const VERSION = '5.3.3';
 
   /**
    * Class definition
@@ -11447,9 +11446,9 @@ return jQuery;
       if (hrefAttribute.includes('#') && !hrefAttribute.startsWith('#')) {
         hrefAttribute = `#${hrefAttribute.split('#')[1]}`;
       }
-      selector = hrefAttribute && hrefAttribute !== '#' ? parseSelector(hrefAttribute.trim()) : null;
+      selector = hrefAttribute && hrefAttribute !== '#' ? hrefAttribute.trim() : null;
     }
-    return selector;
+    return selector ? selector.split(',').map(sel => parseSelector(sel)).join(',') : null;
   };
   const SelectorEngine = {
     find(selector, element = document.documentElement) {
@@ -14634,7 +14633,6 @@ return jQuery;
     // if false, we use the backdrop helper without adding any element to the dom
     rootElement: 'body' // give the choice to place backdrop under different elements
   };
-
   const DefaultType$8 = {
     className: 'string',
     clickCallback: '(function|null)',
@@ -14759,7 +14757,6 @@ return jQuery;
     autofocus: true,
     trapElement: null // The element to trap focus inside of
   };
-
   const DefaultType$7 = {
     autofocus: 'boolean',
     trapElement: 'element'
@@ -15486,7 +15483,10 @@ return jQuery;
     br: [],
     col: [],
     code: [],
+    dd: [],
     div: [],
+    dl: [],
+    dt: [],
     em: [],
     hr: [],
     h1: [],
@@ -23322,7 +23322,8 @@ return jQuery;
     }
     addResourceBundle(lng, ns, resources, deep, overwrite) {
       let options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {
-        silent: false
+        silent: false,
+        skipCopy: false
       };
       let path = [lng, ns];
       if (lng.indexOf('.') > -1) {
@@ -23333,6 +23334,7 @@ return jQuery;
       }
       this.addNamespaces(ns);
       let pack = getPath(this.data, path) || {};
+      if (!options.skipCopy) resources = JSON.parse(JSON.stringify(resources));
       if (deep) {
         deepExtend(pack, resources, overwrite);
       } else {
@@ -23865,7 +23867,8 @@ return jQuery;
           found = this.options.supportedLngs.find(supportedLng => {
             if (supportedLng === lngOnly) return supportedLng;
             if (supportedLng.indexOf('-') < 0 && lngOnly.indexOf('-') < 0) return;
-            if (supportedLng.indexOf(lngOnly) === 0) return supportedLng;
+            if (supportedLng.indexOf('-') > 0 && lngOnly.indexOf('-') < 0 && supportedLng.substring(0, supportedLng.indexOf('-')) === lngOnly) return supportedLng;
+            if (supportedLng.indexOf(lngOnly) === 0 && lngOnly.length > 1) return supportedLng;
           });
         });
       }
@@ -24206,20 +24209,38 @@ return jQuery;
       if (!options.interpolation) options.interpolation = {
         escapeValue: true
       };
-      const iOpts = options.interpolation;
-      this.escape = iOpts.escape !== undefined ? iOpts.escape : escape;
-      this.escapeValue = iOpts.escapeValue !== undefined ? iOpts.escapeValue : true;
-      this.useRawValueToEscape = iOpts.useRawValueToEscape !== undefined ? iOpts.useRawValueToEscape : false;
-      this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
-      this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
-      this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
-      this.unescapePrefix = iOpts.unescapeSuffix ? '' : iOpts.unescapePrefix || '-';
-      this.unescapeSuffix = this.unescapePrefix ? '' : iOpts.unescapeSuffix || '';
-      this.nestingPrefix = iOpts.nestingPrefix ? regexEscape(iOpts.nestingPrefix) : iOpts.nestingPrefixEscaped || regexEscape('$t(');
-      this.nestingSuffix = iOpts.nestingSuffix ? regexEscape(iOpts.nestingSuffix) : iOpts.nestingSuffixEscaped || regexEscape(')');
-      this.nestingOptionsSeparator = iOpts.nestingOptionsSeparator ? iOpts.nestingOptionsSeparator : iOpts.nestingOptionsSeparator || ',';
-      this.maxReplaces = iOpts.maxReplaces ? iOpts.maxReplaces : 1000;
-      this.alwaysFormat = iOpts.alwaysFormat !== undefined ? iOpts.alwaysFormat : false;
+      const {
+        escape: escape$1,
+        escapeValue,
+        useRawValueToEscape,
+        prefix,
+        prefixEscaped,
+        suffix,
+        suffixEscaped,
+        formatSeparator,
+        unescapeSuffix,
+        unescapePrefix,
+        nestingPrefix,
+        nestingPrefixEscaped,
+        nestingSuffix,
+        nestingSuffixEscaped,
+        nestingOptionsSeparator,
+        maxReplaces,
+        alwaysFormat
+      } = options.interpolation;
+      this.escape = escape$1 !== undefined ? escape$1 : escape;
+      this.escapeValue = escapeValue !== undefined ? escapeValue : true;
+      this.useRawValueToEscape = useRawValueToEscape !== undefined ? useRawValueToEscape : false;
+      this.prefix = prefix ? regexEscape(prefix) : prefixEscaped || '{{';
+      this.suffix = suffix ? regexEscape(suffix) : suffixEscaped || '}}';
+      this.formatSeparator = formatSeparator || ',';
+      this.unescapePrefix = unescapeSuffix ? '' : unescapePrefix || '-';
+      this.unescapeSuffix = this.unescapePrefix ? '' : unescapeSuffix || '';
+      this.nestingPrefix = nestingPrefix ? regexEscape(nestingPrefix) : nestingPrefixEscaped || regexEscape('$t(');
+      this.nestingSuffix = nestingSuffix ? regexEscape(nestingSuffix) : nestingSuffixEscaped || regexEscape(')');
+      this.nestingOptionsSeparator = nestingOptionsSeparator || ',';
+      this.maxReplaces = maxReplaces || 1000;
+      this.alwaysFormat = alwaysFormat !== undefined ? alwaysFormat : false;
       this.resetRegExp();
     }
     reset() {
@@ -24337,7 +24358,7 @@ return jQuery;
           this.logger.warn(`failed parsing options string in nesting for key ${key}`, e);
           return `${key}${sep}${optionsString}`;
         }
-        delete clonedOptions.defaultValue;
+        if (clonedOptions.defaultValue && clonedOptions.defaultValue.indexOf(this.prefix) > -1) delete clonedOptions.defaultValue;
         return key;
       }
       while (match = this.nestingRegexp.exec(str)) {
@@ -24572,7 +24593,9 @@ return jQuery;
       const ns = s[1];
       if (err) this.emit('failedLoading', lng, ns, err);
       if (data) {
-        this.store.addResourceBundle(lng, ns, data);
+        this.store.addResourceBundle(lng, ns, data, undefined, undefined, {
+          skipCopy: true
+        });
       }
       this.state[name] = err ? -1 : 2;
       const loaded = {};
@@ -24831,6 +24854,7 @@ return jQuery;
       var _this = this;
       let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       let callback = arguments.length > 1 ? arguments[1] : undefined;
+      this.isInitializing = true;
       if (typeof options === 'function') {
         callback = options;
         options = {};
@@ -24948,6 +24972,7 @@ return jQuery;
       const deferred = defer();
       const load = () => {
         const finish = (err, t) => {
+          this.isInitializing = false;
           if (this.isInitialized && !this.initializedStoreOnce) this.logger.warn('init: i18next is already initialized. You should call init just once!');
           this.isInitialized = true;
           if (!this.options.isClone) this.logger.log('initialized', this.options);
@@ -25195,7 +25220,7 @@ return jQuery;
       const deferred = defer();
       if (typeof lngs === 'string') lngs = [lngs];
       const preloaded = this.options.preload || [];
-      const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0);
+      const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0 && this.services.languageUtils.isSupportedCode(lng));
       if (!newLngs.length) {
         if (callback) callback();
         return Promise.resolve();
@@ -43596,10 +43621,6 @@ module.exports = Yaml;
         Promise.defaultErrorHandler( createErrorObject( e, url ) );
     };
 
-    function callDefaultErrorHandle(reason, url){
-        return Promise.defaultErrorHandler( createErrorObject( reason, url ) );
-    }
-
     //Promise.defaultPrefetch = function(url, options): To be called before ALL fetch
     Promise.defaultPrefetch = null;
 
@@ -43610,7 +43631,36 @@ module.exports = Yaml;
     Promise.fetch( url, options )
     Fetch the url.
     Retries up to options.retries times with delay between of options.retryDeday ms
+    Princip taken from https://medium.com/@yshen4/javascript-fetch-with-retry-fb7e2e8f8cad
+
+    Original code from https://medium.com/@yshen4/javascript-fetch-with-retry-fb7e2e8f8cad:
+
+    const wait = (delay) => (new Promise((resolve) => setTimeout(resolve, delay)));
+    Promise.fetchWithRetry = function(url, tries=2){
+        fetch(url)
+            .then( (response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    // 1. throw a new exception
+                    if (res.status === 401) throw new 4xxError('Not authorized', response)
+                    if (res.status === 404) throw new 4xxError(`Resource doesn't exist`, response)
+                    // 2. reject instead of throw, peferred
+                    return Promise.reject(response);
+                }
+            })
+            .catch( (error) => {
+                if (error instanceof 4xxError || tries < 1) {
+                    throw error;
+                } else {
+                    //Retry network error or 5xx errors
+                    const delay = Math.floor(Math.random() * 1000);
+                    wait(delay).then(()=> Promise.fetchWithRetry(url, tries - 1));
+                }
+            })
+    }
     **************************************************************/
+    const wait = (delay) => (new Promise((resolve) => setTimeout(resolve, delay)));
     Promise.fetch = function(url, options) {
         options = $.extend( {}, {
             retries   : 3,
@@ -43628,27 +43678,35 @@ module.exports = Yaml;
         if (options.noCache)
             url = url + (url.indexOf('?') > 0 ? '&' : '?') + 'dummy='+Math.random().toString(36).substr(2, 9);
 
-        if (Promise.defaultPrefetch)
+        if (Promise.defaultPrefetch && !options.noDefaultPrefetch)
             Promise.defaultPrefetch(url, options);
 
         return new Promise(function(resolve, reject) {
-            var wrappedFetch = function(n) {
-                fetch(url, options)
-                    .then(function(response) {
+            fetch(url, options)
+                .then((response) => {
+                    if (response.ok)
                         resolve(response);
-                    })
-                    .catch(function(error) {
-                        if (n > 0) {
-                            setTimeout(function() {
-                                wrappedFetch(--n);
-                            }, options.retryDelay);
-                        }
-                        else {
+                    else
+                        return Promise.reject(response);
+                })
+                .catch((/*error*/reason) => {
+                    if (options.retries > 0){
+                        options.retries--;
+                        options.noCache = false;
+                        options.noDefaultPrefetch = true;
+                        wait(options.retryDelay)
+                            .then(()=> Promise.fetch(url, options) );
+                    }
+                    else {
+
+                        //console.log('HER', error, reject, options);
+                        let error =  createErrorObject(reason, options.url);
+                        if (options.reject)
+                            options.reject(error);
+                        if (options.useDefaultErrorHandler)
                             reject(error);
-                        }
-                    });
-            };
-            wrappedFetch(options.retries);
+                    }
+                });
         });
     };
 
@@ -43766,29 +43824,6 @@ module.exports = Yaml;
 
         if (resolve)
             result = result.then( resolve );
-
-        //Adding error/reject promise
-        var defaultReject = function(reason){
-                return callDefaultErrorHandle(reason, options.url);
-            };
-
-        if (reject){
-            //If options.useDefaultErrorHandler => also needs to call => Promise.defaultErrorHandler
-            if (options.useDefaultErrorHandler)
-                result = result.catch( function( reason ){
-                    reject( createErrorObject( reason, options.url ) );
-                    return defaultReject.call( null, reason );
-                });
-            else
-                //Just use reject as catch
-                result = result.catch( function( reason ){
-                    return reject( createErrorObject( reason, options.url ) );
-                });
-        }
-        else
-            if (!options.useDefaultErrorHandler)
-                //Prevent the use of Promise.defaultErrorHandler
-                result = result.catch( function(){} );
 
         //Adding finally (if any)
         if (fin || Promise.defaultFinally){
@@ -44470,13 +44505,13 @@ return index;
         if (isVertical){
             noScroll = elem.scrollHeight <= elem.clientHeight;
             position = elem.scrollTop <= 0 ? 'start' :
-                       elem.scrollTop >= elem.scrollHeight - elem.clientHeight ? 'end' :
+                       Math.ceil(elem.scrollTop) >= elem.scrollHeight - elem.clientHeight ? 'end' :
                        null;
         }
         else {
             noScroll = elem.scrollWidth < elem.clientWidth;
             position = elem.scrollLeft <= 0 ? 'start' :
-                       elem.scrollLeft >= elem.scrollWidth - elem.clientWidth ? 'end' :
+                       Math.ceil(elem.scrollLeft) >= elem.scrollWidth - elem.clientWidth ? 'end' :
                        null;
         }
 
@@ -52319,7 +52354,7 @@ return index;
 }).call(this);
 ;
 //! moment-timezone.js
-//! version : 0.5.44
+//! version : 0.5.45
 //! Copyright (c) JS Foundation and other contributors
 //! license : MIT
 //! github.com/moment/moment-timezone
@@ -52349,7 +52384,7 @@ return index;
 	// 	return moment;
 	// }
 
-	var VERSION = "0.5.44",
+	var VERSION = "0.5.45",
 		zones = {},
 		links = {},
 		countries = {},
@@ -52479,10 +52514,10 @@ return index;
 		} else if (num >= arr[len - 1]) {
 			return -1;
 		}
-	
+
 		var mid;
 		var lo = 0;
-		var hi = len - 1;  
+		var hi = len - 1;
 		while (hi - lo > 1) {
 			mid = Math.floor((lo + hi) / 2);
 			if (arr[mid] <= num) {
@@ -52493,7 +52528,7 @@ return index;
 		}
 		return hi;
 	}
-	
+
 	Zone.prototype = {
 		_set : function (unpacked) {
 			this.name       = unpacked.name;
@@ -53044,101 +53079,99 @@ return index;
 	}
 
 	loadData({
-		"version": "2023d",
+		"version": "2024a",
 		"zones": [
 			"Africa/Abidjan|GMT|0|0||48e5",
 			"Africa/Nairobi|EAT|-30|0||47e5",
 			"Africa/Algiers|CET|-10|0||26e5",
 			"Africa/Lagos|WAT|-10|0||17e6",
 			"Africa/Khartoum|CAT|-20|0||51e5",
-			"Africa/Cairo|EET EEST|-20 -30|0101010101010|29NW0 1cL0 1cN0 1fz0 1a10 1fz0 1a10 1fz0 1cN0 1cL0 1cN0 1cL0|15e6",
-			"Africa/Casablanca|+00 +01|0 -10|010101010101010101010101|1Vq20 jA0 e00 28M0 e00 2600 gM0 2600 e00 2600 gM0 2600 e00 28M0 e00 2600 gM0 2600 e00 28M0 e00 2600 gM0|32e5",
-			"Europe/Paris|CET CEST|-10 -20|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|11e6",
+			"Africa/Cairo|EET EEST|-20 -30|010101010101010|29NW0 1cL0 1cN0 1fz0 1a10 1fz0 1a10 1fz0 1cN0 1cL0 1cN0 1cL0 1cN0 1cL0|15e6",
+			"Africa/Casablanca|+01 +00|-10 0|010101010101010101010101|208q0 e00 2600 gM0 2600 e00 2600 gM0 2600 e00 28M0 e00 2600 gM0 2600 e00 28M0 e00 2600 gM0 2600 e00 2600|32e5",
+			"Europe/Paris|CET CEST|-10 -20|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|11e6",
 			"Africa/Johannesburg|SAST|-20|0||84e5",
 			"Africa/Juba|EAT CAT|-30 -20|01|24nx0|",
-			"Africa/Sao_Tome|GMT WAT|0 -10|010|1UQN0 2q00|",
+			"Africa/Sao_Tome|WAT GMT|-10 0|01|1XiN0|",
 			"Africa/Tripoli|EET|-20|0||11e5",
-			"America/Adak|HST HDT|a0 90|01010101010101010101010|1VkA0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|326",
-			"America/Anchorage|AKST AKDT|90 80|01010101010101010101010|1Vkz0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|30e4",
+			"America/Adak|HST HDT|a0 90|01010101010101010101010|1XKc0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|326",
+			"America/Anchorage|AKST AKDT|90 80|01010101010101010101010|1XKb0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|30e4",
 			"America/Santo_Domingo|AST|40|0||29e5",
 			"America/Fortaleza|-03|30|0||34e5",
-			"America/Asuncion|-03 -04|30 40|01010101010101010101010|1Vq30 1ip0 17b0 1ip0 17b0 1ip0 19X0 1fB0 19X0 1fB0 19X0 1fB0 19X0 1ip0 17b0 1ip0 17b0 1ip0 19X0 1fB0 19X0 1fB0|28e5",
+			"America/Asuncion|-03 -04|30 40|01010101010101010101010|1XPD0 1ip0 17b0 1ip0 19X0 1fB0 19X0 1fB0 19X0 1fB0 19X0 1ip0 17b0 1ip0 17b0 1ip0 19X0 1fB0 19X0 1fB0 19X0 1ip0|28e5",
 			"America/Panama|EST|50|0||15e5",
-			"America/Mexico_City|CST CDT|60 50|01010101010|1VsU0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|20e6",
+			"America/Mexico_City|CST CDT|60 50|010101010|1XVk0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|20e6",
 			"America/Managua|CST|60|0||22e5",
 			"America/Caracas|-04|40|0||29e5",
 			"America/Lima|-05|50|0||11e6",
-			"America/Denver|MST MDT|70 60|01010101010101010101010|1Vkx0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|26e5",
-			"America/Campo_Grande|-03 -04|30 40|0101|1Vc30 1HB0 FX0|77e4",
-			"America/Chicago|CST CDT|60 50|01010101010101010101010|1Vkw0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|92e5",
-			"America/Chihuahua|MST MDT CST|70 60 60|01010101012|1VsV0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|81e4",
-			"America/Ciudad_Juarez|MST MDT CST|70 60 60|010101010120101010101010|1Vkx0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0 cm0 EP0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|",
+			"America/Denver|MST MDT|70 60|01010101010101010101010|1XK90 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|26e5",
+			"America/Campo_Grande|-03 -04|30 40|01|1XBD0|77e4",
+			"America/Chicago|CST CDT|60 50|01010101010101010101010|1XK80 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|92e5",
+			"America/Chihuahua|MST MDT CST|70 60 60|010101012|1XVl0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|81e4",
+			"America/Ciudad_Juarez|MST MDT CST|70 60 60|010101012010101010101010|1XK90 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0 cm0 EP0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|",
 			"America/Phoenix|MST|70|0||42e5",
-			"America/Whitehorse|PST PDT MST|80 70 70|0101012|1Vky0 1zb0 Op0 1zb0 Op0 1z90|23e3",
-			"America/New_York|EST EDT|50 40|01010101010101010101010|1Vkv0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|21e6",
-			"America/Los_Angeles|PST PDT|80 70|01010101010101010101010|1Vky0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|15e6",
-			"America/Halifax|AST ADT|40 30|01010101010101010101010|1Vku0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|39e4",
-			"America/Godthab|-03 -02 -01|30 20 10|0101010101012121212121|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 2so0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|17e3",
-			"America/Grand_Turk|AST EDT EST|40 40 50|01212121212121212121212|1Vkv0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|37e2",
-			"America/Havana|CST CDT|50 40|01010101010101010101010|1Vkt0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0|21e5",
-			"America/Mazatlan|MST MDT|70 60|01010101010|1VsV0 1nX0 14p0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|44e4",
-			"America/Metlakatla|AKST AKDT PST|90 80 80|012010101010101010101010|1Vkz0 1zb0 uM0 jB0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|14e2",
-			"America/Miquelon|-03 -02|30 20|01010101010101010101010|1Vkt0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|61e2",
+			"America/Whitehorse|PST PDT MST|80 70 70|01012|1XKa0 1zb0 Op0 1z90|23e3",
+			"America/New_York|EST EDT|50 40|01010101010101010101010|1XK70 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|21e6",
+			"America/Los_Angeles|PST PDT|80 70|01010101010101010101010|1XKa0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|15e6",
+			"America/Halifax|AST ADT|40 30|01010101010101010101010|1XK60 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|39e4",
+			"America/Godthab|-03 -02 -01|30 20 10|0101010101212121212121|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 2so0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|17e3",
+			"America/Havana|CST CDT|50 40|01010101010101010101010|1XK50 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Oo0 1zc0 Rc0 1zc0 Oo0 1zc0 Oo0 1zc0|21e5",
+			"America/Mazatlan|MST MDT|70 60|010101010|1XVl0 1lb0 14p0 1lb0 14p0 1nX0 11B0 1nX0|44e4",
+			"America/Metlakatla|PST AKST AKDT|80 90 80|012121212121212121212121|1Xqy0 jB0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|14e2",
+			"America/Miquelon|-03 -02|30 20|01010101010101010101010|1XK50 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|61e2",
 			"America/Noronha|-02|20|0||30e2",
-			"America/Ojinaga|MST MDT CST CDT|70 60 60 50|01010101012323232323232|1Vkx0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0 Rc0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|23e3",
-			"America/Santiago|-03 -04|30 40|01010101010101010101010|1VJD0 Ap0 1zb0 11B0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 11B0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|62e5",
-			"America/Sao_Paulo|-02 -03|20 30|0101|1Vc20 1HB0 FX0|20e6",
-			"America/Scoresbysund|-01 +00 -02|10 0 20|0101010101010202020202|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 2pA0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|452",
-			"America/St_Johns|NST NDT|3u 2u|01010101010101010101010|1Vktu 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|11e4",
-			"Antarctica/Casey|+11 +08|-b0 -80|010101010101|1Vkh0 1o30 14k0 1kr0 12l0 1o01 14kX 1lf1 14kX 1lf1 13bX|10",
+			"America/Ojinaga|MST MDT CST CDT|70 60 60 50|01010101232323232323232|1XK90 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1wn0 Rc0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|23e3",
+			"America/Santiago|-03 -04|30 40|01010101010101010101010|1XVf0 11B0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 11B0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0|62e5",
+			"America/Sao_Paulo|-02 -03|20 30|01|1XBC0|20e6",
+			"America/Scoresbysund|-01 +00 -02|10 0 20|0101010101020202020202|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 2pA0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|452",
+			"America/St_Johns|NST NDT|3u 2u|01010101010101010101010|1XK5u 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0|11e4",
+			"Antarctica/Casey|+11 +08|-b0 -80|0101010101|1XME0 1kr0 12l0 1o01 14kX 1lf1 14kX 1lf1 13bX|10",
 			"Asia/Bangkok|+07|-70|0||15e6",
 			"Asia/Vladivostok|+10|-a0|0||60e4",
-			"Australia/Sydney|AEDT AEST|-b0 -a0|01010101010101010101010|1VsE0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0|40e5",
+			"Australia/Sydney|AEDT AEST|-b0 -a0|01010101010101010101010|1XV40 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0|40e5",
 			"Asia/Tashkent|+05|-50|0||23e5",
-			"Pacific/Auckland|NZDT NZST|-d0 -c0|01010101010101010101010|1VsC0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1io0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00|14e5",
+			"Pacific/Auckland|NZDT NZST|-d0 -c0|01010101010101010101010|1XV20 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1io0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0|14e5",
 			"Europe/Istanbul|+03|-30|0||13e6",
-			"Antarctica/Troll|+00 +02|0 -20|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|40",
+			"Antarctica/Troll|+00 +02|0 -20|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|40",
 			"Antarctica/Vostok|+07 +05|-70 -50|01|2bnv0|25",
-			"Asia/Dhaka|+06|-60|0||16e6",
-			"Asia/Amman|EET EEST +03|-20 -30 -30|01010101012|1VrW0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 LA0 1C00|25e5",
+			"Asia/Almaty|+06 +05|-60 -50|01|2bR60|15e5",
+			"Asia/Amman|EET EEST +03|-20 -30 -30|010101012|1XRy0 1o00 11A0 1qM0 WM0 1qM0 LA0 1C00|25e5",
 			"Asia/Kamchatka|+12|-c0|0||18e4",
 			"Asia/Dubai|+04|-40|0||39e5",
-			"Asia/Beirut|EET EEST|-20 -30|01010101010101010101010|1VpW0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0|22e5",
+			"Asia/Beirut|EET EEST|-20 -30|01010101010101010101010|1XSm0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0|22e5",
+			"Asia/Dhaka|+06|-60|0||16e6",
 			"Asia/Kuala_Lumpur|+08|-80|0||71e5",
 			"Asia/Kolkata|IST|-5u|0||15e6",
 			"Asia/Chita|+09|-90|0||33e4",
 			"Asia/Shanghai|CST|-80|0||23e6",
 			"Asia/Colombo|+0530|-5u|0||22e5",
-			"Asia/Damascus|EET EEST +03|-20 -30 -30|01010101012|1VrW0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0|26e5",
-			"Europe/Athens|EET EEST|-20 -30|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|35e5",
-			"Asia/Gaza|EET EEST|-20 -30|01010101010101010101010|1Vpz0 1qL0 11c0 1on0 11B0 1o00 11A0 1qo0 XA0 1qp0 1cN0 1cL0 17d0 1in0 14p0 1lb0 11B0 1nX0 11B0 1qL0 WN0 1qL0|18e5",
+			"Asia/Damascus|EET EEST +03|-20 -30 -30|010101012|1XRy0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0|26e5",
+			"Europe/Athens|EET EEST|-20 -30|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|35e5",
+			"Asia/Gaza|EET EEST|-20 -30|01010101010101010101010|1XRy0 1on0 11B0 1o00 11A0 1qo0 XA0 1qp0 1cN0 1cL0 1a10 1fz0 17d0 1in0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0|18e5",
 			"Asia/Hong_Kong|HKT|-80|0||73e5",
 			"Asia/Jakarta|WIB|-70|0||31e6",
 			"Asia/Jayapura|WIT|-90|0||26e4",
-			"Asia/Jerusalem|IST IDT|-20 -30|01010101010101010101010|1Vpc0 1rz0 10N0 1oL0 10N0 1oL0 10N0 1rz0 W10 1rz0 W10 1rz0 10N0 1oL0 10N0 1oL0 10N0 1oL0 10N0 1rz0 W10 1rz0|81e4",
+			"Asia/Jerusalem|IST IDT|-20 -30|01010101010101010101010|1XRA0 1oL0 10N0 1oL0 10N0 1rz0 W10 1rz0 W10 1rz0 10N0 1oL0 10N0 1oL0 10N0 1oL0 10N0 1rz0 W10 1rz0 W10 1rz0|81e4",
 			"Asia/Kabul|+0430|-4u|0||46e5",
 			"Asia/Karachi|PKT|-50|0||24e6",
 			"Asia/Kathmandu|+0545|-5J|0||12e5",
 			"Asia/Sakhalin|+11|-b0|0||58e4",
 			"Asia/Makassar|WITA|-80|0||15e5",
 			"Asia/Manila|PST|-80|0||24e6",
-			"Asia/Pyongyang|KST KST|-8u -90|01|1VGf0|29e5",
-			"Asia/Qyzylorda|+06 +05|-60 -50|01|1Xei0|73e4",
-			"Asia/Rangoon|+0630|-6u|0||48e5",
 			"Asia/Seoul|KST|-90|0||23e6",
-			"Asia/Tehran|+0330 +0430|-3u -4u|01010101010|1VoIu 1dz0 1cp0 1dz0 1cp0 1dz0 1cN0 1dz0 1cp0 1dz0|14e6",
+			"Asia/Rangoon|+0630|-6u|0||48e5",
+			"Asia/Tehran|+0330 +0430|-3u -4u|010101010|1XOIu 1dz0 1cp0 1dz0 1cN0 1dz0 1cp0 1dz0|14e6",
 			"Asia/Tokyo|JST|-90|0||38e6",
-			"Atlantic/Azores|-01 +00|10 0|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|25e4",
-			"Europe/Lisbon|WET WEST|0 -10|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|27e5",
+			"Atlantic/Azores|-01 +00|10 0|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|25e4",
+			"Europe/Lisbon|WET WEST|0 -10|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|27e5",
 			"Atlantic/Cape_Verde|-01|10|0||50e4",
-			"Australia/Adelaide|ACDT ACST|-au -9u|01010101010101010101010|1VsEu 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0|11e5",
+			"Australia/Adelaide|ACDT ACST|-au -9u|01010101010101010101010|1XV4u 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0|11e5",
 			"Australia/Brisbane|AEST|-a0|0||20e5",
 			"Australia/Darwin|ACST|-9u|0||12e4",
 			"Australia/Eucla|+0845|-8J|0||368",
-			"Australia/Lord_Howe|+11 +1030|-b0 -au|01010101010101010101010|1VsD0 1fAu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1fzu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu|347",
+			"Australia/Lord_Howe|+11 +1030|-b0 -au|01010101010101010101010|1XV30 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1fzu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1fAu|347",
 			"Australia/Perth|AWST|-80|0||18e5",
-			"Pacific/Easter|-05 -06|50 60|01010101010101010101010|1VJD0 Ap0 1zb0 11B0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 11B0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|30e2",
-			"Europe/Dublin|GMT IST|0 -10|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|12e5",
+			"Pacific/Easter|-05 -06|50 60|01010101010101010101010|1XVf0 11B0 1nX0 11B0 1nX0 11B0 1nX0 14p0 1lb0 11B0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0|30e2",
+			"Europe/Dublin|GMT IST|0 -10|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|12e5",
 			"Etc/GMT-1|+01|-10|0||",
 			"Pacific/Tongatapu|+13|-d0|0||75e3",
 			"Pacific/Kiritimati|+14|-e0|0||51e2",
@@ -53151,19 +53184,19 @@ return index;
 			"Pacific/Pitcairn|-08|80|0||56",
 			"Pacific/Gambier|-09|90|0||125",
 			"Etc/UTC|UTC|0|0||",
-			"Europe/London|GMT BST|0 -10|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|10e6",
-			"Europe/Chisinau|EET EEST|-20 -30|01010101010101010101010|1Vq00 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|67e4",
+			"Europe/London|GMT BST|0 -10|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|10e6",
+			"Europe/Chisinau|EET EEST|-20 -30|01010101010101010101010|1XSo0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|67e4",
 			"Europe/Moscow|MSK|-30|0||16e6",
-			"Europe/Volgograd|MSK +04|-30 -40|010|1WQL0 5gn0|10e5",
+			"Europe/Volgograd|+04 MSK|-40 -30|01|249a0|10e5",
 			"Pacific/Honolulu|HST|a0|0||37e4",
-			"MET|MET MEST|-10 -20|01010101010101010101010|1Vq10 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|",
-			"Pacific/Chatham|+1345 +1245|-dJ -cJ|01010101010101010101010|1VsC0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1io0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00|600",
-			"Pacific/Apia|+14 +13|-e0 -d0|01010101|1VsC0 1cM0 1fA0 1a00 1fA0 1a00 1fA0|37e3",
-			"Pacific/Fiji|+13 +12|-d0 -c0|01010101|1UVO0 1VA0 s00 20o0 pc0 2hc0 bc0|88e4",
+			"MET|MET MEST|-10 -20|01010101010101010101010|1XSp0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0|",
+			"Pacific/Chatham|+1345 +1245|-dJ -cJ|01010101010101010101010|1XV20 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1io0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0|600",
+			"Pacific/Apia|+14 +13|-e0 -d0|010101|1XV20 1a00 1fA0 1a00 1fA0|37e3",
+			"Pacific/Fiji|+13 +12|-d0 -c0|010101|1Xnq0 20o0 pc0 2hc0 bc0|88e4",
 			"Pacific/Guam|ChST|-a0|0||17e4",
 			"Pacific/Marquesas|-0930|9u|0||86e2",
 			"Pacific/Pago_Pago|SST|b0|0||37e2",
-			"Pacific/Norfolk|+11 +12|-b0 -c0|01010101010101010101|219P0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0|25e4"
+			"Pacific/Norfolk|+11 +12|-b0 -c0|0101010101010101010101|219P0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0|25e4"
 		],
 		"links": [
 			"Africa/Abidjan|Africa/Accra",
@@ -53340,6 +53373,7 @@ return index;
 			"America/Mexico_City|Mexico/General",
 			"America/New_York|America/Detroit",
 			"America/New_York|America/Fort_Wayne",
+			"America/New_York|America/Grand_Turk",
 			"America/New_York|America/Indiana/Indianapolis",
 			"America/New_York|America/Indiana/Marengo",
 			"America/New_York|America/Indiana/Petersburg",
@@ -53407,6 +53441,7 @@ return index;
 			"America/St_Johns|Canada/Newfoundland",
 			"America/Whitehorse|America/Dawson",
 			"America/Whitehorse|Canada/Yukon",
+			"Asia/Almaty|Asia/Qostanay",
 			"Asia/Bangkok|Antarctica/Davis",
 			"Asia/Bangkok|Asia/Barnaul",
 			"Asia/Bangkok|Asia/Ho_Chi_Minh",
@@ -53425,12 +53460,10 @@ return index;
 			"Asia/Chita|Asia/Yakutsk",
 			"Asia/Chita|Etc/GMT-9",
 			"Asia/Chita|Pacific/Palau",
-			"Asia/Dhaka|Asia/Almaty",
 			"Asia/Dhaka|Asia/Bishkek",
 			"Asia/Dhaka|Asia/Dacca",
 			"Asia/Dhaka|Asia/Kashgar",
 			"Asia/Dhaka|Asia/Omsk",
-			"Asia/Dhaka|Asia/Qostanay",
 			"Asia/Dhaka|Asia/Thimbu",
 			"Asia/Dhaka|Asia/Thimphu",
 			"Asia/Dhaka|Asia/Urumqi",
@@ -53487,6 +53520,7 @@ return index;
 			"Asia/Sakhalin|Pacific/Noumea",
 			"Asia/Sakhalin|Pacific/Pohnpei",
 			"Asia/Sakhalin|Pacific/Ponape",
+			"Asia/Seoul|Asia/Pyongyang",
 			"Asia/Seoul|ROK",
 			"Asia/Shanghai|Asia/Chongqing",
 			"Asia/Shanghai|Asia/Chungking",
@@ -53504,6 +53538,7 @@ return index;
 			"Asia/Tashkent|Asia/Atyrau",
 			"Asia/Tashkent|Asia/Dushanbe",
 			"Asia/Tashkent|Asia/Oral",
+			"Asia/Tashkent|Asia/Qyzylorda",
 			"Asia/Tashkent|Asia/Samarkand",
 			"Asia/Tashkent|Asia/Yekaterinburg",
 			"Asia/Tashkent|Etc/GMT-5",
@@ -58160,10 +58195,10 @@ module.exports = g;
 //# sourceMappingURL=noty.js.map
 ;
 /**
- *  PDFObject v2.2.12
+ *  PDFObject v2.3.0
  *  https://github.com/pipwerks/PDFObject
  *  @license
- *  Copyright (c) 2008-2023 Philip Hutchison
+ *  Copyright (c) 2008-2024 Philip Hutchison
  *  MIT-style license: http://pipwerks.mit-license.org/
  *  UMD module pattern from https://github.com/umdjs/umd/blob/master/templates/returnExports.js
  */
@@ -58189,112 +58224,142 @@ module.exports = g;
     //Will choke on undefined navigator and window vars when run on server
     //Return boolean false and exit function when running server-side
 
-    if( typeof window === "undefined" || 
-        window.navigator === undefined || 
-        window.navigator.userAgent === undefined || 
-        window.navigator.mimeTypes === undefined){ 
-            return false;
-    }
+    if(typeof window === "undefined" || window.navigator === undefined || window.navigator.userAgent === undefined){ return false; }
 
-    let pdfobjectversion = "2.2.12";
-    let nav = window.navigator;
-    let ua = window.navigator.userAgent;
+    let pdfobjectversion = "2.3.0";
+    let win = window;
+    let nav = win.navigator;
+    let ua = nav.userAgent;
+    let suppressConsole = false;
 
-    //Time to jump through hoops -- browser vendors do not make it easy to detect PDF support.
+    //Fallback validation when navigator.pdfViewerEnabled is not supported
+    let isModernBrowser = function (){
+
+        /*
+           userAgent sniffing is not the ideal path, but most browsers revoked the ability to check navigator.mimeTypes 
+           for security purposes. As of 2023, browsers have begun implementing navigator.pdfViewerEnabled, but older versions
+           do not have navigator.pdfViewerEnabled or the ability to check navigator.mimeTypes. We're left with basic browser 
+           sniffing and assumptions of PDF support based on browser vendor.
+        */
+
+        //Chromium has provided native PDF support since 2011.
+        //Most modern browsers use Chromium under the hood: Google Chrome, Microsoft Edge, Opera, Brave, Vivaldi, Arc, and more.
+        //Chromium uses the PDFium rendering engine, which is based on Foxit's PDF rendering engine.
+        //Note that MS Edge opts to use a different PDF rendering engine. As of 2024, Edge uses a version of Adobe's Reader
+        let isChromium = (win.chrome !== undefined);
+
+        //Safari on macOS has provided native PDF support since 2009. 
+        //This code snippet also detects the DuckDuckGo browser, which uses Safari/Webkit under the hood.
+        let isSafari = (win.safari !== undefined || (nav.vendor !== undefined && /Apple/.test(nav.vendor) && /Safari/.test(ua)));
+
+        //Firefox has provided PDF support via PDFJS since 2013.
+        let isFirefox = (win.Mozilla !== undefined || /irefox/.test(ua));
+
+        return isChromium || isSafari || isFirefox;  
+
+    };
 
     /*
-        IE11 still uses ActiveX for Adobe Reader, but IE 11 doesn't expose window.ActiveXObject the same way 
-        previous versions of IE did. window.ActiveXObject will evaluate to false in IE 11, but "ActiveXObject" 
-        in window evaluates to true.
-
-        MS Edge does not support ActiveX so this test will evaluate false
+       Special handling for Internet Explorer 11.
+       Check for ActiveX support, then whether "AcroPDF.PDF" or "PDF.PdfCtrl" are valid.
+       IE11 uses ActiveX for Adobe Reader and other PDF plugins, but window.ActiveXObject will evaluate to false. 
+       ("ActiveXObject" in window) evaluates to true.
+       MS Edge does not support ActiveX so this test will evaluate false for MS Edge.
     */
-    let isIE = ("ActiveXObject" in window);
-
-    /*
-        There is a coincidental correlation between implementation of window.promises and native PDF support in desktop browsers
-        We use this to assume if the browser supports promises it supports embedded PDFs
-        Is this fragile? Sort of. But browser vendors removed mimetype detection, so we're left to improvise
-    */
-    let isModernBrowser = (window.Promise !== undefined);
-
-    //Older browsers still expose the mimeType
-    let supportsPdfMimeType = (nav.mimeTypes["application/pdf"] !== undefined);
-
-    //Safari on iPadOS doesn't report as 'mobile' when requesting desktop site, yet still fails to embed PDFs
-    let isSafariIOSDesktopMode = (  nav.platform !== undefined && 
-                                    nav.platform === "MacIntel" && 
-                                    nav.maxTouchPoints !== undefined && 
-                                    nav.maxTouchPoints > 1 );
-
-    //Quick test for mobile devices.
-    let isMobileDevice = (isSafariIOSDesktopMode || /Mobi|Tablet|Android|iPad|iPhone/.test(ua));
-
-    //Safari desktop requires special handling 
-    let isSafariDesktop = ( !isMobileDevice && 
-                            nav.vendor !== undefined && 
-                            /Apple/.test(nav.vendor) && 
-                            /Safari/.test(ua) );
-    
-    //Firefox started shipping PDF.js in Firefox 19. If this is Firefox 19 or greater, assume PDF.js is available
-    let isFirefoxWithPDFJS = (!isMobileDevice && /irefox/.test(ua) && ua.split("rv:").length > 1) ? (parseInt(ua.split("rv:")[1].split(".")[0], 10) > 18) : false;
-
-
-    /* ----------------------------------------------------
-       Supporting functions
-       ---------------------------------------------------- */
-
-    let createAXO = function (type){
-        var ax;
+    let validateAX = function (type){
+        var ax = null;
         try {
             ax = new ActiveXObject(type);
         } catch (e) {
-            ax = null; //ensure ax remains null
+            //ensure ax remains null when ActiveXObject attempt fails
+            ax = null;
         }
-        return ax;
+        return !!ax; //convert resulting object to boolean
     };
 
-    //If either ActiveX support for "AcroPDF.PDF" or "PDF.PdfCtrl" are found, return true
-    //Constructed as a method (not a prop) to avoid unneccesarry overhead -- will only be evaluated if needed
-    let supportsPdfActiveX = function (){ return !!(createAXO("AcroPDF.PDF") || createAXO("PDF.PdfCtrl")); };
+    let hasActiveXPDFPlugin = function (){ return ("ActiveXObject" in win) && (validateAX("AcroPDF.PDF") || validateAX("PDF.PdfCtrl")) };
+
+    let checkSupport = function (){
+
+        //Safari on iPadOS doesn't report as 'mobile' when requesting desktop site, yet still fails to embed PDFs
+        let isSafariIOSDesktopMode = (nav.platform !== undefined && nav.platform === "MacIntel" && nav.maxTouchPoints !== undefined && nav.maxTouchPoints > 1);
+
+        let isMobileDevice = (isSafariIOSDesktopMode || /Mobi|Tablet|Android|iPad|iPhone/.test(ua));
+
+        //As of June 2023, no mobile browsers properly support inline PDFs. If mobile, just say no.
+        if(isMobileDevice){ return false; }
+        
+        //Modern browsers began supporting navigator.pdfViewerEnabled in late 2022 and early 2023.
+        let supportsPDFVE = (typeof nav.pdfViewerEnabled === "boolean");
+
+        //If browser supports nav.pdfViewerEnabled and is explicitly saying PDFs are NOT supported (e.g. PDFJS disabled by user in Firefox), respect it.
+        if(supportsPDFVE && !nav.pdfViewerEnabled){ return false; }
+
+        return (supportsPDFVE && nav.pdfViewerEnabled) || isModernBrowser() || hasActiveXPDFPlugin();
+
+    };
 
     //Determines whether PDF support is available
-    let supportsPDFs = (
-        //As of Sept 2020 no mobile browsers properly support PDF embeds
-        !isMobileDevice && (
-            //We're moving into the age of MIME-less browsers. They mostly all support PDF rendering without plugins.
-            isModernBrowser ||
-            //Modern versions of Firefox come bundled with PDFJS
-            isFirefoxWithPDFJS ||
-            //Browsers that still support the original MIME type check
-            supportsPdfMimeType ||
-            //Pity the poor souls still using IE
-            (isIE && supportsPdfActiveX())
-        )
-    );
+    let supportsPDFs = checkSupport();
 
     //Create a fragment identifier for using PDF Open parameters when embedding PDF
     let buildURLFragmentString = function(pdfParams){
 
         let string = "";
         let prop;
+        let paramArray = [];
+        let fdf = "";
+        
+        //The comment, viewrect, and highlight parameters require page to be set first. 
 
+        //Check to ensure page is used if comment, viewrect, or highlight are specified
+        if(pdfParams.comment || pdfParams.viewrect || pdfParams.highlight){
+
+            if(!pdfParams.page){
+                
+                //If page is not set, use the first page
+                pdfParams.page = 1;
+                
+                //Inform user that page needs to be set properly
+                embedError("The comment, viewrect, and highlight parameters require a page parameter, but none was specified. Defaulting to page 1.");
+            
+            }
+
+        }
+
+        //Let's go ahead and ensure page is always the first parameter.
+        if(pdfParams.page){
+            paramArray.push("page=" + encodeURIComponent(pdfParams.page));
+            delete pdfParams.page;
+        }
+
+        //FDF needs to be the last parameter in the string
+        if(pdfParams.fdf){
+            fdf = pdfParams.fdf;
+            delete pdfParams.fdf;
+        }
+        
+        //Add all other parameters, as needed
         if(pdfParams){
 
             for (prop in pdfParams) {
                 if (pdfParams.hasOwnProperty(prop)) {
-                    string += encodeURIComponent(prop) + "=" + encodeURIComponent(pdfParams[prop]) + "&";
+                    paramArray.push(encodeURIComponent(prop) + "=" + encodeURIComponent(pdfParams[prop]));
                 }
             }
 
-            //The string will be empty if no PDF Params found
+            //Add fdf as the last parameter, if needed
+            if(fdf){
+                paramArray.push("fdf=" + encodeURIComponent(fdf));
+            }
+
+            //Join all parameters in the array into a string
+            string = paramArray.join("&");
+
+            //The string will be empty if no PDF Parameters were provided
+            //Only prepend the hash if the string is not empty
             if(string){
-
                 string = "#" + string;
-
-                //Remove last ampersand
-                string = string.slice(0, string.length - 1);
-
             }
 
         }
@@ -58303,9 +58368,9 @@ module.exports = g;
 
     };
 
-    let embedError = function (msg, suppressConsole){
+    let embedError = function (msg){
         if(!suppressConsole){
-            console.log("[PDFObject] " + msg);
+            console.log("[PDFObject]", msg);
         }
         return false;
     };
@@ -58329,7 +58394,7 @@ module.exports = g;
             //Is CSS selector
             targetNode = document.querySelector(targetSelector);
 
-        } else if (window.jQuery !== undefined && targetSelector instanceof jQuery && targetSelector.length) {
+        } else if (win.jQuery !== undefined && targetSelector instanceof jQuery && targetSelector.length) {
 
             //Is jQuery element. Extract HTML node
             targetNode = targetSelector.get(0);
@@ -58344,6 +58409,36 @@ module.exports = g;
         return targetNode;
 
     };
+
+    let convertBase64ToDownloadableLink = function (b64, filename, targetNode, fallbackHTML) {
+
+        //IE-11 safe version. More verbose than modern fetch()
+        if (window.Blob && window.URL && window.URL.createObjectURL) {
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', b64, true);
+            xhr.responseType = 'blob';
+            xhr.onload = function() {
+
+                if (xhr.status === 200) {
+ 
+                    var blob = xhr.response;
+                    var link = document.createElement('a');
+                    link.innerText = "Download PDF";
+                    link.href = URL.createObjectURL(blob);
+                    link.setAttribute('download', filename);
+                    targetNode.innerHTML = fallbackHTML.replace(/\[pdflink\]/g, link.outerHTML);
+
+                }
+
+            };
+
+            xhr.send();
+            
+        }
+
+    };
+
 
     let generatePDFObjectMarkup = function (embedType, targetNode, url, pdfOpenFragment, width, height, id, title, omitInlineStyles, customAttribute, PDFJS_URL){
 
@@ -58360,26 +58455,18 @@ module.exports = g;
             source += pdfOpenFragment;
         }
 
-        let el_type = (embedType === "pdfjs" || embedType === "iframe") ? "iframe" : "embed";
-        let el = document.createElement(el_type);
-
+        let el = document.createElement("iframe");
         el.className = "pdfobject";
         el.type = "application/pdf";
         el.title = title;
         el.src = source;
-
-        if(id){
-            el.id = id;
-        }
-
-        if(el_type === "iframe"){
-            el.allow = "fullscreen";
-            el.frameborder = "0";
-        }
+        el.allow = "fullscreen";
+        el.frameborder = "0";
+        if(id){ el.id = id; }
 
         if(!omitInlineStyles){
 
-            let style = (el_type === "embed") ? "overflow: auto;" : "border: none;";
+            let style = "border: none;";
 
             if(targetNode !== document.body){
                 //assign width and height to target node
@@ -58393,7 +58480,7 @@ module.exports = g;
 
         }
 
-        //Allow developer to insert custom attribute on embed/iframe element, but ensure it does not conflict with attributes used by PDFObject
+        //Allow developer to insert custom attribute on iframe element, but ensure it does not conflict with attributes used by PDFObject
         let reservedTokens = ["className", "type", "title", "src", "style", "id", "allow", "frameborder"];
         if(customAttribute && customAttribute.key && reservedTokens.indexOf(customAttribute.key) === -1){
             el.setAttribute(customAttribute.key, (typeof customAttribute.value !== "undefined") ? customAttribute.value : "");
@@ -58402,7 +58489,7 @@ module.exports = g;
         targetNode.classList.add("pdfobject-container");
         targetNode.appendChild(el);
 
-        return targetNode.getElementsByTagName(el_type)[0];
+        return targetNode.getElementsByTagName("iframe")[0];
 
     };
 
@@ -58415,6 +58502,7 @@ module.exports = g;
         let opt = options || {};
 
         //Get passed options, or set reasonable defaults
+        suppressConsole = (typeof opt.suppressConsole === "boolean") ? opt.suppressConsole : false;
         let id = (typeof opt.id === "string") ? opt.id : "";
         let page = opt.page || false;
         let pdfOpenParams = opt.pdfOpenParams || {};
@@ -58422,24 +58510,19 @@ module.exports = g;
         let width = opt.width || "100%";
         let height = opt.height || "100%";
         let title = opt.title || "Embedded PDF";
-        let assumptionMode = (typeof opt.assumptionMode === "boolean") ? opt.assumptionMode : true;
         let forcePDFJS = (typeof opt.forcePDFJS === "boolean") ? opt.forcePDFJS : false;
-        let supportRedirect = (typeof opt.supportRedirect === "boolean") ? opt.supportRedirect : false;
         let omitInlineStyles = (typeof opt.omitInlineStyles === "boolean") ? opt.omitInlineStyles : false;
-        let suppressConsole = (typeof opt.suppressConsole === "boolean") ? opt.suppressConsole : false;
-        let forceIframe = (typeof opt.forceIframe === "boolean") ? opt.forceIframe : false;
         let PDFJS_URL = opt.PDFJS_URL || false;
         let targetNode = getTargetElement(selector);
-        let fallbackHTML = "";
         let pdfOpenFragment = "";
         let customAttribute = opt.customAttribute || {};
-        let fallbackHTML_default = "<p>This browser does not support inline PDFs. Please download the PDF to view it: <a href='[url]'>Download PDF</a></p>";
+        let fallbackHTML_default = "<p>This browser does not support inline PDFs. Please download the PDF to view it: [pdflink]</p>";
 
         //Ensure URL is available. If not, exit now.
-        if(typeof url !== "string"){ return embedError("URL is not valid", suppressConsole); }
+        if(typeof url !== "string"){ return embedError("URL is not valid"); }
 
         //If target element is specified but is not valid, exit without doing anything
-        if(!targetNode){ return embedError("Target element cannot be determined", suppressConsole); }
+        if(!targetNode){ return embedError("Target element cannot be determined"); }
 
         //page option overrides pdfOpenParams, if found
         if(page){ pdfOpenParams.page = page; }
@@ -58457,19 +58540,9 @@ module.exports = g;
  
         // --== Embed attempt #2 ==--
 
-        //Embed PDF if traditional support is provided, or if this developer is willing to roll with assumption
-        //that modern desktop (not mobile) browsers natively support PDFs 
-        if(supportsPDFs || (assumptionMode && !isMobileDevice)){
-            
-            //Should we use <embed> or <iframe>? In most cases <embed>. 
-            //Allow developer to force <iframe>, if desired
-            //There is an edge case where Safari does not respect 302 redirect requests for PDF files when using <embed> element.
-            //Redirect appears to work fine when using <iframe> instead of <embed> (Addresses issue #210)
-            //Forcing Safari desktop to use iframe due to freezing bug in macOS 11 (Big Sur)
-            let embedtype = (forceIframe || supportRedirect || isSafariDesktop) ? "iframe" : "embed";
-            
-            return generatePDFObjectMarkup(embedtype, targetNode, url, pdfOpenFragment, width, height, id, title, omitInlineStyles, customAttribute);
-
+        //Embed PDF if support is detected, or if this is a relatively modern browser 
+        if(supportsPDFs){
+            return generatePDFObjectMarkup("iframe", targetNode, url, pdfOpenFragment, width, height, id, title, omitInlineStyles, customAttribute);
         }
         
         // --== Embed attempt #3 ==--
@@ -58484,12 +58557,33 @@ module.exports = g;
         //Display the fallback link if available
         if(fallbackLink){
 
-            fallbackHTML = (typeof fallbackLink === "string") ? fallbackLink : fallbackHTML_default;
-            targetNode.innerHTML = fallbackHTML.replace(/\[url\]/g, url);
+            //If a custom fallback has been provided, handle it now
+            if(typeof fallbackLink === "string"){
+
+                //Ensure [url] is set in custom fallback
+                targetNode.innerHTML = fallbackLink.replace(/\[url\]/g, url);
+
+            } else {
+
+                //If the PDF is a base64 string, convert it to a downloadable link
+                if(url.indexOf("data:application/pdf;base64") !== -1){
+
+                    //Asynchronously append the link to the targetNode
+                    convertBase64ToDownloadableLink(url, "file.pdf", targetNode, fallbackHTML_default);
+                
+                } else {
+
+                    //Use default fallback link
+                    let link = "<a href='" + url + "'>Download PDF</a>";
+                    targetNode.innerHTML = fallbackHTML_default.replace(/\[pdflink\]/g, link);
+
+                }
+
+            }
 
         }
 
-        return embedError("This browser does not support embedded PDFs", suppressConsole);
+        return embedError("This browser does not support embedded PDFs");
 
     };
 
@@ -58500,7 +58594,6 @@ module.exports = g;
     };
 
 }));
-
 ;
 /****************************************************************************
     jquery-bootstrap.js,
@@ -61402,51 +61495,86 @@ uri         : {default: "Please enter a valid URI"}
     diminish
     pin
     unpin
-
+    new
+    warning
+    info
+    help
     close (x)
+    */
+
+    /*
+    There are two ways to display icon-buttons on the header:
+    1: Small icons inside round borders (default), or
+    2: Full sized icons with square background changing color on hover - a la MS Windows
+
+    Popups and Noty always uses 1.
+
+    For bsModals a global variablecan be set to use square icons
+
+    bsHeaderIcons and bsHeaderIconsSquare = {icon, className, title} for the different icons on the header. Set by function to allow updating $.FONTAWESOME_PREFIX_??
+
 
     */
 
-    //$.bsHeaderIcons = class-names for the different icons on the header. Set by function to allow updating $.FONTAWESOME_PREFIX_??
-    $.bsHeaderIcons = {};
-    $._set_bsHeaderIcons = function( forceOptions = {}){
+    $.BSMODAL_USE_SQUARE_ICONS = $.BSMODAL_USE_SQUARE_ICONS || false;
 
-        $.bsHeaderIcons = $.extend( $.bsHeaderIcons, {
-            back    : 'fa-circle-chevron-left',
-            forward : 'fa-circle-chevron-right',
+    let bsHeaderIcons       = {},
+        bsHeaderIconsSquare = {};
 
-            pin     : ['fas fa-thumbtack fa-inside-circle', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
-            unpin   : 'fa-thumbtack',
+    function adjustHeaderIcon( headerIcon ){
+        if ((typeof headerIcon == 'string') || Array.isArray(headerIcon))
+                headerIcon = {icon: headerIcon};
+        return headerIcon;
+    }
 
-            extend  : 'fa-chevron-circle-up',
-            diminish: 'fa-chevron-circle-down',
+    function adjustHeaderIcons( headerIcons ){
+        $.each( headerIcons, (id, cont) => {
+            headerIcons[id] = adjustHeaderIcon(cont);
+        });
+        return headerIcons;
+    }
+    function getDefaultHeaderIcons( square ){
+        return adjustHeaderIcons({
+            back    : square ? 'fas fa-arrow-left'  : 'fa-circle-chevron-left',
+            forward : square ? 'fas fa-arrow-right' : 'fa-circle-chevron-right',
+
+            pin     : square ? 'fa-thumbtack' : ['fas fa-thumbtack fa-inside-circle', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
+            unpin   : {
+                icon: 'fa-thumbtack',
+                class: square ? 'header-icon-selected' : null
+            },
+
+            extend  : square ? 'fa-square-plus' : 'fa-chevron-circle-up',
+            diminish: square ? 'fa-square-minus' : 'fa-chevron-circle-down',
 
 
-            new     : [ $.FONTAWESOME_PREFIX_STANDARD + ' fa-window-maximize fa-inside-circle2',
-                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'  ],
+            new     : square ? 'fa-window-maximize' : [ $.FONTAWESOME_PREFIX_STANDARD + ' fa-window-maximize fa-inside-circle2', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle'],
 
-            warning : [ 'fas fa-circle back text-warning',
-                        $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle',
-                        'fas fa-exclamation fa-inside-circle-xmark'   ],
+            warning : {
+                icon : square ? 'fa-exclamation' : [ 'fas fa-circle back text-warning', $.FONTAWESOME_PREFIX_STANDARD + ' fa-circle', 'fas fa-exclamation fa-inside-circle-xmark'],
+                class: square ? 'header-icon-warning' : null
+            },
 
-            info    : 'fa-circle-info',
-            help    : 'fa-circle-question',
+            info    : square ? 'fa-info' : 'fa-circle-info',
+            help    : square ? 'fa-question' : 'fa-circle-question',
 
-            close   : [ 'fas fa-circle show-for-hover fa-hover-color-red',
-                        'fa-xmark fa-inside-circle-xmark fa-hover-color-white',
-                        $.FONTAWESOME_PREFIX_STANDARD+' fa-circle' ]
+            close   : {
+                icon : square ? 'fas fa-xmark' : ['fas fa-circle show-for-hover fa-hover-color-red', 'fa-xmark fa-inside-circle-xmark fa-hover-color-white', $.FONTAWESOME_PREFIX_STANDARD+' fa-circle'],
+                title: {da:'Luk', en:'Close'},
+                class: square ? 'header-icon-close' : null
+            }
+        });
+    }
 
-        }, forceOptions );
+    $._set_bsHeaderIcons = function( newHeaderIcons = {}, newHeaderIconsSquare = {}){
+        bsHeaderIcons       = $.extend(true, getDefaultHeaderIcons(),     bsHeaderIcons,       adjustHeaderIcons(newHeaderIcons)       );
+        bsHeaderIconsSquare = $.extend(true, getDefaultHeaderIcons(true), bsHeaderIconsSquare, adjustHeaderIcons(newHeaderIconsSquare) );
     };
+
     $._set_bsHeaderIcons();
 
-    //mandatoryHeaderIconClass = mandatory class-names and title for the different icons on the header
-    var mandatoryHeaderIconClassAndTitle = {
-        close  : {/*class:'',*/ title: {da:'Luk', en:'Close'}},
-    };
-
     /******************************************************
-    _bsHeaderAndIcons(options)
+    _bsHeaderAndIcons(options, useSquareIcons)
     Create the text and icon content of a header inside this
     options: {
         headerClassName: [string]
@@ -61461,23 +61589,24 @@ uri         : {default: "Please enter a valid URI"}
             event.stopImmediatePropagation();
     }
 
-    $.fn._bsHeaderAndIcons = function(options){
+    $.fn._bsHeaderAndIcons = function(options, useSquareIcons){
         var $this = this;
 
         options = $.extend( true, {text:'DAVS MED DIG', headerClassName: '', inclHeader: true, icons: {} }, options );
-        this.addClass( options.headerClassName );
-        this.addClass('header-content');
+        this
+            .addClass( options.headerClassName )
+            .addClass('header-content');
 
         if (options.inclHeader){
             options.header = $._bsAdjustIconAndText(options.header);
             //If header contents more than one text => set the first to "fixed" so that only the following text are truncated
-            if ($.isArray(options.header) && (options.header.length > 1)){
+            if (Array.isArray(options.header) && (options.header.length > 1))
                 options.header[0].textClass = 'fixed-header';
-            }
+
             this._bsAddHtml( options.header || $.EMPTY_TEXT );
         }
         //Add icons (if any)
-        if ( !$.isEmptyObject(options.icons) ) {
+        if ( !$.isEmptyObject(options.icons) ){
             //Container for icons
             var $iconContainer =
                     $('<div/>')
@@ -61485,22 +61614,23 @@ uri         : {default: "Please enter a valid URI"}
                             baseClass   :'header-icon-container',
                             useTouchSize: true
                         })
+                        .toggleClass('with-square-icons', !!useSquareIcons)
                         .appendTo( this );
 
             //Add icons
-            $.each( ['back', 'forward', 'pin', 'unpin', 'extend', 'diminish', 'new', 'warning', 'info', 'help', 'close'], function( index, id ){
-                var iconOptions = options.icons[id],
-                    classAndTitle = mandatoryHeaderIconClassAndTitle[id] || {};
-
-                if (iconOptions && iconOptions.onClick){
-                    var icon = iconOptions.icon || $.bsHeaderIcons[id];
-                    icon = $.isArray(icon) ? icon : [icon];
+            let headerIcons = useSquareIcons ? bsHeaderIconsSquare : bsHeaderIcons;
+            ['back', 'forward', 'pin', 'unpin', 'extend', 'diminish', 'new', 'warning', 'info', 'help', 'close'].forEach( (id) => {
+                let iconOptions = options.icons[id];
+                if (iconOptions && (iconOptions.onClick || (typeof iconOptions == 'function'))){
+                    if (typeof iconOptions == 'function')
+                        iconOptions = {onClick: iconOptions};
+                    iconOptions = $.extend(true, {}, headerIcons[id] || {}, iconOptions);
 
                     $._bsCreateIcon(
-                        icon,
+                        Array.isArray(iconOptions.icon) ? iconOptions.icon : [iconOptions.icon],
                         $iconContainer,
-                        iconOptions.title || classAndTitle.title || '',
-                        (iconOptions.className || '') + ' header-icon ' + (classAndTitle.class || '')
+                        iconOptions.title || '',
+                        'header-icon ' + (iconOptions.className || '') + ' ' + (iconOptions.class || '')
                     )
                     .toggleClass('hidden', !!iconOptions.hidden)
                     .toggleClass('disabled', !!iconOptions.disabled)
@@ -62078,7 +62208,6 @@ options
 
     var objectWithFileClasses = 'border-0 w-100 h-100';
 
-    //$.bsHeaderIcons = class-names for the different icons on the header
     $.bsExternalLinkIcon = 'fa-external-link-alt';
 
     /**********************************************************
@@ -62627,6 +62756,9 @@ jquery-bootstrap-modal-promise.js
         alwaysMaxHeight: BOOLEAN - If true the modal is always the full height of it parent
 
 
+        innerHeight     : The fixed height of the content
+        innerMaxHeight  : The fixed max-height of the content
+
         flexWidth
         extraWidth
         megaWidth
@@ -62642,15 +62774,18 @@ jquery-bootstrap-modal-promise.js
         minimized,
         extended: {
             type
+            showHeader (only minimized) if true the header is also shown in minimized-mode
             showHeaderOnClick (only minimized)
-            fixedContent
+            fixedContent, fixed: content or true. If true the content is equal to normal or extended/minimized
             noVerticalPadding
             noHorizontalPadding
             alwaysMaxHeight
+            innerHeight
+            innerMaxHeight
             content
             verticalButtons: BOOLEAN, default = options.verticalButtons, if true the buttons are vertical stacked and has width = 100%. If false and options.verticalButtons = true only normal gets vertival buttons
             scroll: boolean | 'vertical' | 'horizontal'
-            footer
+            footer: content or true. If true the content is equal to normal or extended/minimized
         }
         isExtended: boolean
         footer
@@ -62898,9 +63033,9 @@ jquery-bootstrap-modal-promise.js
         //If options.extended.fixedContent == true and/or options.extended.footer == true => normal and extended uses same fixed and/or footer content
         if (options.extended) {
             //If common fixed content => add it as normal fixed content
-            if ((options.fixedContent === true) || (options.extended.fixedContent === true)) {
+            if ((options.fixedContent === true) || (options.extended.fixedContent === true) || (options.extended.fixed === true)) {
                 options.fixedContent = options.fixedContent === true ? options.extended.fixedContent : options.fixedContent;
-                options.extended.fixedContent = options.extended.fixedContent === true ? options.fixedContent : options.extended.fixedContent;
+                options.extended.fixedContent = ((options.extended.fixedContent === true) || (options.extended.fixed === true)) ? options.fixedContent : options.extended.fixedContent;
             }
 
             //If common footer content => add it as extended footer content
@@ -62908,6 +63043,15 @@ jquery-bootstrap-modal-promise.js
                 options.footer = options.footer === true ? options.extended.footer : options.footer;
                 options.extended.footer = options.extended.footer === true ? options.footer : options.extended.footer;
             }
+        }
+
+        //If options.minimized.fixedContent/fixed == true and/or options.minimized.footer == true => normal and minimized uses same fixed and/or footer content
+        if (options.minimized){
+            if ((options.minimized.fixedContent === true) || (options.minimized.fixed === true))
+                options.minimized.fixedContent = options.fixedContent;
+
+            if (options.minimized.footer === true)
+                options.minimized.footer = options.footer;
         }
     }
 
@@ -62986,7 +63130,7 @@ jquery-bootstrap-modal-promise.js
 
             //Update header
             var $iconContainer = this.bsModal.$header.find('.header-icon-container').detach();
-            updateElement(this.bsModal.$header, options, '_bsHeaderAndIcons');
+            updateElement(this.bsModal.$header, options, '_bsHeaderAndIcons', $.BSMODAL_USE_SQUARE_ICONS);
             this.bsModal.$header.append($iconContainer);
 
             _updateFixedAndFooterInOptions(options);
@@ -63052,9 +63196,22 @@ jquery-bootstrap-modal-promise.js
             return result ? 'alert-'+result : '';
         }
 
+        function setInnerHeightAndInnerMaxHeight($elem, options){
+            if (options.innerHeight)
+                $elem.css('--inner-height',     typeof options.innerHeight == 'number'    ? options.innerHeight + 'px'    : options.innerHeight    );
+            if (options.innerMaxHeight)
+                $elem.css('--inner-max-height', typeof options.innerMaxHeight == 'number' ? options.innerMaxHeight + 'px' : options.innerMaxHeight );
+        }
+
         //Append fixed content (if any)
+        //If fixedContent.contetn exists => fixedContent is also the options for the fixed content
         //options.fixedContentOptions = options different from content for fixed-content
-        var fixedOptions = $.extend({}, options, options.fixedContentOptions || {}),
+        var fixedOptions = $.extend({},
+                options,
+                {innerHeight:'auto', innerMaxheight: 'none'},
+                options.fixedContent && options.fixedContent.content ? options.fixedContent : {},
+                options.fixedContentOptions || {}
+            ),
             $modalFixedContent = parts.$fixedContent =
                 $('<div/>')
                     .addClass('modal-body-fixed')
@@ -63065,12 +63222,16 @@ jquery-bootstrap-modal-promise.js
                     .toggleClass('pb-0',                        !!fixedOptions.noBottomPadding)
                     .toggleClass('px-0',                        !!fixedOptions.noHorizontalPadding)
                     .toggleClass('modal-body-semi-transparent', !!fixedOptions.semiTransparent)
+                    .toggleClass('center-middle-content',       !!fixedOptions.centerMiddle)
+                    .toggleClass('with-border',                 !!(fixedOptions.withBorder || fixedOptions.bottomBorder || fixedOptions.border))
                     .addClass( getAlertClass(fixedOptions) )
                     .addClass(options.fixedClassName || '')
                     .appendTo( this );
 
-        if (options.fixedContent)
-            $modalFixedContent._bsAppendContent( options.fixedContent, options.fixedContentContext, null, options );
+        if (options.fixedContent){
+            $modalFixedContent._bsAppendContent( options.fixedContent.content ? options.fixedContent.content : options.fixedContent, options.fixedContentContext, null, options );
+            setInnerHeightAndInnerMaxHeight($modalFixedContent, fixedOptions);
+        }
 
         //Append body and content
         var $modalBody = parts.$body =
@@ -63080,13 +63241,15 @@ jquery-bootstrap-modal-promise.js
                     .toggleClass('py-0',                         !!options.noVerticalPadding)
                     .toggleClass('px-0',                         !!options.noHorizontalPadding)
                     .toggleClass('modal-body-semi-transparent',  !!options.semiTransparent)
+                    .toggleClass('center-middle-content',        !!options.centerMiddle)
                     .addClass( getAlertClass(options) )
                     .addClass(options.className || '')
                     .appendTo( this );
 
+        setInnerHeightAndInnerMaxHeight($modalBody, options);
+
         if (!options.content || (options.content === {}))
             $modalBody.addClass('modal-body-no-content');
-
 
         var $modalContent = parts.$content =
                 hasScroll ?
@@ -63204,26 +63367,28 @@ jquery-bootstrap-modal-promise.js
         //Set bsModal.cssWidth
         this.bsModal.cssWidth[MODAL_SIZE_NORMAL] = getWidthFromOptions( options );
 
-        if (options.minimized)
-            this.bsModal.cssWidth[MODAL_SIZE_MINIMIZED] = getWidthFromOptions(options.minimized);
 
-        if (options.extended){
-            //If options.extended.width == true or none width-options is set in extended => use same width as normal-mode
-            if ( (options.extended.width == true) ||
-                 ( (options.extended.flexWidth == undefined) &&
-                   (options.extended.extraWidth == undefined) &&
-                   (options.extended.megaWidth == undefined) &&
-                   (options.extended.maxWidth == undefined) &&
-                   (options.extended.fullWidth == undefined) &&
-                   (options.extended.fullScreen == undefined) &&
-                   (options.extended.fullScreenWithBorder == undefined) &&
-                   (options.extended.width == undefined)
-                 )
-              )
-                this.bsModal.cssWidth[MODAL_SIZE_EXTENDED] = this.bsModal.cssWidth[MODAL_SIZE_NORMAL];
-            else
-                this.bsModal.cssWidth[MODAL_SIZE_EXTENDED] = getWidthFromOptions( options.extended );
+        function useNormalWidth(options = {}){
+            return (options.width == true) ||
+                    (   (options.flexWidth == undefined) &&
+                        (options.extraWidth == undefined) &&
+                        (options.megaWidth == undefined) &&
+                        (options.maxWidth == undefined) &&
+                        (options.fullWidth == undefined) &&
+                        (options.fullScreen == undefined) &&
+                        (options.fullScreenWithBorder == undefined) &&
+                        (options.width == undefined)
+                    );
         }
+
+        if (options.minimized)
+            //If options.minimized.width == true or none width-options is set in extended => use same width as normal-mode
+            this.bsModal.cssWidth[MODAL_SIZE_MINIMIZED] = useNormalWidth(options.minimized) ? this.bsModal.cssWidth[MODAL_SIZE_NORMAL] : getWidthFromOptions( options.minimized );
+
+        if (options.extended)
+            //If options.extended.width == true or none width-options is set in extended => use same width as normal-mode
+            this.bsModal.cssWidth[MODAL_SIZE_EXTENDED] = useNormalWidth(options.extended) ? this.bsModal.cssWidth[MODAL_SIZE_NORMAL] : this.bsModal.cssWidth[MODAL_SIZE_EXTENDED] = getWidthFromOptions( options.extended );
+
 
         var $modalContent = this.bsModal.$modalContent =
                 $('<div/>')
@@ -63293,10 +63458,10 @@ jquery-bootstrap-modal-promise.js
                 unpin   : { className: 'show-for-modal-pinned', onClick: options.onPin ? modalUnpin    : null },
                 extend  : { className: iconExtendClassName,     onClick: multiSize ? modalExtend   : null, altEvents:'swipeup'   },
                 diminish: { className: iconDiminishClassName,   onClick: multiSize ? modalDiminish : null, altEvents:'swipedown' },
-                new     : { className: '',                      onClick: options.onNew ? $.proxy(options.onNew, this) : null },
-                info    : { className: '',                      onClick: options.onInfo ? $.proxy(options.onInfo, this) : null },
-                warning : { className: '',                      onClick: options.onWarning ? $.proxy(options.onWarning, this) : null },
-                help    : { className: '',                      onClick: options.onHelp ? $.proxy(options.onHelp, this) : null },
+                new     : {                                     onClick: options.onNew ? $.proxy(options.onNew, this) : null },
+                info    : {                                     onClick: options.onInfo ? $.proxy(options.onInfo, this) : null },
+                warning : {                                     onClick: options.onWarning ? $.proxy(options.onWarning, this) : null },
+                help    : {                                     onClick: options.onHelp ? $.proxy(options.onHelp, this) : null },
             }
         }, options );
 
@@ -63339,7 +63504,7 @@ jquery-bootstrap-modal-promise.js
         if (!options.noHeader &&  (options.header || !$.isEmptyObject(options.icons) ) ){
             var $modalHeader = this.bsModal.$header =
                     $('<div/>')
-                        ._bsHeaderAndIcons( options )
+                        ._bsHeaderAndIcons( options, $.BSMODAL_USE_SQUARE_ICONS )
                         .appendTo( $modalContent );
 
             //Add dbl-click on header to change to/from extended
@@ -63355,6 +63520,12 @@ jquery-bootstrap-modal-promise.js
         //Create minimized content
         if (options.minimized){
             this.bsModal.minimized = {};
+
+            if (options.minimized.showHeader){
+                $modalContent.addClass('modal-minimized-full-header');
+                options.minimized.showHeaderOnClick = false;
+            }
+            else {
                 $modalContent.addClass('modal-minimized-hide-header');
                 var bsModalToggleMinimizedHeader = $.proxy(this._bsModalToggleMinimizedHeader, this);
                 options.minimized.onClick =
@@ -63362,9 +63533,10 @@ jquery-bootstrap-modal-promise.js
                         bsModalToggleMinimizedHeader :
                         modalExtend;
 
-            //Close header when a icon is clicked
-            if (options.minimized.showHeaderOnClick)
-                this.bsModal.$header.on('click', bsModalToggleMinimizedHeader);
+                //Close header when a icon is clicked
+                if (options.minimized.showHeaderOnClick)
+                    this.bsModal.$header.on('click', bsModalToggleMinimizedHeader);
+            }
 
             $modalContent._bsModalBodyAndFooter( MODAL_SIZE_MINIMIZED/*'minimized'*/, options.minimized, this.bsModal.minimized, '', initSize, parentOptions );
 
@@ -63376,6 +63548,7 @@ jquery-bootstrap-modal-promise.js
 
                 this.bsModal.cssHeight[MODAL_SIZE_MINIMIZED] = null;
             }
+
         }
 
         //Create normal content
@@ -63504,13 +63677,17 @@ jquery-bootstrap-modal-promise.js
     _bsModalSetHeightAndWidth - Set the height and width according to current cssHeight and cssWidth
     ******************************************************/
     $.fn._bsModalSetHeightAndWidth = function(){
-
         var bsModal = this.bsModal,
             $modalContent = get$modalContent(this),
             $modalDialog = $modalContent.parent(),
             size = $modalContent._bsModalGetSize(),
             cssHeight = bsModal.cssHeight[size],
             cssWidth = bsModal.cssWidth[size];
+
+        if (!cssWidth){
+            this._bsModalSetSize(MODAL_SIZE_NORMAL);
+            return;
+        }
 
         //Set height
         $modalContent
@@ -63573,7 +63750,6 @@ jquery-bootstrap-modal-promise.js
 
         this._bsModalSetSizeClass(size);
         this._bsModalSetHeightAndWidth();
-
 
         /*
         NOTE: 2021-04-16
@@ -63689,6 +63865,21 @@ jquery-bootstrap-modal-promise.js
                 options.extended.relativeHeightOffset = 0;
         }
 
+        //Set options for a modal inside a container
+        if (options.$container){
+            options.show      = true;
+            options.fullWidth = !options.width;
+            if (options.minimized){
+                options.minimized.width = options.minimized.width || options.width;
+                options.minimized.fullWidth = !options.minimized.width;
+            }
+            if (options.extended){
+                options.extended.width = options.extended.width || options.width;
+                options.extended.fullWidth = !options.extended.width;
+                options.extended.height = options.extended.height || true;
+            }
+        }
+
 
         //Create the modal
         $result =
@@ -63747,17 +63938,24 @@ jquery-bootstrap-modal-promise.js
             $result.getHeaderIcon('forward').css('visibility', 'hidden');
         }
 
-        $result.on({
-            'show.bs.modal'  : $.proxy(show_bs_modal, $result),//show_bs_modal,
-            'shown.bs.modal' : shown_bs_modal,
-            'hide.bs.modal'  : $.proxy(hide_bs_modal, $result),
-            'hidden.bs.modal': hidden_bs_modal
-        });
+        if (options.$container){
+            $result.addClass('show');
+            $result.appendTo( options.$container );
+            options.$container.addClass('modal-fixed-container');
+        }
+        else {
+            $result.on({
+                'show.bs.modal'  : show_bs_modal.bind($result),
+                'shown.bs.modal' : shown_bs_modal,
+                'hide.bs.modal'  : hide_bs_modal.bind($result),
+                'hidden.bs.modal': hidden_bs_modal
+            });
+            $result.appendTo( $('body') );
+            if (options.show)
+                $result.show();
+        }
 
-        $result.appendTo( $('body') );
 
-        if (options.show)
-            $result.show();
         return $result;
     };
 

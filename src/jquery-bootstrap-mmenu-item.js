@@ -82,6 +82,16 @@
 
         this.type = ['button', 'buttons', 'buttonlist'].includes(this.type) ? 'buttons' : this.type;
         this.isButtons = this.type == 'buttons';
+
+        //If type = button and no buttons are given in buttonList/buttons => add one
+        if (this.isButtons && (!this.options.buttonList || !this.options.buttonList.length) && !this.options.buttons)
+            this.options.buttonList = [{
+                icon     : this.options.icon,
+                iconClass: this.options.iconClass,
+                text     : this.options.text,
+                onClick  : this.options.onClick
+            }];
+
         this.buttonPaddingLeft  = this.isButtons && options.buttonPaddingLeft;
         this.buttonPaddingRight = this.isButtons && options.buttonPaddingRight;
 
@@ -131,6 +141,7 @@
     $.bsMmenuItem = function(options, parent, owner){
         return new $.BsMmenuItem(options, parent, owner);
     };
+
 
     //Extend the prototype
     $.BsMmenuItem.prototype = {
@@ -249,7 +260,6 @@
                 paddingClass = paddingClass + ' padding-left';
             if (this.$favoriteButton || this.buttonPaddingRight)
                 paddingClass = paddingClass + ' padding-right';
-
 
             if (buttonList){
                 //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
