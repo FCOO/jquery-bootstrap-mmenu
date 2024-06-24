@@ -519,7 +519,12 @@
             if (selected){
                 if (!this.favoriteItem){
                     //Create the 'copy' menu-item to add to favorites
-                    var favoriteOptions = $.extend(true, {}, this.options);
+                    //Use options.favotiteXX is given
+                    var favoriteOptions = $.extend(true, {}, this.options, {
+                            icon     : this.options.favoriteIcon      || this.options.icon      || null,
+                            iconClass: this.options.favoriteIconClass || this.options.iconClass || null,
+                            text     : this.options.favoriteText      || this.options.text      || null
+                    });
 
                     favoriteOptions.id = null;
                     favoriteOptions.noFavoriteButton = true;
