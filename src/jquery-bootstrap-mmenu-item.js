@@ -210,6 +210,9 @@
                     this.checkbox.find('label').addClass('w-100');
 
                     this.setState(this.state);
+                }
+
+                if (this.options.link || this.checkbox){
 
                     //Add button to toggle favorites
                     if (this.menu.options.favorites && !this.options.noFavoriteButton){
