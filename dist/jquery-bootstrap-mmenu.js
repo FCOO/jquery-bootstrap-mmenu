@@ -82,6 +82,7 @@
 
         this.type = ['button', 'buttons', 'buttonlist'].includes(this.type) ? 'buttons' : this.type;
         this.isButtons = this.type == 'buttons';
+        this.isLink = !!this.options.link;
 
         //If type = button and no buttons are given in buttonList/buttons => add one
         if (this.isButtons && (!this.options.buttonList || !this.options.buttonList.length) && !this.options.buttons)
@@ -162,9 +163,20 @@
             var $outer    = this.$outer = $('<span/>').appendTo(this.$li);
 
             if (!this.isButtons){
-                this.$content = $('<div/>')
-                                    .addClass('d-flex align-items-center')
-                                    .appendTo(this.$outer);
+                if (this.isLink)
+                    this.$content = $('<a/>').addClass('mm-listitem-link');
+                else
+                    this.$content = $('<div/>');
+
+                this.$content
+                        .addClass('d-flex align-items-center')
+                        .appendTo(this.$outer);
+
+                if (this.isLink)
+                    this.$content
+                        .i18n(this.options.link, 'href')
+                        .prop('target', '_blank');
+
 
                 var originalContent = this.options.content || this.options,
                     adjustIcon = this.menu.options.adjustIcon;
@@ -243,7 +255,7 @@
                             icon        : this.menu.removeFavoriteIcon,
                             title       : {da:'Fjern fra Favoritter', en:'Remove from Favorites'},
                             transparent : true,
-                        square      : true,
+                            square      : true,
                             noBorder    : true,
                             class       :'flex-shrink-0 mm-favorite-icons',
                             onClick     : $.proxy(owner._toggleFavorite, owner)

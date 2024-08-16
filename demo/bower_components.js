@@ -23040,7 +23040,7 @@ return jQuery;
     }
   }
 
-  function defer() {
+  const defer = () => {
     let res;
     let rej;
     const promise = new Promise((resolve, reject) => {
@@ -23050,28 +23050,24 @@ return jQuery;
     promise.resolve = res;
     promise.reject = rej;
     return promise;
-  }
-  function makeString(object) {
+  };
+  const makeString = object => {
     if (object == null) return '';
     return '' + object;
-  }
-  function copy(a, s, t) {
+  };
+  const copy = (a, s, t) => {
     a.forEach(m => {
       if (s[m]) t[m] = s[m];
     });
-  }
+  };
   const lastOfPathSeparatorRegExp = /###/g;
-  function getLastOfPath(object, path, Empty) {
-    function cleanKey(key) {
-      return key && key.indexOf('###') > -1 ? key.replace(lastOfPathSeparatorRegExp, '.') : key;
-    }
-    function canNotTraverseDeeper() {
-      return !object || typeof object === 'string';
-    }
+  const cleanKey = key => key && key.indexOf('###') > -1 ? key.replace(lastOfPathSeparatorRegExp, '.') : key;
+  const canNotTraverseDeeper = object => !object || typeof object === 'string';
+  const getLastOfPath = (object, path, Empty) => {
     const stack = typeof path !== 'string' ? path : path.split('.');
     let stackIndex = 0;
     while (stackIndex < stack.length - 1) {
-      if (canNotTraverseDeeper()) return {};
+      if (canNotTraverseDeeper(object)) return {};
       const key = cleanKey(stack[stackIndex]);
       if (!object[key] && Empty) object[key] = new Empty();
       if (Object.prototype.hasOwnProperty.call(object, key)) {
@@ -23081,13 +23077,13 @@ return jQuery;
       }
       ++stackIndex;
     }
-    if (canNotTraverseDeeper()) return {};
+    if (canNotTraverseDeeper(object)) return {};
     return {
       obj: object,
       k: cleanKey(stack[stackIndex])
     };
-  }
-  function setPath(object, path, newValue) {
+  };
+  const setPath = (object, path, newValue) => {
     const {
       obj,
       k
@@ -23108,32 +23104,31 @@ return jQuery;
       }
     }
     last.obj[`${last.k}.${e}`] = newValue;
-  }
-  function pushPath(object, path, newValue, concat) {
+  };
+  const pushPath = (object, path, newValue, concat) => {
     const {
       obj,
       k
     } = getLastOfPath(object, path, Object);
     obj[k] = obj[k] || [];
-    if (concat) obj[k] = obj[k].concat(newValue);
-    if (!concat) obj[k].push(newValue);
-  }
-  function getPath(object, path) {
+    obj[k].push(newValue);
+  };
+  const getPath = (object, path) => {
     const {
       obj,
       k
     } = getLastOfPath(object, path);
     if (!obj) return undefined;
     return obj[k];
-  }
-  function getPathWithDefaults(data, defaultData, key) {
+  };
+  const getPathWithDefaults = (data, defaultData, key) => {
     const value = getPath(data, key);
     if (value !== undefined) {
       return value;
     }
     return getPath(defaultData, key);
-  }
-  function deepExtend(target, source, overwrite) {
+  };
+  const deepExtend = (target, source, overwrite) => {
     for (const prop in source) {
       if (prop !== '__proto__' && prop !== 'constructor') {
         if (prop in target) {
@@ -23148,10 +23143,8 @@ return jQuery;
       }
     }
     return target;
-  }
-  function regexEscape(str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-  }
+  };
+  const regexEscape = str => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
   var _entityMap = {
     '&': '&amp;',
     '<': '&lt;',
@@ -23160,12 +23153,12 @@ return jQuery;
     "'": '&#39;',
     '/': '&#x2F;'
   };
-  function escape(data) {
+  const escape = data => {
     if (typeof data === 'string') {
       return data.replace(/[&<>"'\/]/g, s => _entityMap[s]);
     }
     return data;
-  }
+  };
   class RegExpCache {
     constructor(capacity) {
       this.capacity = capacity;
@@ -23188,7 +23181,7 @@ return jQuery;
   }
   const chars = [' ', ',', '?', '!', ';'];
   const looksLikeObjectPathRegExpCache = new RegExpCache(20);
-  function looksLikeObjectPath(key, nsSeparator, keySeparator) {
+  const looksLikeObjectPath = (key, nsSeparator, keySeparator) => {
     nsSeparator = nsSeparator || '';
     keySeparator = keySeparator || '';
     const possibleChars = chars.filter(c => nsSeparator.indexOf(c) < 0 && keySeparator.indexOf(c) < 0);
@@ -23202,8 +23195,8 @@ return jQuery;
       }
     }
     return matched;
-  }
-  function deepFind(obj, path) {
+  };
+  const deepFind = function (obj, path) {
     let keySeparator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '.';
     if (!obj) return undefined;
     if (obj[path]) return obj[path];
@@ -23232,11 +23225,11 @@ return jQuery;
       current = next;
     }
     return current;
-  }
-  function getCleanedCode(code) {
+  };
+  const getCleanedCode = code => {
     if (code && code.indexOf('_') > 0) return code.replace('_', '-');
     return code;
-  }
+  };
 
   class ResourceStore extends EventEmitter {
     constructor(data) {
@@ -23314,7 +23307,7 @@ return jQuery;
         silent: false
       };
       for (const m in resources) {
-        if (typeof resources[m] === 'string' || Object.prototype.toString.apply(resources[m]) === '[object Array]') this.addResource(lng, ns, m, resources[m], {
+        if (typeof resources[m] === 'string' || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
           silent: true
         });
       }
@@ -23495,7 +23488,7 @@ return jQuery;
       const joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
       const handleAsObjectInI18nFormat = !this.i18nFormat || this.i18nFormat.handleAsObject;
       const handleAsObject = typeof res !== 'string' && typeof res !== 'boolean' && typeof res !== 'number';
-      if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && resType === '[object Array]')) {
+      if (handleAsObjectInI18nFormat && res && handleAsObject && noObject.indexOf(resType) < 0 && !(typeof joinArrays === 'string' && Array.isArray(res))) {
         if (!options.returnObjects && !this.options.returnObjects) {
           if (!this.options.returnedObjectHandler) {
             this.logger.warn('accessing an object - but returnObjects options is not enabled!');
@@ -23512,7 +23505,7 @@ return jQuery;
           return r;
         }
         if (keySeparator) {
-          const resTypeIsArray = resType === '[object Array]';
+          const resTypeIsArray = Array.isArray(res);
           const copy = resTypeIsArray ? [] : {};
           const newKeyToUse = resTypeIsArray ? resExactUsedKey : resUsedKey;
           for (const m in res) {
@@ -23530,7 +23523,7 @@ return jQuery;
           }
           res = copy;
         }
-      } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && resType === '[object Array]') {
+      } else if (handleAsObjectInI18nFormat && typeof joinArrays === 'string' && Array.isArray(res)) {
         res = res.join(joinArrays);
         if (res) res = this.extendTranslation(res, keys, options, lastKey);
       } else {
@@ -23647,13 +23640,13 @@ return jQuery;
           ...this.options.interpolation.defaultVariables,
           ...data
         };
-        res = this.interpolator.interpolate(res, data, options.lng || this.language, options);
+        res = this.interpolator.interpolate(res, data, options.lng || this.language || resolved.usedLng, options);
         if (skipOnVariables) {
           const na = res.match(this.interpolator.nestingRegexp);
           const nestAft = na && na.length;
           if (nestBef < nestAft) options.nest = false;
         }
-        if (!options.lng && this.options.compatibilityAPI !== 'v1' && resolved && resolved.res) options.lng = resolved.usedLng;
+        if (!options.lng && this.options.compatibilityAPI !== 'v1' && resolved && resolved.res) options.lng = this.language || resolved.usedLng;
         if (options.nest !== false) res = this.interpolator.nest(res, function () {
           for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
             args[_key] = arguments[_key];
@@ -23800,9 +23793,7 @@ return jQuery;
     }
   }
 
-  function capitalize(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
+  const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1);
   class LanguageUtil {
     constructor(options) {
       this.options = options;
@@ -23879,7 +23870,7 @@ return jQuery;
       if (!fallbacks) return [];
       if (typeof fallbacks === 'function') fallbacks = fallbacks(code);
       if (typeof fallbacks === 'string') fallbacks = [fallbacks];
-      if (Object.prototype.toString.apply(fallbacks) === '[object Array]') return fallbacks;
+      if (Array.isArray(fallbacks)) return fallbacks;
       if (!code) return fallbacks.default || [];
       let found = fallbacks[code];
       if (!found) found = fallbacks[this.getScriptPartFromCode(code)];
@@ -24007,72 +23998,28 @@ return jQuery;
     fc: 22
   }];
   let _rulesPluralsTypes = {
-    1: function (n) {
-      return Number(n > 1);
-    },
-    2: function (n) {
-      return Number(n != 1);
-    },
-    3: function (n) {
-      return 0;
-    },
-    4: function (n) {
-      return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
-    },
-    5: function (n) {
-      return Number(n == 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5);
-    },
-    6: function (n) {
-      return Number(n == 1 ? 0 : n >= 2 && n <= 4 ? 1 : 2);
-    },
-    7: function (n) {
-      return Number(n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
-    },
-    8: function (n) {
-      return Number(n == 1 ? 0 : n == 2 ? 1 : n != 8 && n != 11 ? 2 : 3);
-    },
-    9: function (n) {
-      return Number(n >= 2);
-    },
-    10: function (n) {
-      return Number(n == 1 ? 0 : n == 2 ? 1 : n < 7 ? 2 : n < 11 ? 3 : 4);
-    },
-    11: function (n) {
-      return Number(n == 1 || n == 11 ? 0 : n == 2 || n == 12 ? 1 : n > 2 && n < 20 ? 2 : 3);
-    },
-    12: function (n) {
-      return Number(n % 10 != 1 || n % 100 == 11);
-    },
-    13: function (n) {
-      return Number(n !== 0);
-    },
-    14: function (n) {
-      return Number(n == 1 ? 0 : n == 2 ? 1 : n == 3 ? 2 : 3);
-    },
-    15: function (n) {
-      return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
-    },
-    16: function (n) {
-      return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n !== 0 ? 1 : 2);
-    },
-    17: function (n) {
-      return Number(n == 1 || n % 10 == 1 && n % 100 != 11 ? 0 : 1);
-    },
-    18: function (n) {
-      return Number(n == 0 ? 0 : n == 1 ? 1 : 2);
-    },
-    19: function (n) {
-      return Number(n == 1 ? 0 : n == 0 || n % 100 > 1 && n % 100 < 11 ? 1 : n % 100 > 10 && n % 100 < 20 ? 2 : 3);
-    },
-    20: function (n) {
-      return Number(n == 1 ? 0 : n == 0 || n % 100 > 0 && n % 100 < 20 ? 1 : 2);
-    },
-    21: function (n) {
-      return Number(n % 100 == 1 ? 1 : n % 100 == 2 ? 2 : n % 100 == 3 || n % 100 == 4 ? 3 : 0);
-    },
-    22: function (n) {
-      return Number(n == 1 ? 0 : n == 2 ? 1 : (n < 0 || n > 10) && n % 10 == 0 ? 2 : 3);
-    }
+    1: n => Number(n > 1),
+    2: n => Number(n != 1),
+    3: n => 0,
+    4: n => Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2),
+    5: n => Number(n == 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5),
+    6: n => Number(n == 1 ? 0 : n >= 2 && n <= 4 ? 1 : 2),
+    7: n => Number(n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2),
+    8: n => Number(n == 1 ? 0 : n == 2 ? 1 : n != 8 && n != 11 ? 2 : 3),
+    9: n => Number(n >= 2),
+    10: n => Number(n == 1 ? 0 : n == 2 ? 1 : n < 7 ? 2 : n < 11 ? 3 : 4),
+    11: n => Number(n == 1 || n == 11 ? 0 : n == 2 || n == 12 ? 1 : n > 2 && n < 20 ? 2 : 3),
+    12: n => Number(n % 10 != 1 || n % 100 == 11),
+    13: n => Number(n !== 0),
+    14: n => Number(n == 1 ? 0 : n == 2 ? 1 : n == 3 ? 2 : 3),
+    15: n => Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2),
+    16: n => Number(n % 10 == 1 && n % 100 != 11 ? 0 : n !== 0 ? 1 : 2),
+    17: n => Number(n == 1 || n % 10 == 1 && n % 100 != 11 ? 0 : 1),
+    18: n => Number(n == 0 ? 0 : n == 1 ? 1 : 2),
+    19: n => Number(n == 1 ? 0 : n == 0 || n % 100 > 1 && n % 100 < 11 ? 1 : n % 100 > 10 && n % 100 < 20 ? 2 : 3),
+    20: n => Number(n == 1 ? 0 : n == 0 || n % 100 > 0 && n % 100 < 20 ? 1 : 2),
+    21: n => Number(n % 100 == 1 ? 1 : n % 100 == 2 ? 2 : n % 100 == 3 || n % 100 == 4 ? 3 : 0),
+    22: n => Number(n == 1 ? 0 : n == 2 ? 1 : (n < 0 || n > 10) && n % 10 == 0 ? 2 : 3)
   };
   const nonIntlVersions = ['v1', 'v2', 'v3'];
   const intlVersions = ['v4'];
@@ -24084,7 +24031,7 @@ return jQuery;
     many: 4,
     other: 5
   };
-  function createRules() {
+  const createRules = () => {
     const rules = {};
     sets.forEach(set => {
       set.lngs.forEach(l => {
@@ -24095,7 +24042,7 @@ return jQuery;
       });
     });
     return rules;
-  }
+  };
   class PluralResolver {
     constructor(languageUtils) {
       let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -24107,17 +24054,32 @@ return jQuery;
         this.logger.error('Your environment seems not to be Intl API compatible, use an Intl.PluralRules polyfill. Will fallback to the compatibilityJSON v3 format handling.');
       }
       this.rules = createRules();
+      this.pluralRulesCache = {};
     }
     addRule(lng, obj) {
       this.rules[lng] = obj;
+    }
+    clearCache() {
+      this.pluralRulesCache = {};
     }
     getRule(code) {
       let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       if (this.shouldUseIntlApi()) {
         try {
-          return new Intl.PluralRules(getCleanedCode(code === 'dev' ? 'en' : code), {
-            type: options.ordinal ? 'ordinal' : 'cardinal'
+          const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
+          const type = options.ordinal ? 'ordinal' : 'cardinal';
+          const cacheKey = JSON.stringify({
+            cleanedCode,
+            type
           });
+          if (cacheKey in this.pluralRulesCache) {
+            return this.pluralRulesCache[cacheKey];
+          }
+          const rule = new Intl.PluralRules(cleanedCode, {
+            type
+          });
+          this.pluralRulesCache[cacheKey] = rule;
+          return rule;
         } catch (err) {
           return;
         }
@@ -24186,7 +24148,7 @@ return jQuery;
     }
   }
 
-  function deepFindWithDefaults(data, defaultData, key) {
+  const deepFindWithDefaults = function (data, defaultData, key) {
     let keySeparator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '.';
     let ignoreJSONStructure = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
     let path = getPathWithDefaults(data, defaultData, key);
@@ -24195,7 +24157,8 @@ return jQuery;
       if (path === undefined) path = deepFind(defaultData, key, keySeparator);
     }
     return path;
-  }
+  };
+  const regexSafe = val => val.replace(/\$/g, '$$$$');
   class Interpolator {
     constructor() {
       let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -24263,9 +24226,6 @@ return jQuery;
       let value;
       let replaces;
       const defaultData = this.options && this.options.interpolation && this.options.interpolation.defaultVariables || {};
-      function regexSafe(val) {
-        return val.replace(/\$/g, '$$$$');
-      }
       const handleFormat = key => {
         if (key.indexOf(this.formatSeparator) < 0) {
           const path = deepFindWithDefaults(data, defaultData, key, this.options.keySeparator, this.options.ignoreJSONStructure);
@@ -24336,7 +24296,7 @@ return jQuery;
       let match;
       let value;
       let clonedOptions;
-      function handleHasOptions(key, inheritedOptions) {
+      const handleHasOptions = (key, inheritedOptions) => {
         const sep = this.nestingOptionsSeparator;
         if (key.indexOf(sep) < 0) return key;
         const c = key.split(new RegExp(`${sep}[ ]*{`));
@@ -24360,7 +24320,7 @@ return jQuery;
         }
         if (clonedOptions.defaultValue && clonedOptions.defaultValue.indexOf(this.prefix) > -1) delete clonedOptions.defaultValue;
         return key;
-      }
+      };
       while (match = this.nestingRegexp.exec(str)) {
         let formatters = [];
         clonedOptions = {
@@ -24396,7 +24356,7 @@ return jQuery;
     }
   }
 
-  function parseFormatStr(formatStr) {
+  const parseFormatStr = formatStr => {
     let formatName = formatStr.toLowerCase().trim();
     const formatOptions = {};
     if (formatStr.indexOf('(') > -1) {
@@ -24410,13 +24370,15 @@ return jQuery;
       } else {
         const opts = optStr.split(';');
         opts.forEach(opt => {
-          if (!opt) return;
-          const [key, ...rest] = opt.split(':');
-          const val = rest.join(':').trim().replace(/^'+|'+$/g, '');
-          if (!formatOptions[key.trim()]) formatOptions[key.trim()] = val;
-          if (val === 'false') formatOptions[key.trim()] = false;
-          if (val === 'true') formatOptions[key.trim()] = true;
-          if (!isNaN(val)) formatOptions[key.trim()] = parseInt(val, 10);
+          if (opt) {
+            const [key, ...rest] = opt.split(':');
+            const val = rest.join(':').trim().replace(/^'+|'+$/g, '');
+            const trimmedKey = key.trim();
+            if (!formatOptions[trimmedKey]) formatOptions[trimmedKey] = val;
+            if (val === 'false') formatOptions[trimmedKey] = false;
+            if (val === 'true') formatOptions[trimmedKey] = true;
+            if (!isNaN(val)) formatOptions[trimmedKey] = parseInt(val, 10);
+          }
         });
       }
     }
@@ -24424,11 +24386,18 @@ return jQuery;
       formatName,
       formatOptions
     };
-  }
-  function createCachedFormatter(fn) {
+  };
+  const createCachedFormatter = fn => {
     const cache = {};
-    return function invokeFormatter(val, lng, options) {
-      const key = lng + JSON.stringify(options);
+    return (val, lng, options) => {
+      let optForCache = options;
+      if (options && options.interpolationkey && options.formatParams && options.formatParams[options.interpolationkey] && options[options.interpolationkey]) {
+        optForCache = {
+          ...optForCache,
+          [options.interpolationkey]: undefined
+        };
+      }
+      const key = lng + JSON.stringify(optForCache);
       let formatter = cache[key];
       if (!formatter) {
         formatter = fn(getCleanedCode(lng), options);
@@ -24436,7 +24405,7 @@ return jQuery;
       }
       return formatter(val);
     };
-  }
+  };
   class Formatter {
     constructor() {
       let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -24493,6 +24462,10 @@ return jQuery;
     format(value, format, lng) {
       let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
       const formats = format.split(this.formatSeparator);
+      if (formats.length > 1 && formats[0].indexOf('(') > 1 && formats[0].indexOf(')') < 0 && formats.find(f => f.indexOf(')') > -1)) {
+        const lastIndex = formats.findIndex(f => f.indexOf(')') > -1);
+        formats[0] = [formats[0], ...formats.splice(1, lastIndex)].join(this.formatSeparator);
+      }
       const result = formats.reduce((mem, f) => {
         const {
           formatName,
@@ -24521,12 +24494,12 @@ return jQuery;
     }
   }
 
-  function removePending(q, name) {
+  const removePending = (q, name) => {
     if (q.pending[name] !== undefined) {
       delete q.pending[name];
       q.pendingCount--;
     }
-  }
+  };
   class Connector extends EventEmitter {
     constructor(backend, store, services) {
       let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
@@ -24747,69 +24720,67 @@ return jQuery;
     }
   }
 
-  function get() {
-    return {
-      debug: false,
-      initImmediate: true,
-      ns: ['translation'],
-      defaultNS: ['translation'],
-      fallbackLng: ['dev'],
-      fallbackNS: false,
-      supportedLngs: false,
-      nonExplicitSupportedLngs: false,
-      load: 'all',
-      preload: false,
-      simplifyPluralSuffix: true,
-      keySeparator: '.',
-      nsSeparator: ':',
-      pluralSeparator: '_',
-      contextSeparator: '_',
-      partialBundledLanguages: false,
-      saveMissing: false,
-      updateMissing: false,
-      saveMissingTo: 'fallback',
-      saveMissingPlurals: true,
-      missingKeyHandler: false,
-      missingInterpolationHandler: false,
-      postProcess: false,
-      postProcessPassResolved: false,
-      returnNull: false,
-      returnEmptyString: true,
-      returnObjects: false,
-      joinArrays: false,
-      returnedObjectHandler: false,
-      parseMissingKeyHandler: false,
-      appendNamespaceToMissingKey: false,
-      appendNamespaceToCIMode: false,
-      overloadTranslationOptionHandler: function handle(args) {
-        let ret = {};
-        if (typeof args[1] === 'object') ret = args[1];
-        if (typeof args[1] === 'string') ret.defaultValue = args[1];
-        if (typeof args[2] === 'string') ret.tDescription = args[2];
-        if (typeof args[2] === 'object' || typeof args[3] === 'object') {
-          const options = args[3] || args[2];
-          Object.keys(options).forEach(key => {
-            ret[key] = options[key];
-          });
-        }
-        return ret;
-      },
-      interpolation: {
-        escapeValue: true,
-        format: value => value,
-        prefix: '{{',
-        suffix: '}}',
-        formatSeparator: ',',
-        unescapePrefix: '-',
-        nestingPrefix: '$t(',
-        nestingSuffix: ')',
-        nestingOptionsSeparator: ',',
-        maxReplaces: 1000,
-        skipOnVariables: true
+  const get = () => ({
+    debug: false,
+    initImmediate: true,
+    ns: ['translation'],
+    defaultNS: ['translation'],
+    fallbackLng: ['dev'],
+    fallbackNS: false,
+    supportedLngs: false,
+    nonExplicitSupportedLngs: false,
+    load: 'all',
+    preload: false,
+    simplifyPluralSuffix: true,
+    keySeparator: '.',
+    nsSeparator: ':',
+    pluralSeparator: '_',
+    contextSeparator: '_',
+    partialBundledLanguages: false,
+    saveMissing: false,
+    updateMissing: false,
+    saveMissingTo: 'fallback',
+    saveMissingPlurals: true,
+    missingKeyHandler: false,
+    missingInterpolationHandler: false,
+    postProcess: false,
+    postProcessPassResolved: false,
+    returnNull: false,
+    returnEmptyString: true,
+    returnObjects: false,
+    joinArrays: false,
+    returnedObjectHandler: false,
+    parseMissingKeyHandler: false,
+    appendNamespaceToMissingKey: false,
+    appendNamespaceToCIMode: false,
+    overloadTranslationOptionHandler: args => {
+      let ret = {};
+      if (typeof args[1] === 'object') ret = args[1];
+      if (typeof args[1] === 'string') ret.defaultValue = args[1];
+      if (typeof args[2] === 'string') ret.tDescription = args[2];
+      if (typeof args[2] === 'object' || typeof args[3] === 'object') {
+        const options = args[3] || args[2];
+        Object.keys(options).forEach(key => {
+          ret[key] = options[key];
+        });
       }
-    };
-  }
-  function transformOptions(options) {
+      return ret;
+    },
+    interpolation: {
+      escapeValue: true,
+      format: value => value,
+      prefix: '{{',
+      suffix: '}}',
+      formatSeparator: ',',
+      unescapePrefix: '-',
+      nestingPrefix: '$t(',
+      nestingSuffix: ')',
+      nestingOptionsSeparator: ',',
+      maxReplaces: 1000,
+      skipOnVariables: true
+    }
+  });
+  const transformOptions = options => {
     if (typeof options.ns === 'string') options.ns = [options.ns];
     if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
     if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
@@ -24817,17 +24788,17 @@ return jQuery;
       options.supportedLngs = options.supportedLngs.concat(['cimode']);
     }
     return options;
-  }
+  };
 
-  function noop() {}
-  function bindMemberFunctions(inst) {
+  const noop = () => {};
+  const bindMemberFunctions = inst => {
     const mems = Object.getOwnPropertyNames(Object.getPrototypeOf(inst));
     mems.forEach(mem => {
       if (typeof inst[mem] === 'function') {
         inst[mem] = inst[mem].bind(inst);
       }
     });
-  }
+  };
   class I18n extends EventEmitter {
     constructor() {
       let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -24884,11 +24855,11 @@ return jQuery;
       if (options.nsSeparator !== undefined) {
         this.options.userDefinedNsSeparator = options.nsSeparator;
       }
-      function createClassOnDemand(ClassOrObject) {
+      const createClassOnDemand = ClassOrObject => {
         if (!ClassOrObject) return null;
         if (typeof ClassOrObject === 'function') return new ClassOrObject();
         return ClassOrObject;
-      }
+      };
       if (!this.options.isClone) {
         if (this.modules.logger) {
           baseLogger.init(createClassOnDemand(this.modules.logger), this.options);
@@ -25145,7 +25116,7 @@ return jQuery;
         options.lng = options.lng || fixedT.lng;
         options.lngs = options.lngs || fixedT.lngs;
         options.ns = options.ns || fixedT.ns;
-        options.keyPrefix = options.keyPrefix || keyPrefix || fixedT.keyPrefix;
+        if (options.keyPrefix !== '') options.keyPrefix = options.keyPrefix || keyPrefix || fixedT.keyPrefix;
         const keySeparator = _this3.options.keySeparator || '.';
         let resultKey;
         if (options.keyPrefix && Array.isArray(key)) {
@@ -54461,7 +54432,7 @@ options:
         };
 
     window.TimeSlider = function (input, options, pluginCount) {
-        this.VERSION = "7.7.3";
+        this.VERSION = "7.7.4";
 
         //Setting default options
         this.options = $.extend( true, {}, defaultOptions, options );
@@ -54576,8 +54547,9 @@ options:
         },
 
         _prettifyLabelAbsoluteDate: function( value ){
-                return this._valueToTzMoment( value, this.options.format.timezone ).format( this.options.format.dateFormat );
-            },
+            let result = this._valueToTzMoment( value, this.options.format.timezone ).format( this.options.format.dateFormat );
+            return result[0].toUpperCase() + result.slice(1);
+        },
 
         /**************************************************************
         adjustResult
