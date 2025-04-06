@@ -273,7 +273,7 @@
 
             if (this.hasCheckbox || this.buttonPaddingLeft)
                 paddingClass = paddingClass + ' padding-left';
-            if (this.$favoriteButton || this.buttonPaddingRight)
+            if (this.$favoriteButton || this.options.removeFavoriteButton || this.buttonPaddingRight)
                 paddingClass = paddingClass + ' padding-right';
 
             if (buttonList){
