@@ -79,6 +79,10 @@ setTimeout( function(){
                     return icon;
                 },                        
 
+				onOpenOrClose: function(menuItem, isOpen, menu){
+					console.log('onOpenOrClose', menuItem, isOpen, menu);
+				},					
+					
                 list: [{
                     icon: 'fa fa-map',
                     text: {da:'Første', en:'First'},

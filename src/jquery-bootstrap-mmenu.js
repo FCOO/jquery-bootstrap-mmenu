@@ -44,6 +44,9 @@
             },
 
 
+            //Events
+            onOpenOrClose: null, //function(menuItem, open, menu)
+
             /*
             navbar - see https://mmenujs.com/docs/addons/navbars.html
             */
@@ -293,6 +296,12 @@
             this.panel = $elem.find('#'+this.ulId).get(0);
             this.api = this.mmenu.API;
 
+
+
+            //Add event for open/close menus. Other events: 'closePanel:before', 'closePanel:after', 'openPanel:before', 'openPanel:after', 'setSelected:before', 'setSelected:after'
+            this.api.bind('openPanel:after',  this._onOpen.bind(this) );                
+            this.api.bind('closePanel:after', this._onClose.bind(this) );                
+            
             $elem.data('bsMmenu', this.mmenu);
 
             return this;
@@ -357,6 +366,28 @@
             this.options.reset.finally(this);
         },
 
+        /**********************************
+        _onOpenClose
+        **********************************/
+        _onOpen: function(panel) { return this._onOpenOrClose(panel, true);  },
+        _onClose: function(panel){ return this._onOpenOrClose(panel, false); },
+
+        _onOpenOrClose( panel, isOpen=false){
+            let liId      = panel.parentElement ? $(panel.parentElement).attr('id') : null,
+                mmenuItem = liId ? this.getItem(liId, true) : null;
+
+            if (mmenuItem){
+                //Update openItemIdList
+                this.openItemIdList = this.openItemIdList || {};
+                this.openItemIdList[mmenuItem.id] = isOpen;
+
+                if (this.options.onOpenOrClose)
+                    this.options.onOpenOrClose(mmenuItem, isOpen, this);
+            }
+
+            return this;            
+        },            
+        
         /**********************************
         closeAll
         **********************************/
