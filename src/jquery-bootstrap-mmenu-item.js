@@ -71,7 +71,6 @@
         nextLiId = 0;
 
     $.BsMmenuItem = function(options, parent, owner){
-        var _this = this;
         owner = owner || this;
         this.options = options;
 
@@ -103,6 +102,12 @@
         this.parent = parent;
         this.menu = parent.menu;
 
+        //Use forced events if given
+        if (options.onChange && this.menu.options.forceOnChange)
+            options.onChange = this.menu.options.forceOnChange;
+        if (options.onClick && this.menu.options.forceOnClick)
+            options.onClick = this.menu.options.forceOnClick;
+
         //Using global events (if any) if non is given
         if (!options.onChange && !options.onClick){
             options.onChange = this.menu.options.onChange || null;
@@ -117,6 +122,8 @@
             if (this.state && this.options.semiSelected)
                 this.state = 'semi';
         }
+
+        options.getState = options.getState || this.menu.options.getState || null;
 
         //Set element ids
         nextLiId++;
@@ -134,9 +141,8 @@
         var list = this.options.list || this.options.items || this.options.itemList || [];
         if (list.length)
             this._createUl();
-        $.each(list, function(index, opt){
-            _this.append($.bsMmenuItem(opt, _this));
-        });
+       
+        list.forEach( opt => this.append($.bsMmenuItem(opt, this)), this );
     };
 
     $.bsMmenuItem = function(options, parent, owner){
@@ -276,7 +282,7 @@
             if (this.$favoriteButton || this.options.removeFavoriteButton || this.buttonPaddingRight)
                 paddingClass = paddingClass + ' padding-right';
 
-            if (buttonList){
+            if (buttonList && !this.menu.options.noButtons){
                 //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
                 var currentList = [];
 
@@ -478,7 +484,6 @@
         Insert this.$li in DOM
         ***********************************/
         _updateElement: function(){
-
             this.parent._createUl();
 
             if (this.$li){
@@ -496,7 +501,6 @@
                     this._getApi().initPanel( this.menu.panel );
                 }
             }
-
             this.menu._updateFavorites();
 
             return this;
@@ -567,6 +571,61 @@
             this.menu._updateFavorites();
         },
 
+
+        /***********************************
+        _getChildIndex
+        Get the index of childItem
+        ***********************************/
+        _getChildIndex: function( childItem ){
+            let index = 0, 
+                nextItem = this.first;
+            while (nextItem){
+                if (nextItem === childItem)
+                    return index;
+                else {
+                    nextItem = nextItem.next;
+                    index++;
+                }
+            }
+            return -1;
+        },
+            
+        /***********************************
+        _getPlacement
+        Return a array with the index of this in it parents for this and all is parent elements
+        ***********************************/
+        _getPlacement: function(){
+            let getChildIndex = function( childItem, placement = [] ){
+                let parent = childItem.parent;
+                if (parent){
+                    let index = 0, 
+                        nextItem = parent.last;
+                    while (nextItem){
+                        if (nextItem === childItem){
+                            placement.push(index);
+                            return getChildIndex( parent, placement );
+                        }                            
+                        else {
+                            nextItem = nextItem.prev;
+                            index++;
+                        }
+                    }
+                }
+                return placement;
+            };
+            
+            return getChildIndex( this );
+        },
+
+
+        /***********************************
+        getSiblingItem( menu )
+        Returns the equal item in a cloned or original menu
+        ***********************************/
+        getSiblingItem: function( menu ){
+            return menu._getItemByPlacment( this._getPlacement() );
+        },            
+        
         /***********************************
         open
         ***********************************/
@@ -581,6 +640,14 @@
         _onClick
         ***********************************/
         _onClick: function(/*id, state*/){
+            //If the menu is a full clone => use the original menu to handle events
+            if (this.menu.cloneOf && this.menu.options.isFullClone){
+                let siblingItem = this.getSiblingItem( this.menu.cloneOf );
+                if (siblingItem)
+                    siblingItem._onClick.bind(siblingItem).apply(arguments);
+                return;
+            }
+            
             //There are two ways to change the state:
             //options.onChange => simple true/false state
             //options.onClick(id, state, item) => onClick will do all setting
@@ -591,7 +658,6 @@
             else
                 if (this.options.onClick)
                     this.options.onClick(this.id, this.state, this);
-
         },
 
         /***********************************
@@ -626,15 +692,27 @@
         setState
         ***********************************/
         setState: function(state, callOnChange){
-            this.state = state;
+            this.state = this.options.getState ? this.options.getState(this, state) : state;
             if (this.checkbox)
-                this.checkbox.cbxSetState(state);
+                this.checkbox.cbxSetState(this.state);
 
             if (this.favoriteCheckbox)
-                this.favoriteCheckbox.cbxSetState(state);
+                this.favoriteCheckbox.cbxSetState(this.state);
 
             if (callOnChange && this.options.onChange)
                 this.options.onChange(this.id, this.state, this);
+
+            //If the menu has any cloned menus => update the items
+            if (this.menu.clones){
+                let state = this.state;
+                $.each(this.menu.clones, function(id, menu){
+                    let menuItem = this.getSiblingItem( menu );
+                    if (menuItem && menuItem.setState)
+                        menuItem.setState( state, false );
+                }.bind(this));
+            }
+
+
 
             return this;
         },

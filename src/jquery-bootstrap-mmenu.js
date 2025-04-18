@@ -46,7 +46,8 @@
 
             //Events
             onOpenOrClose: null, //function(menuItem, open, menu)
-
+            forceOnChange: null, //function(menuItem, state, menu) Overwrites any onChange given. Normally used in cloned menues
+            forceOnClick : null, //function(menuItem, state, menu) Overwrites any onClick given. Normally used in cloned menues
             /*
             navbar - see https://mmenujs.com/docs/addons/navbars.html
             */
@@ -88,6 +89,8 @@
         inclBar    : BOOLEAN, if true a bar top-right with buttons from items with options.addToBar = true and favorites (optional) and close-all (if barCloseAll=true) and reset (if options.reset is given)
         barCloseAll: BOOLEAN, if true a top-bar button is added that closes all open submenus
 
+        noButtons   : BOOLEAN, if true no buttons are added to menu-items
+        
         adjustIcon  : function(icon): retur icon (optional). Adjust the icon of each menu-items
 
         reset : NULL, true, false or {
@@ -101,8 +104,6 @@
 
     ************************************************/
     $.BsMmenu = function(options = {}, mmenuOptions = {}, configuration = {}){
-        var _this = this;
-
         this.prev = null;
         this.next = null;
         this.first = null;
@@ -113,6 +114,12 @@
 
         this.ulId = 'bsmm_ul_0';
 
+        this.options = options;
+
+        //Save mmenuOptions and configuration in options. Needed for clone
+        this.options.mmenuOptions = mmenuOptions;
+        this.options.configuration = configuration;
+   
         //Setting and adjusting mmenuOptions = the options for Mmenu
         //Using sliding submenus and navbar with title if it is a touch device
         this.mmenuOptions =
@@ -123,7 +130,7 @@
                     add   : !!window.bsIsTouch || !!options.title,
                     title : options.title || ' ',
                 },
-/* mangler
+/* @todo
                 backButton: {
                     // back button options
                 }
@@ -176,22 +183,22 @@
 
         //Create and add sub-items
         var list = $.isArray(options) ? options : (options.list || options.items || options.itemList || []);
-        $.each(list, function(index, opt){
-           _this.append($.bsMmenuItem(opt, _this));
-        });
+        list.forEach( opt => this.append($.bsMmenuItem(opt, this)), this );
+
+        this.list = list;
 
     };
 
 
-    $.bsMmenu = function(options, mmenuOptions){
-        return new $.BsMmenu(options, mmenuOptions);
+    $.bsMmenu = function(options, mmenuOptions, configuration){
+        return new $.BsMmenu(options, mmenuOptions, configuration);
     };
 
     //bsMMenu as jQuery prototype
-    $.fn.bsMmenu = function(options, mmenuOptions){
+    $.fn.bsMmenu = function(options, mmenuOptions, configuration){
         return this.each(function() {
             if (!$.data(this, "bsMmenu"))
-                new $.BsMmenu(options, mmenuOptions);
+                new $.BsMmenu(options, mmenuOptions, configuration);
             $.data(this, "bsMmenu").create($(this));
         });
     };
@@ -263,7 +270,8 @@
                         //bottom: []ELEMENT
                     };
             }
-
+            else
+                this.mmenuOptions.iconbar = false;
 
             //Add button to reset all selected menu-items (if any)
             if (this.options.reset){
@@ -293,10 +301,8 @@
             this.configuration.bsMenu = this;
             this.mmenu = new Mmenu($elem.get(0), this.mmenuOptions, this.configuration );
 
-            this.panel = $elem.find('#'+this.ulId).get(0);
+            this.panel = $elem.find('#'+this.ulId).get(0); 
             this.api = this.mmenu.API;
-
-
 
             //Add event for open/close menus. Other events: 'closePanel:before', 'closePanel:after', 'openPanel:before', 'openPanel:after', 'setSelected:before', 'setSelected:after'
             this.api.bind('openPanel:after',  this._onOpen.bind(this) );                
@@ -325,6 +331,7 @@
                 else
                     item = item.next;
             }
+            
             return result;
         },
 
@@ -334,6 +341,33 @@
         getItem: function(id, findByLiId){
             return this._getItem(id, this, findByLiId);
         },
+            
+        /**********************************
+        _getItemByPlacment
+        **********************************/
+        _getItemByPlacment( placement ){
+            let getChildByIndex = function( parent, placement ){
+                if (!placement.length || !parent)
+                    return parent;
+
+                let nextIndex = placement.pop(),
+                    index = 0, 
+                    nextItem = parent.last;
+                while (nextItem){
+                    if (index == nextIndex)
+                        return getChildByIndex( nextItem, placement );
+                    else {
+                        nextItem = nextItem.prev;
+                        index++;
+                    }
+                }
+                return null;
+            };
+            
+            return getChildByIndex( this, placement );
+        },            
+
+
 
         /**********************************
         remove
@@ -454,7 +488,50 @@
 
                 });
             }
-        }
+        },
+            
+        /**********************************
+        clone
+        Create a cloned version of the menu
+        ***********************************/
+        clone: function( options = {}, mmenuOptions = {}, configuration = {}  ){
+            
+            options = $.extend({
+                inclFavorites: false,
+                noButtons    : true,    
+                inclBar      : false,
+                reset        : false,    
+                favorites    : false,
+                isFullClone  : true     //true => All items are an exact copy
+            }, options);
+            
+            let c_options       = $.extend(true, {}, this.options,               options      ),
+                c_mmenuOptions  = $.extend(true, {}, this.options.mmenuOptions,  mmenuOptions ),
+                c_configuration = $.extend(true, {}, this.options.configuration, configuration);
+            
+
+            let c_menu = $.bsMmenu(c_options, c_mmenuOptions, c_configuration);
+
+            this.nrOfClones = this.nrOfClones || 0;
+            this.clones = this.clones || {};
+        
+            c_menu.cId = 'clone'+this.nrOfClones;
+            c_menu.cloneOf = this;
+            this.nrOfClones++;
+            this.clones[c_menu.cId] = c_menu;
+            return c_menu;
+        
+        },
+            
+        /**********************************
+        destroy
+        Destroy the menu and clean up
+        ***********************************/
+        destroy: function(){
+            if (this.cloneOf)
+                this.cloneOf.clones[this.cId] = null;
+            $(this.mmenu.node.menu).empty();
+        }        
     };
 
     /******************************************

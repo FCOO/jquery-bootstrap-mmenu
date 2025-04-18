@@ -35,6 +35,8 @@
 
 <body>
     <div id="menu" style="width:350px; margin-left:30px; height:50%"></div>
+    <div id="menu_clone"  style="width:350px; height:50%; position: absolute; left:30%"></div>
+    <div id="menu_clone2" style="width:350px; height:50%; position: absolute; left:60%"></div>
 
     <script src="bower_components.js"></script>
     <script src="../src/jquery-bootstrap-mmenu-item.js"></script>
@@ -52,6 +54,17 @@ setTimeout( function(){
     i18next.changeLanguage('en');
     $("*").localize();
 }, 2000);
+
+		function changeRadioGroup(id, state, item){
+			if (state){
+				let nextItem = item.parent.first;
+				while (nextItem){
+					if (nextItem !== item)
+						nextItem.setState(false);
+					nextItem = nextItem.next;
+				}
+			}	
+		}	
 
 
         var menu = {
@@ -80,7 +93,7 @@ setTimeout( function(){
                 },                        
 
 				onOpenOrClose: function(menuItem, isOpen, menu){
-					console.log('onOpenOrClose', menuItem, isOpen, menu);
+					//console.log('onOpenOrClose', menuItem, isOpen, menu);
 				},					
 					
                 list: [{
@@ -193,11 +206,11 @@ setTimeout( function(){
                         
                         id:'CURRENT', text: {da: 'Strøm', en:'Current'},
                         list: [{
-                            id: 'current1', type:'radio', text: 'Current-1', favoriteText: 'Current-1 (favorite)',
+                            id: 'current1', type:'radio', text: 'Current-1', favoriteText: 'Current-1 (favorite)', onChange: changeRadioGroup
                             },{
-                            id: 'current2', type:'radio', text: 'Current-2', favoriteText: 'Current-2 (favorite)',
+                            id: 'current2', type:'radio', text: 'Current-2', favoriteText: 'Current-2 (favorite)', onChange: changeRadioGroup
                             },{
-                            id: 'current3', type:'radio', text: 'Current-3', favoriteText: 'Current-3 (favorite)',
+                            id: 'current3', type:'radio', text: 'Current-3', favoriteText: 'Current-3 (favorite)', onChange: changeRadioGroup
                         }]
                     }]
                 }]
@@ -207,6 +220,17 @@ setTimeout( function(){
 
         var m = $.bsMmenu(menu, {offCanvas: false}).create($('#menu'));
 
+		//Create cloned menus
+		m.clone().create( $('#menu_clone') );
+		m.clone({
+			isFullClone: false,
+			
+			forceOnChange: function(id, state, item){ console.log('FORCED ONCHANGE', id, state, item); },
+			getState: function(item, state){
+				return state ? 'semi' : false;
+			}				
+		}).create( $('#menu_clone2') );
+		
 
 //        i18next.changeLanguage('da');
 
@@ -226,6 +250,6 @@ setTimeout( function(){
 //HER            }
 //HER        });
     </script>
-    <button onClick="javascript:m.favoriteRemoveAll()">Fjern favoritter</button>
+    <!-- <button onClick="javascript:m.favoriteRemoveAll()">Fjern favoritter</button> -->
 </body>
 </html>
