@@ -743,7 +743,7 @@
             //(*)slidingSubmenus: false,   //Whether or not submenus should come sliding in from the right.
                                            //If false, submenus expand below their parent. To expand a single submenu below its parent item, add the class "Vertical" to it.
 
-            offCanvas      : true,   //https://mmenujs.com/docs/core/off-canvas.html
+            offCanvas      : false, //https://mmenujs.com/docs/core/off-canvas.html
 
             preventDefault : true,
             extensions: [
@@ -958,7 +958,10 @@
             this._createUl();
             this.$ul.appendTo($elem);
 
-            $elem.addClass( $._bsGetSizeClass({baseClass: 'mm-menu', useTouchSize: true}) );
+            $elem
+                .addClass( $._bsGetSizeClass({baseClass: 'mm-menu', useTouchSize: true}) )
+                .toggleClass('mm-menu-no-button', !!this.options.noButtons);
+
 
             if (this.options.inclBar){
                 buttonList = [];
@@ -1232,7 +1235,6 @@
                 c_mmenuOptions  = $.extend(true, {}, this.options.mmenuOptions,  mmenuOptions ),
                 c_configuration = $.extend(true, {}, this.options.configuration, configuration);
             
-
             let c_menu = $.bsMmenu(c_options, c_mmenuOptions, c_configuration);
 
             this.nrOfClones = this.nrOfClones || 0;
@@ -1254,7 +1256,57 @@
             if (this.cloneOf)
                 this.cloneOf.clones[this.cId] = null;
             $(this.mmenu.node.menu).empty();
-        }        
+        },        
+
+        /**********************************
+        showInModal
+        Show the menu in a modal
+        ***********************************/
+        showInModal: function(modalOptions = {}){
+
+            let width = null;
+            
+            //If the menu is a clone and modalOptions.sameWidthAsCloneOf = true => the modal inner-wisth gets the same as the original menu
+            if (this.cloneOf && modalOptions.sameWidthAsCloneOf && !modalOptions.width)
+                width = this.cloneOf.$ul.width();               
+            else
+                width = modalOptions.width;
+            
+            let offCanvas = this.mmenuOptions.offCanvas;
+            this.mmenuOptions.offCanvas = false;
+
+            this.bsModal = $.bsModal( 
+                $.extend( modalOptions, {
+                    scroll   : true,
+                    fitWidth : !!width,
+                    flexWidth: !width,                    
+
+                    content: function(modalOptions, $container){
+                        let $outercontent = 
+                                $('<div></div>')
+                                    .addClass('mm-menu-modal-content')
+                                    .appendTo($container);
+                                                
+                        if (modalOptions.minHeight)
+                            $outercontent.css('minHeight', modalOptions.minHeight);
+
+                        if (width)
+                            $outercontent.width(width);
+                        
+                        let $content = $('<div></div>')
+                                .appendTo($outercontent);
+                        
+                        this.create($content);
+                    }.bind(this, modalOptions),                
+                        
+                        
+                })                
+            );
+
+            this.mmenuOptions.offCanvas = offCanvas;
+           
+        }
+    
     };
 
     /******************************************

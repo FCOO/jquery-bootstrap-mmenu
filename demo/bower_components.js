@@ -24887,6 +24887,10 @@ return jQuery;
           break;
         }
       }
+      if (!this.resolvedLanguage && this.languages.indexOf(l) < 0 && this.store.hasLanguageSomeTranslations(l)) {
+        this.resolvedLanguage = l;
+        if (this.languages.indexOf(l) < 0) this.languages.unshift(l);
+      }
     }
     changeLanguage(lng, callback) {
       var _this2 = this;
@@ -24920,7 +24924,8 @@ return jQuery;
       };
       const setLng = lngs => {
         if (!lng && !lngs && this.services.languageDetector) lngs = [];
-        const l = this.services.languageUtils.getBestMatchFromCodes(isString(lngs) ? [lngs] : lngs);
+        const fl = isString(lngs) ? lngs : lngs && lngs[0];
+        const l = this.store.hasLanguageSomeTranslations(fl) ? fl : this.services.languageUtils.getBestMatchFromCodes(isString(lngs) ? [lngs] : lngs);
         if (l) {
           if (!this.language) {
             setLngProps(l);
@@ -63173,6 +63178,7 @@ jquery-bootstrap-modal-promise.js
         innerHeight     : The fixed height of the content
         innerMaxHeight  : The fixed max-height of the content
 
+        fitWidth
         flexWidth
         extraWidth
         megaWidth
@@ -63309,6 +63315,7 @@ jquery-bootstrap-modal-promise.js
     3: fixed height. options.height
 
     The width of a modal is by default 300px.
+    options.fitWidth  : If true the width of the modal is set by the with of the content
     options.flexWidth : If true the width of the modal will adjust to the width of the browser up to 500px
     options.extraWidth: Only when flexWidth is set: If true the width of the modal will adjust to the width of the browser up to 800px
     options.megaWidth : Only when flexWidth is set: If true the width of the modal will adjust to the width of the browser up to 1200px
@@ -63327,6 +63334,7 @@ jquery-bootstrap-modal-promise.js
 
     function getWidthFromOptions( options ){
         return {
+            fitWidth            : !!options.fitWidth,
             flexWidth           : !!options.flexWidth,
             extraWidth          : !!options.extraWidth,
             megaWidth           : !!options.megaWidth,
@@ -63806,7 +63814,8 @@ jquery-bootstrap-modal-promise.js
 
         function useNormalWidth(options = {}){
             return (options.width == true) ||
-                    (   (options.flexWidth == undefined) &&
+                    (   (options.fitWidth == undefined) &&
+                        (options.flexWidth == undefined) &&
                         (options.extraWidth == undefined) &&
                         (options.megaWidth == undefined) &&
                         (options.maxWidth == undefined) &&
@@ -64140,6 +64149,7 @@ jquery-bootstrap-modal-promise.js
 
         //Set width
         $modalDialog
+            .toggleClass('modal-fit-width'              , cssWidth.fitWidth             )
             .toggleClass('modal-flex-width'             , cssWidth.flexWidth            )
             .toggleClass('modal-extra-width'            , cssWidth.extraWidth           )
             .toggleClass('modal-mega-width'             , cssWidth.megaWidth            )

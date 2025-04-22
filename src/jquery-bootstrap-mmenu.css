@@ -1649,8 +1649,32 @@ a.btn.mm-favorite-icons {
 
 .mm-listitem.only-buttons {
   --mm-line-height: 0;
+}
+.mm-menu:not(.mm-menu-no-button) .mm-listitem.only-buttons {
   padding-top: 2px;
 }
 .mm-listitem.only-buttons.no-padding-right .mm-listitem__text {
   padding-right: 0;
+}
+
+/*************************************
+Adjust css for mmenus inside bsModal
+*************************************/
+.modal-body .mm-menu-modal-content {
+  width: 100%;
+}
+.modal-body .mm-menu-modal-content .mm-menu {
+  position: relative;
+}
+.modal-body .mm-menu-modal-content .mm-panel:after {
+  background-color: green;
+  height: 0;
+}
+.modal-body .mm-listview {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.modal-body .mm-panels > .mm-panel {
+  position: relative;
+  overflow-y: hidden;
 }

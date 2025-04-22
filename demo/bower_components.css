@@ -14643,6 +14643,9 @@ div.modal-dialog.modal-full-screen:not(.modal-full-screen-with-border) .modal-co
   border: none;
   border-radius: 0px;
 }
+div.modal-dialog.modal-fit-width {
+  width: fit-content;
+}
 div.modal-dialog.modal-dialog-inline .modal-content {
   box-shadow: none;
   max-height: inherit;

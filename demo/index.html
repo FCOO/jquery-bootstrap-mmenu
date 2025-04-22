@@ -190,7 +190,7 @@ setTimeout( function(){
 
                             }, {
                                 id: 'sealvl3',
-                                //type:'radio', 
+                                type:'radio', 
                                 content: [
                                     {text: {da: '3: Noget andet', en:'3: Something else'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
@@ -218,7 +218,7 @@ setTimeout( function(){
             
 
 
-        var m = $.bsMmenu(menu, {offCanvas: false}).create($('#menu'));
+        var m = $.bsMmenu(menu).create($('#menu'));
 
 		//Create cloned menus
 		m.clone().create( $('#menu_clone') );
@@ -231,6 +231,39 @@ setTimeout( function(){
 			}				
 		}).create( $('#menu_clone2') );
 		
+
+//HER   		let m2 = m.clone();
+//HER   		m2.showInModal({
+//HER   			header: {text:'bsMenu in modal'},
+//HER   			show: false
+//HER   		});			
+
+//*********************************************
+		$('<button style="position: absolute; top: 50%">Clone menu in modal</button>').appendTo( $('body')).on('click', () => {
+
+			let m2 = m.clone();
+			m2.showInModal({
+				header: {text:'bsMenu in modal'},
+				show: true, 
+				minHeight: 500,
+				sameWidthAsCloneOf: true
+			});			
+		
+		});        
+//*********************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //        i18next.changeLanguage('da');
 
