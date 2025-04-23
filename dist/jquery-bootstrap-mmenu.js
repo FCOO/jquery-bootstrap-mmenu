@@ -141,7 +141,7 @@
         var list = this.options.list || this.options.items || this.options.itemList || [];
         if (list.length)
             this._createUl();
-       
+
         list.forEach( opt => this.append($.bsMmenuItem(opt, this)), this );
     };
 
@@ -190,11 +190,16 @@
                 if (originalContent && originalContent.icon && adjustIcon)
                     originalContent.icon = adjustIcon(originalContent.icon);
 
+
+                let onClick = owner._onClick.bind(owner);
+
                 content = clone(originalContent);
                 content = $.isArray(content) ? content : [content];
 
                 //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(icon) is given
                 var firstContent = content[0];
+                if (firstContent.onClick)
+                    firstContent.onClick = onClick;
 
                 if ( $.isPlainObject(firstContent) && (!firstContent.type || (firstContent.type == 'text')) )
                     content[0] = $('<div/>')._bsAddHtml(firstContent);
@@ -217,7 +222,7 @@
                         icon        : this.options.icon,
                         text        : this.options.text,
                         content     : content,
-                        onClick     : $.proxy(owner._onClick, owner)
+                        onClick     : onClick
                     })
                     .appendTo( this.$content );
 
@@ -245,7 +250,7 @@
                                 noBorder    : true,
                                 class       :'flex-shrink-0 mm-favorite-icons',
                                 selected    : inFavorites,
-                                onChange    : $.proxy(this._toggleFavorite, this)
+                                onChange    : this._toggleFavorite.bind(this)
                             }).appendTo(this.$outer);
 
                         this.$outer.addClass('pe-0');
@@ -264,7 +269,7 @@
                             square      : true,
                             noBorder    : true,
                             class       :'flex-shrink-0 mm-favorite-icons',
-                            onClick     : $.proxy(owner._toggleFavorite, owner)
+                            onClick     : owner._toggleFavorite.bind(owner)
                         }).appendTo(this.$outer);
                         this.$outer.addClass('pe-0');
                     }
@@ -577,7 +582,7 @@
         Get the index of childItem
         ***********************************/
         _getChildIndex: function( childItem ){
-            let index = 0, 
+            let index = 0,
                 nextItem = this.first;
             while (nextItem){
                 if (nextItem === childItem)
@@ -589,7 +594,7 @@
             }
             return -1;
         },
-            
+
         /***********************************
         _getPlacement
         Return a array with the index of this in it parents for this and all is parent elements
@@ -598,13 +603,13 @@
             let getChildIndex = function( childItem, placement = [] ){
                 let parent = childItem.parent;
                 if (parent){
-                    let index = 0, 
+                    let index = 0,
                         nextItem = parent.last;
                     while (nextItem){
                         if (nextItem === childItem){
                             placement.push(index);
                             return getChildIndex( parent, placement );
-                        }                            
+                        }
                         else {
                             nextItem = nextItem.prev;
                             index++;
@@ -613,7 +618,7 @@
                 }
                 return placement;
             };
-            
+
             return getChildIndex( this );
         },
 
@@ -624,8 +629,8 @@
         ***********************************/
         getSiblingItem: function( menu ){
             return menu._getItemByPlacment( this._getPlacement() );
-        },            
-        
+        },
+
         /***********************************
         open
         ***********************************/
@@ -647,7 +652,7 @@
                     siblingItem._onClick.bind(siblingItem).apply(arguments);
                 return;
             }
-            
+
             //There are two ways to change the state:
             //options.onChange => simple true/false state
             //options.onClick(id, state, item) => onClick will do all setting
@@ -972,7 +977,7 @@
                         title: {da:'Luk alle', en:'Close all'},
                         square : true,
                         tagName: 'div',
-                        onClick: $.proxy(this.closeAll, this)}
+                        onClick: this.closeAll.bind(this)}
                     ).get(0) );
 
                 var item = this.first;
@@ -984,7 +989,7 @@
                                 title   : item.options.text || null,
                                 square  : true,
                                 tagName : 'div',
-                                onClick : $.proxy(item.open, item, true)
+                                onClick : item.open.bind(item, true)
                             }).get(0)
                         );
                     item = item.next;
@@ -1020,7 +1025,7 @@
                         title   : resetOptions.title,
                         square  : true,
                         tagName : 'div',
-                        onClick : $.proxy(this.reset, this)
+                        onClick : this.reset.bind(this)
                     }).get(0)
                 );
             }
@@ -1120,7 +1125,7 @@
         **********************************/
         reset: function(){
             if (this.options.reset.promise)
-                this.options.reset.promise( $.proxy(this._reset_resolve, this) );
+                this.options.reset.promise( this._reset_resolve.bind(this) );
         },
 
         _reset_resolve: function( closeAll ){

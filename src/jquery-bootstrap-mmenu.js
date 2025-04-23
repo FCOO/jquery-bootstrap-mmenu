@@ -249,7 +249,7 @@
                         title: {da:'Luk alle', en:'Close all'},
                         square : true,
                         tagName: 'div',
-                        onClick: $.proxy(this.closeAll, this)}
+                        onClick: this.closeAll.bind(this)}
                     ).get(0) );
 
                 var item = this.first;
@@ -261,7 +261,7 @@
                                 title   : item.options.text || null,
                                 square  : true,
                                 tagName : 'div',
-                                onClick : $.proxy(item.open, item, true)
+                                onClick : item.open.bind(item, true)
                             }).get(0)
                         );
                     item = item.next;
@@ -297,7 +297,7 @@
                         title   : resetOptions.title,
                         square  : true,
                         tagName : 'div',
-                        onClick : $.proxy(this.reset, this)
+                        onClick : this.reset.bind(this)
                     }).get(0)
                 );
             }
@@ -397,7 +397,7 @@
         **********************************/
         reset: function(){
             if (this.options.reset.promise)
-                this.options.reset.promise( $.proxy(this._reset_resolve, this) );
+                this.options.reset.promise( this._reset_resolve.bind(this) );
         },
 
         _reset_resolve: function( closeAll ){

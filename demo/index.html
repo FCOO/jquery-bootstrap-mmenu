@@ -9,14 +9,14 @@
     <meta name='copyright' content='FCOO'>
     <meta name='owner' content='FCOO'>
 
-    <link  href="bower_components.css" rel="stylesheet">    
+    <link  href="bower_components.css" rel="stylesheet">
     <link  href="../src/jquery-bootstrap-mmenu.css" rel="stylesheet">
     <link  href="fcoo-fontawesome.css" rel="stylesheet">
 
 
     <style>
-        html, body { 
-            width : 100%; 
+        html, body {
+            width : 100%;
             height: 100%;
             background-color: gray;
         }
@@ -56,6 +56,8 @@ setTimeout( function(){
 }, 2000);
 
 		function changeRadioGroup(id, state, item){
+console.log(arguments);
+console.log(id, state, item);
 			if (state){
 				let nextItem = item.parent.first;
 				while (nextItem){
@@ -63,17 +65,17 @@ setTimeout( function(){
 						nextItem.setState(false);
 					nextItem = nextItem.next;
 				}
-			}	
-		}	
+			}
+		}
 
 
         var menu = {
                 inclBar    : true,
                 barCloseAll: true,
                 favorites: {
-                    get   : function(id){ return false; }, 
-                    add   : function(id){ return true; }, 
-                    remove: function(id){ return true; }, 
+                    get   : function(id){ return false; },
+                    add   : function(id){ return true; },
+                    remove: function(id){ return true; },
                 },
                 onChange: function(id, state, item){
                     console.log('GLOBAL onChange', id, state, item);
@@ -90,12 +92,12 @@ setTimeout( function(){
                 },
                 adjustIcon  : function(icon){
                     return icon;
-                },                        
+                },
 
 				onOpenOrClose: function(menuItem, isOpen, menu){
 					//console.log('onOpenOrClose', menuItem, isOpen, menu);
-				},					
-					
+				},
+
                 list: [{
                     icon: 'fa fa-map',
                     text: {da:'Første', en:'First'},
@@ -103,9 +105,9 @@ setTimeout( function(){
                     list: [{
                         text: 'Item 1-1 (Link dr.dk)', link: 'https://dr.dk'
                     }, {
-                        type: "text", text: 'Item 1-2 der er meget lang med en masse tekst der gerne skal vises over flere linier', 
+                        type: "text", text: 'Item 1-2 der er meget lang med en masse tekst der gerne skal vises over flere linier',
                     }, {
-                        type: "button", text: 'Dette er en knap', onClick: function(){ console.log('Click', arguments ); } 
+                        type: "button", text: 'Dette er en knap', onClick: function(){ console.log('Click', arguments ); }
                     }]
                 }, {
                     text: {da:'Overflade', en:'Surface'},
@@ -151,7 +153,7 @@ setTimeout( function(){
                                 {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }}
                             ]
                         }, {
-                            type: 'buttons', 
+                            type: 'buttons',
                             buttonList: [
                                 {icon: 'fa-home', text: {da: 'En knap', en:'A Button'}, onClick: function(){ console.log('Klik på En Knap'); }},
                                 {icon: 'fa-home', text: {da: '2. knap', en:'2. Button'}, onClick: function(){ console.log('Klik på En Anden Knap'); }}
@@ -162,7 +164,7 @@ setTimeout( function(){
                         list: [
                             {
                                 id: 'sealvl1',
-                                type:'radio', 
+                                type:'radio',
                                 content: [
                                     {text: {da: '1: Indre Danske Farvande', en:'1: Inner Danish Waters'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>'),
@@ -176,7 +178,7 @@ setTimeout( function(){
                                 ]
                             }, {
                                 id: 'sealvl2',
-                                type:'radio', 
+                                type:'radio',
                                 content: [
                                     {icon: 'fa-map', text:  {da: '2: Navigation', en:'2: Navigation'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
@@ -190,7 +192,7 @@ setTimeout( function(){
 
                             }, {
                                 id: 'sealvl3',
-                                type:'radio', 
+                                type:'radio',
                                 content: [
                                     {text: {da: '3: Noget andet', en:'3: Something else'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
@@ -203,19 +205,19 @@ setTimeout( function(){
 
                         }]
                     },{
-                        
+
                         id:'CURRENT', text: {da: 'Strøm', en:'Current'},
                         list: [{
-                            id: 'current1', type:'radio', text: 'Current-1', favoriteText: 'Current-1 (favorite)', onChange: changeRadioGroup
+                            id: 'current1', type:'radio', text: 'Current-1', favoriteText: 'Current-1 (favorite)', onClick/*onChange*/: changeRadioGroup
                             },{
-                            id: 'current2', type:'radio', text: 'Current-2', favoriteText: 'Current-2 (favorite)', onChange: changeRadioGroup
+                            id: 'current2', type:'radio', text: 'Current-2', favoriteText: 'Current-2 (favorite)', onClick/*onChange*/: changeRadioGroup
                             },{
-                            id: 'current3', type:'radio', text: 'Current-3', favoriteText: 'Current-3 (favorite)', onChange: changeRadioGroup
+                            id: 'current3', type:'radio', text: 'Current-3', favoriteText: 'Current-3 (favorite)', onClick/*onChange*/: changeRadioGroup
                         }]
                     }]
                 }]
             };
-            
+
 
 
         var m = $.bsMmenu(menu).create($('#menu'));
@@ -224,19 +226,19 @@ setTimeout( function(){
 		m.clone().create( $('#menu_clone') );
 		m.clone({
 			isFullClone: false,
-			
+
 			forceOnChange: function(id, state, item){ console.log('FORCED ONCHANGE', id, state, item); },
 			getState: function(item, state){
 				return state ? 'semi' : false;
-			}				
+			}
 		}).create( $('#menu_clone2') );
-		
+
 
 //HER   		let m2 = m.clone();
 //HER   		m2.showInModal({
 //HER   			header: {text:'bsMenu in modal'},
 //HER   			show: false
-//HER   		});			
+//HER   		});
 
 //*********************************************
 		$('<button style="position: absolute; top: 50%">Clone menu in modal</button>').appendTo( $('body')).on('click', () => {
@@ -244,12 +246,12 @@ setTimeout( function(){
 			let m2 = m.clone();
 			m2.showInModal({
 				header: {text:'bsMenu in modal'},
-				show: true, 
+				show: true,
 				minHeight: 500,
 				sameWidthAsCloneOf: true
-			});			
-		
-		});        
+			});
+
+		});
 //*********************************************
 
 
