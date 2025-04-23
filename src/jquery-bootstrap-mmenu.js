@@ -78,6 +78,7 @@
         }
     };
 
+
     /************************************************
     BsMmenu
     options = {
@@ -90,7 +91,7 @@
         barCloseAll: BOOLEAN, if true a top-bar button is added that closes all open submenus
 
         noButtons   : BOOLEAN, if true no buttons are added to menu-items
-        
+
         adjustIcon  : function(icon): retur icon (optional). Adjust the icon of each menu-items
 
         reset : NULL, true, false or {
@@ -119,7 +120,7 @@
         //Save mmenuOptions and configuration in options. Needed for clone
         this.options.mmenuOptions = mmenuOptions;
         this.options.configuration = configuration;
-   
+
         //Setting and adjusting mmenuOptions = the options for Mmenu
         //Using sliding submenus and navbar with title if it is a touch device
         this.mmenuOptions =
@@ -304,14 +305,23 @@
             this.configuration.bsMenu = this;
             this.mmenu = new Mmenu($elem.get(0), this.mmenuOptions, this.configuration );
 
-            this.panel = $elem.find('#'+this.ulId).get(0); 
+            this.panel = $elem.find('#'+this.ulId).get(0);
             this.api = this.mmenu.API;
 
             //Add event for open/close menus. Other events: 'closePanel:before', 'closePanel:after', 'openPanel:before', 'openPanel:after', 'setSelected:before', 'setSelected:after'
-            this.api.bind('openPanel:after',  this._onOpen.bind(this) );                
-            this.api.bind('closePanel:after', this._onClose.bind(this) );                
-            
+            this.api.bind('openPanel:after',  this._onOpen.bind(this) );
+            this.api.bind('closePanel:after', this._onClose.bind(this) );
+
             $elem.data('bsMmenu', this.mmenu);
+
+
+            //Open item
+            $.each(this.openItemIdList, function(id, isOpen){
+                let item = this.getItem(id);
+                if (item && isOpen)
+                    item.open();
+            }.bind(this));
+
 
             return this;
         },
@@ -334,7 +344,7 @@
                 else
                     item = item.next;
             }
-            
+
             return result;
         },
 
@@ -344,7 +354,7 @@
         getItem: function(id, findByLiId){
             return this._getItem(id, this, findByLiId);
         },
-            
+
         /**********************************
         _getItemByPlacment
         **********************************/
@@ -354,7 +364,7 @@
                     return parent;
 
                 let nextIndex = placement.pop(),
-                    index = 0, 
+                    index = 0,
                     nextItem = parent.last;
                 while (nextItem){
                     if (index == nextIndex)
@@ -366,9 +376,9 @@
                 }
                 return null;
             };
-            
+
             return getChildByIndex( this, placement );
-        },            
+        },
 
 
 
@@ -422,9 +432,9 @@
                     this.options.onOpenOrClose(mmenuItem, isOpen, this);
             }
 
-            return this;            
-        },            
-        
+            return this;
+        },
+
         /**********************************
         closeAll
         **********************************/
@@ -492,39 +502,47 @@
                 });
             }
         },
-            
+
         /**********************************
         clone
         Create a cloned version of the menu
         ***********************************/
         clone: function( options = {}, mmenuOptions = {}, configuration = {}  ){
-            
+
             options = $.extend({
                 inclFavorites: false,
-                noButtons    : true,    
+                noButtons    : true,
                 inclBar      : false,
-                reset        : false,    
+                reset        : false,
                 favorites    : false,
                 isFullClone  : true     //true => All items are an exact copy
             }, options);
-            
+
             let c_options       = $.extend(true, {}, this.options,               options      ),
                 c_mmenuOptions  = $.extend(true, {}, this.options.mmenuOptions,  mmenuOptions ),
                 c_configuration = $.extend(true, {}, this.options.configuration, configuration);
-            
+
             let c_menu = $.bsMmenu(c_options, c_mmenuOptions, c_configuration);
 
             this.nrOfClones = this.nrOfClones || 0;
             this.clones = this.clones || {};
-        
+
             c_menu.cId = 'clone'+this.nrOfClones;
             c_menu.cloneOf = this;
             this.nrOfClones++;
             this.clones[c_menu.cId] = c_menu;
+
+            c_menu.openItemIdList = {};
+            $.each(this.openItemIdList, function(id, isOpen){
+                let origialItem = this.getItem(id),
+                    cloneItem = origialItem ? origialItem.getSiblingItem( c_menu ) : null;
+                if (cloneItem)
+                    c_menu.openItemIdList[cloneItem.id] = isOpen;
+            }.bind(this));
+
             return c_menu;
-        
         },
-            
+
         /**********************************
         destroy
         Destroy the menu and clean up
@@ -533,7 +551,7 @@
             if (this.cloneOf)
                 this.cloneOf.clones[this.cId] = null;
             $(this.mmenu.node.menu).empty();
-        },        
+        },
 
         /**********************************
         showInModal
@@ -542,48 +560,48 @@
         showInModal: function(modalOptions = {}){
 
             let width = null;
-            
+
             //If the menu is a clone and modalOptions.sameWidthAsCloneOf = true => the modal inner-wisth gets the same as the original menu
             if (this.cloneOf && modalOptions.sameWidthAsCloneOf && !modalOptions.width)
-                width = this.cloneOf.$ul.width();               
+                width = this.cloneOf.$ul.width();
             else
                 width = modalOptions.width;
-            
+
             let offCanvas = this.mmenuOptions.offCanvas;
             this.mmenuOptions.offCanvas = false;
 
-            this.bsModal = $.bsModal( 
+            this.bsModal = $.bsModal(
                 $.extend( modalOptions, {
                     scroll   : true,
                     fitWidth : !!width,
-                    flexWidth: !width,                    
+                    flexWidth: !width,
 
                     content: function(modalOptions, $container){
-                        let $outercontent = 
+                        let $outercontent =
                                 $('<div></div>')
                                     .addClass('mm-menu-modal-content')
                                     .appendTo($container);
-                                                
+
                         if (modalOptions.minHeight)
                             $outercontent.css('minHeight', modalOptions.minHeight);
 
                         if (width)
                             $outercontent.width(width);
-                        
+
                         let $content = $('<div></div>')
                                 .appendTo($outercontent);
-                        
+
                         this.create($content);
-                    }.bind(this, modalOptions),                
-                        
-                        
-                })                
+                    }.bind(this, modalOptions),
+
+
+                })
             );
 
             this.mmenuOptions.offCanvas = offCanvas;
-           
+
         }
-    
+
     };
 
     /******************************************
