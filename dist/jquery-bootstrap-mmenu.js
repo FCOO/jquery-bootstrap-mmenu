@@ -10,7 +10,7 @@
     //clone( elem ) return a cloned copy of elem
     function clone(elem){
         var result;
-        if ($.isArray(elem)){
+        if (Array.isArray(elem)){
             result = [];
             $.each(elem, function(index, subElem){
                 result.push( clone(subElem) );
@@ -71,6 +71,7 @@
         nextLiId = 0;
 
     $.BsMmenuItem = function(options, parent, owner){
+
         owner = owner || this;
         this.options = options;
 
@@ -127,8 +128,9 @@
 
         //Set element ids
         nextLiId++;
-        this.liId = 'bsmm_li_'+nextLiId;
-        this.ulId = 'bsmm_ul_'+nextLiId;
+        this.liId       = 'bsmm_li_'+nextLiId;
+        this.checkboxId = 'bsmm_cb_'+nextLiId;
+        this.ulId       = 'bsmm_ul_'+nextLiId;
 
         //Create the DOM-element
         this.createLi(owner);
@@ -190,14 +192,14 @@
                 if (originalContent && originalContent.icon && adjustIcon)
                     originalContent.icon = adjustIcon(originalContent.icon);
 
-
                 let onClick = owner._onClick.bind(owner);
 
                 content = clone(originalContent);
-                content = $.isArray(content) ? content : [content];
+                content = Array.isArray(content) ? content : [content];
 
                 //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(icon) is given
                 var firstContent = content[0];
+
                 if (firstContent.onClick)
                     firstContent.onClick = onClick;
 
@@ -216,7 +218,7 @@
                 }
                 else {
                     this.checkbox = $.bsCheckbox({
-                        id          : this.id,
+                        id          : this.checkboxId,
                         type        : this.type,
                         multiLines  : true,
                         icon        : this.options.icon,
@@ -911,7 +913,7 @@
         }
 
         //Create and add sub-items
-        var list = $.isArray(options) ? options : (options.list || options.items || options.itemList || []);
+        var list = Array.isArray(options) ? options : (options.list || options.items || options.itemList || []);
         list.forEach( opt => this.append($.bsMmenuItem(opt, this)), this );
 
         this.list = list;
@@ -1260,6 +1262,7 @@
             this.nrOfClones++;
             this.clones[c_menu.cId] = c_menu;
 
+            //Copy the open/close state from the original menu
             c_menu.openItemIdList = {};
             $.each(this.openItemIdList, function(id, isOpen){
                 let origialItem = this.getItem(id),
@@ -1277,7 +1280,7 @@
         ***********************************/
         destroy: function(){
             if (this.cloneOf)
-                this.cloneOf.clones[this.cId] = null;
+                delete this.cloneOf.clones[this.cId];
             $(this.mmenu.node.menu).empty();
         },
 
@@ -1305,31 +1308,27 @@
                     flexWidth: !width,
 
                     content: function(modalOptions, $container){
-                        let $outercontent =
+                        let $outerContent =
                                 $('<div></div>')
                                     .addClass('mm-menu-modal-content')
                                     .appendTo($container);
 
                         if (modalOptions.minHeight)
-                            $outercontent.css('minHeight', modalOptions.minHeight);
+                            $outerContent.css('minHeight', modalOptions.minHeight);
 
                         if (width)
-                            $outercontent.width(width);
+                            $outerContent.width(width);
 
                         let $content = $('<div></div>')
-                                .appendTo($outercontent);
+                                .appendTo($outerContent);
 
                         this.create($content);
                     }.bind(this, modalOptions),
-
-
                 })
             );
 
             this.mmenuOptions.offCanvas = offCanvas;
-
         }
-
     };
 
     /******************************************

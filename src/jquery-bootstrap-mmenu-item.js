@@ -10,7 +10,7 @@
     //clone( elem ) return a cloned copy of elem
     function clone(elem){
         var result;
-        if ($.isArray(elem)){
+        if (Array.isArray(elem)){
             result = [];
             $.each(elem, function(index, subElem){
                 result.push( clone(subElem) );
@@ -71,6 +71,7 @@
         nextLiId = 0;
 
     $.BsMmenuItem = function(options, parent, owner){
+
         owner = owner || this;
         this.options = options;
 
@@ -127,8 +128,9 @@
 
         //Set element ids
         nextLiId++;
-        this.liId = 'bsmm_li_'+nextLiId;
-        this.ulId = 'bsmm_ul_'+nextLiId;
+        this.liId       = 'bsmm_li_'+nextLiId;
+        this.checkboxId = 'bsmm_cb_'+nextLiId;
+        this.ulId       = 'bsmm_ul_'+nextLiId;
 
         //Create the DOM-element
         this.createLi(owner);
@@ -190,14 +192,14 @@
                 if (originalContent && originalContent.icon && adjustIcon)
                     originalContent.icon = adjustIcon(originalContent.icon);
 
-
                 let onClick = owner._onClick.bind(owner);
 
                 content = clone(originalContent);
-                content = $.isArray(content) ? content : [content];
+                content = Array.isArray(content) ? content : [content];
 
                 //If first content-item is the text => make it full-width inside a div. Adjust the icon if menu.options.adjustIcon = function(icon) is given
                 var firstContent = content[0];
+
                 if (firstContent.onClick)
                     firstContent.onClick = onClick;
 
@@ -216,7 +218,7 @@
                 }
                 else {
                     this.checkbox = $.bsCheckbox({
-                        id          : this.id,
+                        id          : this.checkboxId,
                         type        : this.type,
                         multiLines  : true,
                         icon        : this.options.icon,

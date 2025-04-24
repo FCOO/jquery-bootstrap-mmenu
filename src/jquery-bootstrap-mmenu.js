@@ -183,7 +183,7 @@
         }
 
         //Create and add sub-items
-        var list = $.isArray(options) ? options : (options.list || options.items || options.itemList || []);
+        var list = Array.isArray(options) ? options : (options.list || options.items || options.itemList || []);
         list.forEach( opt => this.append($.bsMmenuItem(opt, this)), this );
 
         this.list = list;
@@ -532,6 +532,7 @@
             this.nrOfClones++;
             this.clones[c_menu.cId] = c_menu;
 
+            //Copy the open/close state from the original menu
             c_menu.openItemIdList = {};
             $.each(this.openItemIdList, function(id, isOpen){
                 let origialItem = this.getItem(id),
@@ -549,7 +550,7 @@
         ***********************************/
         destroy: function(){
             if (this.cloneOf)
-                this.cloneOf.clones[this.cId] = null;
+                delete this.cloneOf.clones[this.cId];
             $(this.mmenu.node.menu).empty();
         },
 
@@ -577,31 +578,27 @@
                     flexWidth: !width,
 
                     content: function(modalOptions, $container){
-                        let $outercontent =
+                        let $outerContent =
                                 $('<div></div>')
                                     .addClass('mm-menu-modal-content')
                                     .appendTo($container);
 
                         if (modalOptions.minHeight)
-                            $outercontent.css('minHeight', modalOptions.minHeight);
+                            $outerContent.css('minHeight', modalOptions.minHeight);
 
                         if (width)
-                            $outercontent.width(width);
+                            $outerContent.width(width);
 
                         let $content = $('<div></div>')
-                                .appendTo($outercontent);
+                                .appendTo($outerContent);
 
                         this.create($content);
                     }.bind(this, modalOptions),
-
-
                 })
             );
 
             this.mmenuOptions.offCanvas = offCanvas;
-
         }
-
     };
 
     /******************************************

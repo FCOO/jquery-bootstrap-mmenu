@@ -35,8 +35,8 @@
 
 <body>
     <div id="menu" style="width:350px; margin-left:30px; height:50%"></div>
-    <div id="menu_clone"  style="width:350px; height:50%; position: absolute; left:30%"></div>
-    <div id="menu_clone2" style="width:350px; height:50%; position: absolute; left:60%"></div>
+    <div id="menu_clone"  style="width:350px; height:50%; position: absolute; left:calc(50% - 350px/2)"></div>
+    <div id="menu_clone2" style="width:350px; height:50%; position: absolute; left:calc(100% - 350px)"></div>
 
     <script src="bower_components.js"></script>
     <script src="../src/jquery-bootstrap-mmenu-item.js"></script>
@@ -56,9 +56,9 @@ setTimeout( function(){
 }, 2000);
 
 		function changeRadioGroup(id, state, item){
-console.log(arguments);
-console.log(id, state, item);
-			if (state){
+            console.log('changeRadioGroup', id, item);
+            item.setState(!item.state);
+			if (item.state){
 				let nextItem = item.parent.first;
 				while (nextItem){
 					if (nextItem !== item)
@@ -179,7 +179,10 @@ console.log(id, state, item);
                             }, {
                                 id: 'sealvl2',
                                 type:'radio',
-                                content: [
+                                icon: 'fa-map',
+                                text:  {da: '2: Navigation', en:'2: Navigation'},
+
+                                _content: [
                                     {icon: 'fa-map', text:  {da: '2: Navigation', en:'2: Navigation'}},
                                     $('<img height="30px" src="https://wms01.fcoo.dk/webmap/v2/data/DMI/HARMONIE/DMI_NEA_MAPS_v005C.nc.wms?request=GetColorbar&styles=horizontal%2Cnolabel&cmap=Wind_ms_BGYRP_11colors"/>')
                                 ],
@@ -208,11 +211,11 @@ console.log(id, state, item);
 
                         id:'CURRENT', text: {da: 'Strøm', en:'Current'},
                         list: [{
-                            id: 'current1', type:'radio', text: 'Current-1', favoriteText: 'Current-1 (favorite)', onClick/*onChange*/: changeRadioGroup
+                            id: 'current1', type:'radio', icon: 'fa-map',   text: 'Current-1', favoriteText: 'Current-1 (favorite)', /*onChange*/onClick: changeRadioGroup
                             },{
-                            id: 'current2', type:'radio', text: 'Current-2', favoriteText: 'Current-2 (favorite)', onClick/*onChange*/: changeRadioGroup
+                            id: 'current2', type:'radio',			        text: 'Current-2', favoriteText: 'Current-2 (favorite)', /*onChange*/onClick: changeRadioGroup
                             },{
-                            id: 'current3', type:'radio', text: 'Current-3', favoriteText: 'Current-3 (favorite)', onClick/*onChange*/: changeRadioGroup
+                            id: 'current3', type:'radio', icon: 'fa-map',   text: 'Current-3', favoriteText: 'Current-3 (favorite)', /*onChange*/onClick: changeRadioGroup
                         }]
                     }]
                 }]
@@ -227,7 +230,8 @@ console.log(id, state, item);
 		m.clone({
 			isFullClone: false,
 
-			forceOnChange: function(id, state, item){ console.log('FORCED ONCHANGE', id, state, item); },
+			forceOnClick: function(id, state, item){ console.log('FORCED ON CLICK', id, state, item); },
+			forceOnChange: function(id, state, item){ console.log('FORCED ON CHANGE', id, state, item); },
 			getState: function(item, state){
 				return state ? 'semi' : false;
 			}
@@ -241,14 +245,21 @@ console.log(id, state, item);
 //HER   		});
 
 //*********************************************
+		function forceOnClick(){
+			console.log('forceOnClick', arguments);
+		}
 		$('<button style="position: absolute; top: 50%">Clone menu in modal</button>').appendTo( $('body')).on('click', () => {
 
-			let m2 = m.clone();
+			let m2 = m.clone({
+						isFullClone : false,
+						forceOnClick: forceOnClick
+					});
 			m2.showInModal({
 				header: {text:'bsMenu in modal'},
 				show: true,
 				minHeight: 500,
-				sameWidthAsCloneOf: true
+				sameWidthAsCloneOf: true,
+
 			});
 
 		});
