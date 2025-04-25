@@ -558,7 +558,7 @@
         showInModal
         Show the menu in a modal
         ***********************************/
-        showInModal: function(modalOptions = {}){
+        showInModal: function(modalOptions = {}, destroyOnClose){
 
             let width = null;
 
@@ -570,6 +570,11 @@
 
             let offCanvas = this.mmenuOptions.offCanvas;
             this.mmenuOptions.offCanvas = false;
+
+            if (destroyOnClose){
+                modalOptions.show   = false;
+                modalOptions.remove = true;
+            }
 
             this.bsModal = $.bsModal(
                 $.extend( modalOptions, {
@@ -598,7 +603,83 @@
             );
 
             this.mmenuOptions.offCanvas = offCanvas;
+
+            if (destroyOnClose)
+                //Destroy the cloned menu on close + show it!
+                this.bsModal
+                    .on('hidden.bs.modal', this.destroy.bind(this) )
+                    .show();
+        },
+
+        /**********************************
+        asSimpleMenu
+        Special method to return the menu as a new simple bsMenu
+        The returned menu do not only contain any pure text or buttons or checkbox/radio
+        Instead eaach menu-item is just a click-item calling onClick
+        Optional: include(menuItem) return true/false
+        Optional: adjust(menuItem) return menuItem adjusted (icon, text etc)
+        ***********************************/
+        asSimpleMenu: function(
+            onClick = (/*menuItem*/) => {/* Do sometning with item*/},
+            include = (  menuItem  ) => {return !!menuItem.onClick || !!menuItem.onChange;},
+            adjust  = (  menuItem  ) => {return menuItem; }){
+
+
+            let onClickSimple = function(id, state, menuItem){
+                onClick(menuItem);
+            };
+
+
+            let getIcon = function( opt ){
+                let icon = opt.icon;
+                if (icon && this.options.adjustIcon)
+                    icon = this.options.adjustIcon(icon);
+                return icon;
+            }.bind(this);
+
+
+            let getSimpleOptions = function( menuList = []){
+                let result = [];
+
+                menuList.forEach( menuItem => {
+                    menuItem = adjust(menuItem);
+
+                    let simpleOptions = null;
+                    let list = getSimpleOptions( menuItem.list);
+
+                    if (list.length)
+                        simpleOptions = {
+                            id  : menuItem.id,
+                            icon: getIcon(menuItem),
+                            text: menuItem.text,
+                            list: list
+                        };
+                    else
+                        //Menu-item has no children => Add it if it is included (default = has a onClick/onChange )
+                        if (include(menuItem))
+                            simpleOptions = {
+                                id      : menuItem.id,
+                                icon    : getIcon(menuItem),
+                                text    : menuItem.text || {da:'Mangler', en:'Missing'},
+                                onClick : onClickSimple,
+                                simpleFullWidth: true
+                            };
+
+                    if (simpleOptions)
+                        result.push( simpleOptions );
+                }, this);
+
+                return result;
+
+            }.bind(this);
+
+            return $.bsMmenu(
+                       {list: getSimpleOptions( this.list ) },
+                       this.options.mmenuOptions,
+                       this.options.configuration
+                   );
         }
+
     };
 
     /******************************************

@@ -238,13 +238,8 @@ setTimeout( function(){
 		}).create( $('#menu_clone2') );
 
 
-//HER   		let m2 = m.clone();
-//HER   		m2.showInModal({
-//HER   			header: {text:'bsMenu in modal'},
-//HER   			show: false
-//HER   		});
 
-//*********************************************
+        //*********************************************
 		function forceOnClick(){
 			console.log('forceOnClick', arguments);
 		}
@@ -260,11 +255,21 @@ setTimeout( function(){
 				minHeight: 500,
 				sameWidthAsCloneOf: true,
 
-			});
+			}, true);
 
 		});
-//*********************************************
+        //*********************************************
+		$('<button style="position: absolute; top: calc(50% + 40px)">As simple</button>').appendTo( $('body')).on('click', () => {
+            m
+                .asSimpleMenu((item) => console.log('>>>>>>>>>', item))
+                .showInModal({
+                    header: {text: 'As accordion'},
+                    show: true,
+                    remove: true
+			    }, true);
 
+		});
+        //*********************************************
 
 
 
@@ -287,14 +292,6 @@ setTimeout( function(){
             parent.append(item);
         };
 
-
-//HER        document.addEventListener('click', function (evnt) {
-//HER            var anchor = evnt.target.closest('a[href^="#/"]');
-//HER            if (anchor) {
-//HER                alert("Thank you for clicking, but that's a demo link.");
-//HER                evnt.preventDefault();
-//HER            }
-//HER        });
     </script>
     <!-- <button onClick="javascript:m.favoriteRemoveAll()">Fjern favoritter</button> -->
 </body>

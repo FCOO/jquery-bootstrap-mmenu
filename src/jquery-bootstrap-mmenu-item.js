@@ -185,6 +185,8 @@
                         .i18n(this.options.link, 'href')
                         .prop('target', '_blank');
 
+                if (this.options.simpleFullWidth)
+                    this.$content.addClass('simple-full-width');
 
                 var originalContent = this.options.content || this.options,
                     adjustIcon = this.menu.options.adjustIcon;
@@ -293,7 +295,7 @@
                 //Buttons added inside button-bar. If button-options have first: true => new 'line' = new bsButtonGroup
                 var currentList = [];
 
-                buttonList.forEach( function(buttonOptions){
+                buttonList.forEach( buttonOptions => {
                     if (buttonOptions.isFirstButton && currentList.length){
                         groupList.push( currentList );
                         currentList = [];
@@ -308,6 +310,7 @@
                 });
                 if (currentList.length)
                     groupList.push( currentList );
+
 
                 groupList.forEach( function( list ){
                     $.bsButtonBar({
