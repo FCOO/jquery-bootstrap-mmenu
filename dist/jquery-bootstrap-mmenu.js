@@ -642,10 +642,31 @@
         open: function(closeAllOther){
             if (closeAllOther)
                 this.menu.closeAll();
+
             if (this.$ul)
                 this._getApi().openPanel(this.$ul.get(0));
+
+            //For unknown reasons this is also needed.....
+            if (this.$li && this.$ul){
+                this.$li.addClass('mm-listitem_opened');
+                this.$ul.parent().removeClass('mm-hidden');
+            }
+
         },
 
+        /***********************************
+        close
+        ***********************************/
+        close: function(){
+            if (this.$ul)
+                this._getApi().closePanel(this.$ul.get(0));
+
+            //For unknown reasons this is also needed.....
+            if (this.$li && this.$ul){
+                this.$li.removeClass('mm-listitem_opened');
+                this.$ul.parent().addClass('mm-hidden');
+            }
+        },
         /***********************************
         _onClick
         ***********************************/
@@ -1048,15 +1069,33 @@
             $elem.data('bsMmenu', this.mmenu);
 
 
-            //Open item
+            this.setOpenAndClosedItems();
+
+            return this;
+        },
+
+        /**********************************
+        setOpenAndClosedItems
+        Open/close items according to the setting in this.openItemIdList
+        **********************************/
+        setOpenAndClosedItems: function(){
+            this.openItemIdList = this.openItemIdList || {};
+
+            let save_openItemIdList = $.extend({}, this.openItemIdList);
             $.each(this.openItemIdList, function(id, isOpen){
                 let item = this.getItem(id);
                 if (item && isOpen)
                     item.open();
             }.bind(this));
 
+            //Need to re-close other items
+            this.openItemIdList = save_openItemIdList;
 
-            return this;
+            this.visitAllItems( function(menuItem){
+                if (!this.openItemIdList || !this.openItemIdList[menuItem.id])
+                    menuItem.close();
+            }.bind(this));
+
         },
 
         /**********************************
@@ -1113,7 +1152,22 @@
             return getChildByIndex( this, placement );
         },
 
+        /**********************************
+        visitAllItems
+        func = function(menuItem)
+        **********************************/
+        visitAllItems: function( func ){
+            function visitAll( menuItem ){
+                let nextChild = menuItem.first;
+                while (nextChild){
+                    func(nextChild);
+                    visitAll(nextChild);
+                    nextChild = nextChild.next;
+                }
+            }
+            visitAll( this );
 
+        },
 
         /**********************************
         remove
@@ -1153,16 +1207,16 @@
         _onClose: function(panel){ return this._onOpenOrClose(panel, false); },
 
         _onOpenOrClose( panel, isOpen=false){
-            let liId      = panel.parentElement ? $(panel.parentElement).attr('id') : null,
-                mmenuItem = liId ? this.getItem(liId, true) : null;
+            let liId     = panel.parentElement ? $(panel.parentElement).attr('id') : null,
+                menuItem = liId ? this.getItem(liId, true) : null;
 
-            if (mmenuItem){
+            if (menuItem){
                 //Update openItemIdList
                 this.openItemIdList = this.openItemIdList || {};
-                this.openItemIdList[mmenuItem.id] = isOpen;
+                this.openItemIdList[menuItem.id] = isOpen;
 
                 if (this.options.onOpenOrClose)
-                    this.options.onOpenOrClose(mmenuItem, isOpen, this);
+                    this.options.onOpenOrClose(menuItem, isOpen, this);
             }
 
             return this;
@@ -1406,11 +1460,24 @@
 
             }.bind(this);
 
-            return $.bsMmenu(
-                       {list: getSimpleOptions( this.list ) },
-                       this.options.mmenuOptions,
-                       this.options.configuration
-                   );
+
+            let bsMenu = $.bsMmenu(
+                    {list: getSimpleOptions( this.list ) },
+                    this.options.mmenuOptions,
+                    this.options.configuration
+                );
+
+            //Copy the open/close state from the original menu
+            bsMenu.openItemIdList = {};
+            $.each(this.openItemIdList, function(id, isOpen){
+                let origialItem = this.getItem(id),
+                    cloneItem = origialItem ? origialItem.getSiblingItem( bsMenu ) : null;
+                if (cloneItem)
+                    bsMenu.openItemIdList[cloneItem.id] = isOpen;
+            }.bind(this));
+
+            return bsMenu;
+
         }
 
     };

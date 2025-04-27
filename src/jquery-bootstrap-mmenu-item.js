@@ -642,10 +642,31 @@
         open: function(closeAllOther){
             if (closeAllOther)
                 this.menu.closeAll();
+
             if (this.$ul)
                 this._getApi().openPanel(this.$ul.get(0));
+
+            //For unknown reasons this is also needed.....
+            if (this.$li && this.$ul){
+                this.$li.addClass('mm-listitem_opened');
+                this.$ul.parent().removeClass('mm-hidden');
+            }
+
         },
 
+        /***********************************
+        close
+        ***********************************/
+        close: function(){
+            if (this.$ul)
+                this._getApi().closePanel(this.$ul.get(0));
+
+            //For unknown reasons this is also needed.....
+            if (this.$li && this.$ul){
+                this.$li.removeClass('mm-listitem_opened');
+                this.$ul.parent().addClass('mm-hidden');
+            }
+        },
         /***********************************
         _onClick
         ***********************************/
