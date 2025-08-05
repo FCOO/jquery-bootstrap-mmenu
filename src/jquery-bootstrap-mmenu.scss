@@ -115,8 +115,9 @@ COLORS AND STYLE
     --mm-color-background   : var(--bs-modal-bg);
 
     //Open/Closed item. Possible to have different colors than panel
-    --mm-item-opened-color  : null;
-    --mm-item-opened-bg     : null;
+    --mm-item-opened-color   : null;
+    --mm-item-opened-bg      : null;
+    --mm-sub-item-left-border: null;
 
     --mm-item-closed-color  : null;
     --mm-item-closed-bg     : null;
@@ -201,7 +202,8 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 
 //Only padding-left for sub-menus
 .mm-listitem_vertical > .mm-panel {
-    padding: 0 0 0 5px !important;
+    padding: 0 0 0 0 !important;
+    border-left: 1em solid var(--mm-sub-item-left-border);
 }
 
 //Overwrite standard to have different background and text-color for open items and non-opend items

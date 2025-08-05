@@ -10717,7 +10717,7 @@ return jQuery;
 
 ;
 /*!
-  * Bootstrap v5.3.5 (https://getbootstrap.com/)
+  * Bootstrap v5.3.7 (https://getbootstrap.com/)
   * Copyright 2011-2025 The Bootstrap Authors (https://github.com/twbs/bootstrap/graphs/contributors)
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
   */
@@ -11365,7 +11365,7 @@ return jQuery;
    * Constants
    */
 
-  const VERSION = '5.3.5';
+  const VERSION = '5.3.7';
 
   /**
    * Class definition
@@ -11391,6 +11391,8 @@ return jQuery;
         this[propertyName] = null;
       }
     }
+
+    // Private
     _queueCallback(callback, element, isAnimated = true) {
       executeAfterTransition(callback, element, isAnimated);
     }
@@ -12322,11 +12324,11 @@ return jQuery;
       this._element.style[dimension] = '';
       this._queueCallback(complete, this._element, true);
     }
+
+    // Private
     _isShown(element = this._element) {
       return element.classList.contains(CLASS_NAME_SHOW$7);
     }
-
-    // Private
     _configAfterMerge(config) {
       config.toggle = Boolean(config.toggle); // Coerce string values
       config.parent = getElement(config.parent);
@@ -14406,6 +14408,9 @@ return jQuery;
       this._element.setAttribute('aria-expanded', 'false');
       Manipulator.removeDataAttribute(this._menu, 'popper');
       EventHandler.trigger(this._element, EVENT_HIDDEN$5, relatedTarget);
+
+      // Explicitly return focus to the trigger element
+      this._element.focus();
     }
     _getConfig(config) {
       config = super._getConfig(config);
@@ -15518,7 +15523,6 @@ return jQuery;
    *
    * Shout-out to Angular https://github.com/angular/angular/blob/15.2.8/packages/core/src/sanitization/url_sanitizer.ts#L38
    */
-  // eslint-disable-next-line unicorn/better-regex
   const SAFE_URL_PATTERN = /^(?!javascript:)(?:[a-z0-9+.-]+:|[^&:/?#]*(?:[/?#]|$))/i;
   const allowedAttribute = (attribute, allowedAttributeList) => {
     const attributeName = attribute.nodeName.toLowerCase();
@@ -16062,6 +16066,7 @@ return jQuery;
         if (trigger === 'click') {
           EventHandler.on(this._element, this.constructor.eventName(EVENT_CLICK$1), this._config.selector, event => {
             const context = this._initializeOnDelegatedTarget(event);
+            context._activeTrigger[TRIGGER_CLICK] = !(context._isShown() && context._activeTrigger[TRIGGER_CLICK]);
             context.toggle();
           });
         } else if (trigger !== TRIGGER_MANUAL) {
@@ -16927,7 +16932,6 @@ return jQuery;
     }
 
     // Private
-
     _maybeScheduleHide() {
       if (!this._config.autohide) {
         return;
@@ -17169,12 +17173,11 @@ return jQuery;
   }
 
   /*!
-   * GSAP 3.12.7
+   * GSAP 3.13.0
    * https://gsap.com
    *
    * @license Copyright 2008-2025, GreenSock. All rights reserved.
-   * Subject to the terms at https://gsap.com/standard-license or for
-   * Club GSAP members, the agreement issued with that membership.
+   * Subject to the terms at https://gsap.com/standard-license
    * @author: Jack Doyle, jack@greensock.com
   */
   var _config = {
@@ -17342,9 +17345,12 @@ return jQuery;
       tween && tween._lazy && (tween.render(tween._lazy[0], tween._lazy[1], true)._lazy = 0);
     }
   },
+      _isRevertWorthy = function _isRevertWorthy(animation) {
+    return !!(animation._initted || animation._startAt || animation.add);
+  },
       _lazySafeRender = function _lazySafeRender(animation, time, suppressEvents, force) {
     _lazyTweens.length && !_reverting && _lazyRender();
-    animation.render(time, suppressEvents, force || _reverting && time < 0 && (animation._initted || animation._startAt));
+    animation.render(time, suppressEvents, force || !!(_reverting && time < 0 && _isRevertWorthy(animation)));
     _lazyTweens.length && !_reverting && _lazyRender();
   },
       _numericIfPossible = function _numericIfPossible(value) {
@@ -18802,7 +18808,7 @@ return jQuery;
       var tTime = this.parent && this._ts ? _parentToChildTotalTime(this.parent._time, this) : this._tTime;
       this._rts = +value || 0;
       this._ts = this._ps || value === -_tinyNum ? 0 : this._rts;
-      this.totalTime(_clamp(-Math.abs(this._delay), this._tDur, tTime), suppressEvents !== false);
+      this.totalTime(_clamp(-Math.abs(this._delay), this.totalDuration(), tTime), suppressEvents !== false);
 
       _setEnd(this);
 
@@ -18859,7 +18865,7 @@ return jQuery;
       var prevIsReverting = _reverting;
       _reverting = config;
 
-      if (this._initted || this._startAt) {
+      if (_isRevertWorthy(this)) {
         this.timeline && this.timeline.revert(config);
         this.totalTime(-0.01, config.suppressEvents);
       }
@@ -19229,7 +19235,7 @@ return jQuery;
           prevTime = 0;
         }
 
-        if (!prevTime && time && !suppressEvents && !iteration) {
+        if (!prevTime && tTime && !suppressEvents && !prevIteration) {
           _callback(this, "onStart");
 
           if (this._tTime !== tTime) {
@@ -19271,7 +19277,7 @@ return jQuery;
                 return this.render(totalTime, suppressEvents, force);
               }
 
-              child.render(child._ts > 0 ? (adjustedTime - child._start) * child._ts : (child._dirty ? child.totalDuration() : child._tDur) + (adjustedTime - child._start) * child._ts, suppressEvents, force || _reverting && (child._initted || child._startAt));
+              child.render(child._ts > 0 ? (adjustedTime - child._start) * child._ts : (child._dirty ? child.totalDuration() : child._tDur) + (adjustedTime - child._start) * child._ts, suppressEvents, force || _reverting && _isRevertWorthy(child));
 
               if (time !== this._time || !this._ts && !prevPaused) {
                 pauseTween = 0;
@@ -20350,7 +20356,7 @@ return jQuery;
           this.ratio = ratio = 1 - ratio;
         }
 
-        if (time && !prevTime && !suppressEvents && !iteration) {
+        if (!prevTime && tTime && !suppressEvents && !prevIteration) {
           _callback(this, "onStart");
 
           if (this._tTime !== tTime) {
@@ -21234,6 +21240,7 @@ return jQuery;
       _buildModifierPlugin = function _buildModifierPlugin(name, modifier) {
     return {
       name: name,
+      headless: 1,
       rawVars: 1,
       init: function init(target, vars, tween) {
         tween._onInit = function (tween) {
@@ -21290,6 +21297,7 @@ return jQuery;
     }
   }, {
     name: "endArray",
+    headless: 1,
     init: function init(target, value) {
       var i = value.length;
 
@@ -21298,7 +21306,7 @@ return jQuery;
       }
     }
   }, _buildModifierPlugin("roundProps", _roundModifier), _buildModifierPlugin("modifiers"), _buildModifierPlugin("snap", snap)) || _gsap;
-  Tween.version = Timeline.version = gsap.version = "3.12.7";
+  Tween.version = Timeline.version = gsap.version = "3.13.0";
   _coreReady = 1;
   _windowExists() && _wake();
   var Power0 = _easeMap.Power0,
@@ -21743,6 +21751,10 @@ return jQuery;
     pt.e = end;
     start += "";
     end += "";
+
+    if (end.substring(0, 6) === "var(--") {
+      end = _getComputedProperty(target, end.substring(4, end.indexOf(")")));
+    }
 
     if (end === "auto") {
       startValue = target.style[prop];
@@ -22599,6 +22611,11 @@ return jQuery;
           if (isTransformRelated) {
             this.styles.save(p);
 
+            if (type === "string" && endValue.substring(0, 6) === "var(--") {
+              endValue = _getComputedProperty(target, endValue.substring(4, endValue.indexOf(")")));
+              endNum = parseFloat(endValue);
+            }
+
             if (!transformPropTween) {
               cache = target._gsap;
               cache.renderTransform && !vars.parseTransform || _parseTransform(target, vars.parseTransform);
@@ -23077,8 +23094,7 @@ return jQuery;
     }
     return matched;
   };
-  const deepFind = function (obj, path) {
-    let keySeparator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '.';
+  const deepFind = (obj, path, keySeparator = '.') => {
     if (!obj) return undefined;
     if (obj[path]) {
       if (!Object.prototype.hasOwnProperty.call(obj, path)) return undefined;
@@ -23128,39 +23144,25 @@ return jQuery;
     }
   };
   class Logger {
-    constructor(concreteLogger) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    constructor(concreteLogger, options = {}) {
       this.init(concreteLogger, options);
     }
-    init(concreteLogger) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    init(concreteLogger, options = {}) {
       this.prefix = options.prefix || 'i18next:';
       this.logger = concreteLogger || consoleLogger;
       this.options = options;
       this.debug = options.debug;
     }
-    log() {
-      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
+    log(...args) {
       return this.forward(args, 'log', '', true);
     }
-    warn() {
-      for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-        args[_key2] = arguments[_key2];
-      }
+    warn(...args) {
       return this.forward(args, 'warn', '', true);
     }
-    error() {
-      for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-        args[_key3] = arguments[_key3];
-      }
+    error(...args) {
       return this.forward(args, 'error', '');
     }
-    deprecate() {
-      for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-        args[_key4] = arguments[_key4];
-      }
+    deprecate(...args) {
       return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
     }
     forward(args, lvl, prefix, debugOnly) {
@@ -23204,14 +23206,10 @@ return jQuery;
       }
       this.observers[event].delete(listener);
     }
-    emit(event) {
-      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        args[_key - 1] = arguments[_key];
-      }
+    emit(event, ...args) {
       if (this.observers[event]) {
         const cloned = Array.from(this.observers[event].entries());
-        cloned.forEach(_ref => {
-          let [observer, numTimesAdded] = _ref;
+        cloned.forEach(([observer, numTimesAdded]) => {
           for (let i = 0; i < numTimesAdded; i++) {
             observer(...args);
           }
@@ -23219,8 +23217,7 @@ return jQuery;
       }
       if (this.observers['*']) {
         const cloned = Array.from(this.observers['*'].entries());
-        cloned.forEach(_ref2 => {
-          let [observer, numTimesAdded] = _ref2;
+        cloned.forEach(([observer, numTimesAdded]) => {
           for (let i = 0; i < numTimesAdded; i++) {
             observer.apply(observer, [event, ...args]);
           }
@@ -23230,11 +23227,10 @@ return jQuery;
   }
 
   class ResourceStore extends EventEmitter {
-    constructor(data) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
-        ns: ['translation'],
-        defaultNS: 'translation'
-      };
+    constructor(data, options = {
+      ns: ['translation'],
+      defaultNS: 'translation'
+    }) {
       super();
       this.data = data || {};
       this.options = options;
@@ -23256,8 +23252,7 @@ return jQuery;
         this.options.ns.splice(index, 1);
       }
     }
-    getResource(lng, ns, key) {
-      let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    getResource(lng, ns, key, options = {}) {
       const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
       const ignoreJSONStructure = options.ignoreJSONStructure !== undefined ? options.ignoreJSONStructure : this.options.ignoreJSONStructure;
       let path;
@@ -23284,10 +23279,9 @@ return jQuery;
       if (result || !ignoreJSONStructure || !isString(key)) return result;
       return deepFind(this.data?.[lng]?.[ns], key, keySeparator);
     }
-    addResource(lng, ns, key, value) {
-      let options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
-        silent: false
-      };
+    addResource(lng, ns, key, value, options = {
+      silent: false
+    }) {
       const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
       let path = [lng, ns];
       if (key) path = path.concat(keySeparator ? key.split(keySeparator) : key);
@@ -23300,10 +23294,9 @@ return jQuery;
       setPath(this.data, path, value);
       if (!options.silent) this.emit('added', lng, ns, key, value);
     }
-    addResources(lng, ns, resources) {
-      let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {
-        silent: false
-      };
+    addResources(lng, ns, resources, options = {
+      silent: false
+    }) {
       for (const m in resources) {
         if (isString(resources[m]) || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
           silent: true
@@ -23311,11 +23304,10 @@ return jQuery;
       }
       if (!options.silent) this.emit('added', lng, ns, resources);
     }
-    addResourceBundle(lng, ns, resources, deep, overwrite) {
-      let options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {
-        silent: false,
-        skipCopy: false
-      };
+    addResourceBundle(lng, ns, resources, deep, overwrite, options = {
+      silent: false,
+      skipCopy: false
+    }) {
       let path = [lng, ns];
       if (lng.indexOf('.') > -1) {
         path = lng.split('.');
@@ -23380,8 +23372,7 @@ return jQuery;
   const checkedLoadedFor = {};
   const shouldHandleAsObject = res => !isString(res) && typeof res !== 'boolean' && typeof res !== 'number';
   class Translator extends EventEmitter {
-    constructor(services) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    constructor(services, options = {}) {
       super();
       copy(['resourceStore', 'languageUtils', 'pluralResolver', 'interpolator', 'backendConnector', 'i18nFormat', 'utils'], services, this);
       this.options = options;
@@ -23393,14 +23384,14 @@ return jQuery;
     changeLanguage(lng) {
       if (lng) this.language = lng;
     }
-    exists(key) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
-        interpolation: {}
+    exists(key, o = {
+      interpolation: {}
+    }) {
+      const opt = {
+        ...o
       };
-      if (key == null) {
-        return false;
-      }
-      const resolved = this.resolve(key, options);
+      if (key == null) return false;
+      const resolved = this.resolve(key, opt);
       return resolved?.res !== undefined;
     }
     extractFromKey(key, opt) {
@@ -23427,7 +23418,10 @@ return jQuery;
         namespaces: isString(namespaces) ? [namespaces] : namespaces
       };
     }
-    translate(keys, opt, lastKey) {
+    translate(keys, o, lastKey) {
+      let opt = typeof o === 'object' ? {
+        ...o
+      } : o;
       if (typeof opt !== 'object' && this.options.overloadTranslationOptionHandler) {
         opt = this.options.overloadTranslationOptionHandler(arguments);
       }
@@ -23444,11 +23438,12 @@ return jQuery;
         namespaces
       } = this.extractFromKey(keys[keys.length - 1], opt);
       const namespace = namespaces[namespaces.length - 1];
+      let nsSeparator = opt.nsSeparator !== undefined ? opt.nsSeparator : this.options.nsSeparator;
+      if (nsSeparator === undefined) nsSeparator = ':';
       const lng = opt.lng || this.language;
       const appendNamespaceToCIMode = opt.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
       if (lng?.toLowerCase() === 'cimode') {
         if (appendNamespaceToCIMode) {
-          const nsSeparator = opt.nsSeparator || this.options.nsSeparator;
           if (returnDetails) {
             return {
               res: `${namespace}${nsSeparator}${key}`,
@@ -23603,9 +23598,11 @@ return jQuery;
           }
         }
         res = this.extendTranslation(res, keys, opt, resolved, lastKey);
-        if (usedKey && res === key && this.options.appendNamespaceToMissingKey) res = `${namespace}:${key}`;
+        if (usedKey && res === key && this.options.appendNamespaceToMissingKey) {
+          res = `${namespace}${nsSeparator}${key}`;
+        }
         if ((usedKey || usedDefault) && this.options.parseMissingKeyHandler) {
-          res = this.options.parseMissingKeyHandler(this.options.appendNamespaceToMissingKey ? `${namespace}:${key}` : key, usedDefault ? res : undefined);
+          res = this.options.parseMissingKeyHandler(this.options.appendNamespaceToMissingKey ? `${namespace}${nsSeparator}${key}` : key, usedDefault ? res : undefined, opt);
         }
       }
       if (returnDetails) {
@@ -23616,7 +23613,6 @@ return jQuery;
       return res;
     }
     extendTranslation(res, key, opt, resolved, lastKey) {
-      var _this = this;
       if (this.i18nFormat?.parse) {
         res = this.i18nFormat.parse(res, {
           ...this.options.interpolation.defaultVariables,
@@ -23652,15 +23648,12 @@ return jQuery;
           if (nestBef < nestAft) opt.nest = false;
         }
         if (!opt.lng && resolved && resolved.res) opt.lng = this.language || resolved.usedLng;
-        if (opt.nest !== false) res = this.interpolator.nest(res, function () {
-          for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-          }
+        if (opt.nest !== false) res = this.interpolator.nest(res, (...args) => {
           if (lastKey?.[0] === args[0] && !opt.context) {
-            _this.logger.warn(`It seems you are nesting recursively key: ${args[0]} in key: ${key[0]}`);
+            this.logger.warn(`It seems you are nesting recursively key: ${args[0]} in key: ${key[0]}`);
             return null;
           }
-          return _this.translate(...args, key);
+          return this.translate(...args, key);
         }, opt);
         if (opt.interpolation) this.interpolator.reset();
       }
@@ -23677,8 +23670,7 @@ return jQuery;
       }
       return res;
     }
-    resolve(keys) {
-      let opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    resolve(keys, opt = {}) {
       let found;
       let usedKey;
       let exactUsedKey;
@@ -23758,13 +23750,11 @@ return jQuery;
     isValidLookup(res) {
       return res !== undefined && !(!this.options.returnNull && res === null) && !(!this.options.returnEmptyString && res === '');
     }
-    getResource(code, ns, key) {
-      let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    getResource(code, ns, key, options = {}) {
       if (this.i18nFormat?.getResource) return this.i18nFormat.getResource(code, ns, key, options);
       return this.resourceStore.getResource(code, ns, key, options);
     }
-    getUsedParamsDetails() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    getUsedParamsDetails(options = {}) {
       const optionsKeys = ['defaultValue', 'ordinal', 'context', 'replace', 'lng', 'lngs', 'fallbackLng', 'ns', 'keySeparator', 'nsSeparator', 'returnObjects', 'returnDetails', 'joinArrays', 'postProcess', 'interpolation'];
       const useOptionsReplaceForData = options.replace && !isString(options.replace);
       let data = useOptionsReplaceForData ? options.replace : options;
@@ -23882,7 +23872,7 @@ return jQuery;
       return found || [];
     }
     toResolveHierarchy(code, fallbackCode) {
-      const fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
+      const fallbackCodes = this.getFallbackCodes((fallbackCode === false ? [] : fallbackCode) || this.options.fallbackLng || [], code);
       const codes = [];
       const addCode = c => {
         if (!c) return;
@@ -23921,8 +23911,7 @@ return jQuery;
     })
   };
   class PluralResolver {
-    constructor(languageUtils) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    constructor(languageUtils, options = {}) {
       this.languageUtils = languageUtils;
       this.options = options;
       this.logger = baseLogger.create('pluralResolver');
@@ -23934,8 +23923,7 @@ return jQuery;
     clearCache() {
       this.pluralRulesCache = {};
     }
-    getRule(code) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    getRule(code, options = {}) {
       const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
       const type = options.ordinal ? 'ordinal' : 'cardinal';
       const cacheKey = JSON.stringify({
@@ -23962,25 +23950,21 @@ return jQuery;
       this.pluralRulesCache[cacheKey] = rule;
       return rule;
     }
-    needsPlural(code) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    needsPlural(code, options = {}) {
       let rule = this.getRule(code, options);
       if (!rule) rule = this.getRule('dev', options);
       return rule?.resolvedOptions().pluralCategories.length > 1;
     }
-    getPluralFormsOfKey(code, key) {
-      let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    getPluralFormsOfKey(code, key, options = {}) {
       return this.getSuffixes(code, options).map(suffix => `${key}${suffix}`);
     }
-    getSuffixes(code) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    getSuffixes(code, options = {}) {
       let rule = this.getRule(code, options);
       if (!rule) rule = this.getRule('dev', options);
       if (!rule) return [];
       return rule.resolvedOptions().pluralCategories.sort((pluralCategory1, pluralCategory2) => suffixesOrder[pluralCategory1] - suffixesOrder[pluralCategory2]).map(pluralCategory => `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${pluralCategory}`);
     }
-    getSuffix(code, count) {
-      let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    getSuffix(code, count, options = {}) {
       const rule = this.getRule(code, options);
       if (rule) {
         return `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${rule.select(count)}`;
@@ -23990,9 +23974,7 @@ return jQuery;
     }
   }
 
-  const deepFindWithDefaults = function (data, defaultData, key) {
-    let keySeparator = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '.';
-    let ignoreJSONStructure = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+  const deepFindWithDefaults = (data, defaultData, key, keySeparator = '.', ignoreJSONStructure = true) => {
     let path = getPathWithDefaults(data, defaultData, key);
     if (!path && ignoreJSONStructure && isString(key)) {
       path = deepFind(data, key, keySeparator);
@@ -24002,15 +23984,13 @@ return jQuery;
   };
   const regexSafe = val => val.replace(/\$/g, '$$$$');
   class Interpolator {
-    constructor() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    constructor(options = {}) {
       this.logger = baseLogger.create('interpolator');
       this.options = options;
       this.format = options?.interpolation?.format || (value => value);
       this.init(options);
     }
-    init() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    init(options = {}) {
       if (!options.interpolation) options.interpolation = {
         escapeValue: true
       };
@@ -24133,8 +24113,7 @@ return jQuery;
       });
       return str;
     }
-    nest(str, fc) {
-      let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+    nest(str, fc, options = {}) {
       let match;
       let value;
       let clonedOptions;
@@ -24171,12 +24150,10 @@ return jQuery;
         clonedOptions = clonedOptions.replace && !isString(clonedOptions.replace) ? clonedOptions.replace : clonedOptions;
         clonedOptions.applyPostProcessor = false;
         delete clonedOptions.defaultValue;
-        let doReduce = false;
-        if (match[0].indexOf(this.formatSeparator) !== -1 && !/{.*}/.test(match[1])) {
-          const r = match[1].split(this.formatSeparator).map(elem => elem.trim());
-          match[1] = r.shift();
-          formatters = r;
-          doReduce = true;
+        const keyEndIndex = /{.*}/.test(match[1]) ? match[1].lastIndexOf('}') + 1 : match[1].indexOf(this.formatSeparator);
+        if (keyEndIndex !== -1) {
+          formatters = match[1].slice(keyEndIndex).split(this.formatSeparator).map(elem => elem.trim()).filter(Boolean);
+          match[1] = match[1].slice(0, keyEndIndex);
         }
         value = fc(handleHasOptions.call(this, match[1].trim(), clonedOptions), clonedOptions);
         if (value && match[0] === str && !isString(value)) return value;
@@ -24185,7 +24162,7 @@ return jQuery;
           this.logger.warn(`missed to resolve ${match[1]} for nesting ${str}`);
           value = '';
         }
-        if (doReduce) {
+        if (formatters.length) {
           value = formatters.reduce((v, f) => this.format(v, f, options.lng, {
             ...options,
             interpolationkey: match[1].trim()
@@ -24231,68 +24208,68 @@ return jQuery;
   };
   const createCachedFormatter = fn => {
     const cache = {};
-    return (val, lng, options) => {
-      let optForCache = options;
-      if (options && options.interpolationkey && options.formatParams && options.formatParams[options.interpolationkey] && options[options.interpolationkey]) {
+    return (v, l, o) => {
+      let optForCache = o;
+      if (o && o.interpolationkey && o.formatParams && o.formatParams[o.interpolationkey] && o[o.interpolationkey]) {
         optForCache = {
           ...optForCache,
-          [options.interpolationkey]: undefined
+          [o.interpolationkey]: undefined
         };
       }
-      const key = lng + JSON.stringify(optForCache);
-      let formatter = cache[key];
-      if (!formatter) {
-        formatter = fn(getCleanedCode(lng), options);
-        cache[key] = formatter;
+      const key = l + JSON.stringify(optForCache);
+      let frm = cache[key];
+      if (!frm) {
+        frm = fn(getCleanedCode(l), o);
+        cache[key] = frm;
       }
-      return formatter(val);
+      return frm(v);
     };
   };
+  const createNonCachedFormatter = fn => (v, l, o) => fn(getCleanedCode(l), o)(v);
   class Formatter {
-    constructor() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    constructor(options = {}) {
       this.logger = baseLogger.create('formatter');
       this.options = options;
+      this.init(options);
+    }
+    init(services, options = {
+      interpolation: {}
+    }) {
+      this.formatSeparator = options.interpolation.formatSeparator || ',';
+      const cf = options.cacheInBuiltFormats ? createCachedFormatter : createNonCachedFormatter;
       this.formats = {
-        number: createCachedFormatter((lng, opt) => {
+        number: cf((lng, opt) => {
           const formatter = new Intl.NumberFormat(lng, {
             ...opt
           });
           return val => formatter.format(val);
         }),
-        currency: createCachedFormatter((lng, opt) => {
+        currency: cf((lng, opt) => {
           const formatter = new Intl.NumberFormat(lng, {
             ...opt,
             style: 'currency'
           });
           return val => formatter.format(val);
         }),
-        datetime: createCachedFormatter((lng, opt) => {
+        datetime: cf((lng, opt) => {
           const formatter = new Intl.DateTimeFormat(lng, {
             ...opt
           });
           return val => formatter.format(val);
         }),
-        relativetime: createCachedFormatter((lng, opt) => {
+        relativetime: cf((lng, opt) => {
           const formatter = new Intl.RelativeTimeFormat(lng, {
             ...opt
           });
           return val => formatter.format(val, opt.range || 'day');
         }),
-        list: createCachedFormatter((lng, opt) => {
+        list: cf((lng, opt) => {
           const formatter = new Intl.ListFormat(lng, {
             ...opt
           });
           return val => formatter.format(val);
         })
       };
-      this.init(options);
-    }
-    init(services) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
-        interpolation: {}
-      };
-      this.formatSeparator = options.interpolation.formatSeparator || ',';
     }
     add(name, fc) {
       this.formats[name.toLowerCase().trim()] = fc;
@@ -24300,8 +24277,7 @@ return jQuery;
     addCached(name, fc) {
       this.formats[name.toLowerCase().trim()] = createCachedFormatter(fc);
     }
-    format(value, format, lng) {
-      let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    format(value, format, lng, options = {}) {
       const formats = format.split(this.formatSeparator);
       if (formats.length > 1 && formats[0].indexOf('(') > 1 && formats[0].indexOf(')') < 0 && formats.find(f => f.indexOf(')') > -1)) {
         const lastIndex = formats.findIndex(f => f.indexOf(')') > -1);
@@ -24342,8 +24318,7 @@ return jQuery;
     }
   };
   class Connector extends EventEmitter {
-    constructor(backend, store, services) {
-      let options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    constructor(backend, store, services, options = {}) {
       super();
       this.backend = backend;
       this.store = store;
@@ -24437,10 +24412,7 @@ return jQuery;
       this.emit('loaded', loaded);
       this.queue = this.queue.filter(q => !q.done);
     }
-    read(lng, ns, fcName) {
-      let tried = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-      let wait = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : this.retryTimeout;
-      let callback = arguments.length > 5 ? arguments[5] : undefined;
+    read(lng, ns, fcName, tried = 0, wait = this.retryTimeout, callback) {
       if (!lng.length) return callback(null, {});
       if (this.readingCalls >= this.maxParallelReads) {
         this.waitingReads.push({
@@ -24484,9 +24456,7 @@ return jQuery;
       }
       return fc(lng, ns, resolver);
     }
-    prepareLoading(languages, namespaces) {
-      let options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      let callback = arguments.length > 3 ? arguments[3] : undefined;
+    prepareLoading(languages, namespaces, options = {}, callback) {
       if (!this.backend) {
         this.logger.warn('No backend was added via i18next.use. Will not load resources.');
         return callback && callback();
@@ -24510,8 +24480,7 @@ return jQuery;
         reload: true
       }, callback);
     }
-    loadOne(name) {
-      let prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+    loadOne(name, prefix = '') {
       const s = name.split('|');
       const lng = s[0];
       const ns = s[1];
@@ -24521,9 +24490,7 @@ return jQuery;
         this.loaded(name, err, data);
       });
     }
-    saveMissing(languages, namespace, key, fallbackValue, isUpdate) {
-      let options = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-      let clb = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : () => {};
+    saveMissing(languages, namespace, key, fallbackValue, isUpdate, options = {}, clb = () => {}) {
       if (this.services?.utils?.hasLoadedNamespace && !this.services?.utils?.hasLoadedNamespace(namespace)) {
         this.logger.warn(`did not save key "${key}" as the namespace "${namespace}" was not yet loaded`, 'This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!');
         return;
@@ -24618,7 +24585,8 @@ return jQuery;
       nestingOptionsSeparator: ',',
       maxReplaces: 1000,
       skipOnVariables: true
-    }
+    },
+    cacheInBuiltFormats: true
   });
   const transformOptions = options => {
     if (isString(options.ns)) options.ns = [options.ns];
@@ -24641,9 +24609,7 @@ return jQuery;
     });
   };
   class I18n extends EventEmitter {
-    constructor() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      let callback = arguments.length > 1 ? arguments[1] : undefined;
+    constructor(options = {}, callback) {
       super();
       this.options = transformOptions(options);
       this.services = {};
@@ -24662,10 +24628,7 @@ return jQuery;
         }, 0);
       }
     }
-    init() {
-      var _this = this;
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      let callback = arguments.length > 1 ? arguments[1] : undefined;
+    init(options = {}, callback) {
       this.isInitializing = true;
       if (typeof options === 'function') {
         callback = options;
@@ -24721,9 +24684,13 @@ return jQuery;
           prepend: this.options.pluralSeparator,
           simplifyPluralSuffix: this.options.simplifyPluralSuffix
         });
+        const usingLegacyFormatFunction = this.options.interpolation.format && this.options.interpolation.format !== defOpts.interpolation.format;
+        if (usingLegacyFormatFunction) {
+          this.logger.warn(`init: you are still using the legacy format function, please use the new approach: https://www.i18next.com/translation-function/formatting`);
+        }
         if (formatter && (!this.options.interpolation.format || this.options.interpolation.format === defOpts.interpolation.format)) {
           s.formatter = createClassOnDemand(formatter);
-          s.formatter.init(s, this.options);
+          if (s.formatter.init) s.formatter.init(s, this.options);
           this.options.interpolation.format = s.formatter.format.bind(s.formatter);
         }
         s.interpolator = new Interpolator(this.options);
@@ -24731,11 +24698,8 @@ return jQuery;
           hasLoadedNamespace: this.hasLoadedNamespace.bind(this)
         };
         s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
-        s.backendConnector.on('*', function (event) {
-          for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments[_key];
-          }
-          _this.emit(event, ...args);
+        s.backendConnector.on('*', (event, ...args) => {
+          this.emit(event, ...args);
         });
         if (this.modules.languageDetector) {
           s.languageDetector = createClassOnDemand(this.modules.languageDetector);
@@ -24746,11 +24710,8 @@ return jQuery;
           if (s.i18nFormat.init) s.i18nFormat.init(this);
         }
         this.translator = new Translator(this.services, this.options);
-        this.translator.on('*', function (event) {
-          for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-            args[_key2 - 1] = arguments[_key2];
-          }
-          _this.emit(event, ...args);
+        this.translator.on('*', (event, ...args) => {
+          this.emit(event, ...args);
         });
         this.modules.external.forEach(m => {
           if (m.init) m.init(this);
@@ -24767,15 +24728,13 @@ return jQuery;
       }
       const storeApi = ['getResource', 'hasResourceBundle', 'getResourceBundle', 'getDataByLanguage'];
       storeApi.forEach(fcName => {
-        this[fcName] = function () {
-          return _this.store[fcName](...arguments);
-        };
+        this[fcName] = (...args) => this.store[fcName](...args);
       });
       const storeApiChained = ['addResource', 'addResources', 'addResourceBundle', 'removeResourceBundle'];
       storeApiChained.forEach(fcName => {
-        this[fcName] = function () {
-          _this.store[fcName](...arguments);
-          return _this;
+        this[fcName] = (...args) => {
+          this.store[fcName](...args);
+          return this;
         };
       });
       const deferred = defer();
@@ -24799,8 +24758,7 @@ return jQuery;
       }
       return deferred;
     }
-    loadResources(language) {
-      let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
+    loadResources(language, callback = noop) {
       let usedCallback = callback;
       const usedLng = isString(language) ? language : this.language;
       if (typeof language === 'function') usedCallback = language;
@@ -24889,11 +24847,10 @@ return jQuery;
       }
       if (!this.resolvedLanguage && this.languages.indexOf(l) < 0 && this.store.hasLanguageSomeTranslations(l)) {
         this.resolvedLanguage = l;
-        if (this.languages.indexOf(l) < 0) this.languages.unshift(l);
+        this.languages.unshift(l);
       }
     }
     changeLanguage(lng, callback) {
-      var _this2 = this;
       this.isLanguageChangingTo = lng;
       const deferred = defer();
       this.emit('languageChanging', lng);
@@ -24915,12 +24872,8 @@ return jQuery;
         } else {
           this.isLanguageChangingTo = undefined;
         }
-        deferred.resolve(function () {
-          return _this2.t(...arguments);
-        });
-        if (callback) callback(err, function () {
-          return _this2.t(...arguments);
-        });
+        deferred.resolve((...args) => this.t(...args));
+        if (callback) callback(err, (...args) => this.t(...args));
       };
       const setLng = lngs => {
         if (!lng && !lngs && this.services.languageDetector) lngs = [];
@@ -24951,14 +24904,10 @@ return jQuery;
       return deferred;
     }
     getFixedT(lng, ns, keyPrefix) {
-      var _this3 = this;
-      const fixedT = function (key, opts) {
+      const fixedT = (key, opts, ...rest) => {
         let o;
         if (typeof opts !== 'object') {
-          for (var _len3 = arguments.length, rest = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
-            rest[_key3 - 2] = arguments[_key3];
-          }
-          o = _this3.options.overloadTranslationOptionHandler([key, opts].concat(rest));
+          o = this.options.overloadTranslationOptionHandler([key, opts].concat(rest));
         } else {
           o = {
             ...opts
@@ -24968,14 +24917,14 @@ return jQuery;
         o.lngs = o.lngs || fixedT.lngs;
         o.ns = o.ns || fixedT.ns;
         if (o.keyPrefix !== '') o.keyPrefix = o.keyPrefix || keyPrefix || fixedT.keyPrefix;
-        const keySeparator = _this3.options.keySeparator || '.';
+        const keySeparator = this.options.keySeparator || '.';
         let resultKey;
         if (o.keyPrefix && Array.isArray(key)) {
           resultKey = key.map(k => `${o.keyPrefix}${keySeparator}${k}`);
         } else {
           resultKey = o.keyPrefix ? `${o.keyPrefix}${keySeparator}${key}` : key;
         }
-        return _this3.t(resultKey, o);
+        return this.t(resultKey, o);
       };
       if (isString(lng)) {
         fixedT.lng = lng;
@@ -24986,23 +24935,16 @@ return jQuery;
       fixedT.keyPrefix = keyPrefix;
       return fixedT;
     }
-    t() {
-      for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-        args[_key4] = arguments[_key4];
-      }
+    t(...args) {
       return this.translator?.translate(...args);
     }
-    exists() {
-      for (var _len5 = arguments.length, args = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-        args[_key5] = arguments[_key5];
-      }
+    exists(...args) {
       return this.translator?.exists(...args);
     }
     setDefaultNamespace(ns) {
       this.options.defaultNS = ns;
     }
-    hasLoadedNamespace(ns) {
-      let options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    hasLoadedNamespace(ns, options = {}) {
       if (!this.isInitialized) {
         this.logger.warn('hasLoadedNamespace: i18next was not initialized', this.languages);
         return false;
@@ -25063,18 +25005,22 @@ return jQuery;
     dir(lng) {
       if (!lng) lng = this.resolvedLanguage || (this.languages?.length > 0 ? this.languages[0] : this.language);
       if (!lng) return 'rtl';
+      try {
+        const l = new Intl.Locale(lng);
+        if (l && l.getTextInfo) {
+          const ti = l.getTextInfo();
+          if (ti && ti.direction) return ti.direction;
+        }
+      } catch (e) {}
       const rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ug', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam', 'ckb'];
       const languageUtils = this.services?.languageUtils || new LanguageUtil(get());
+      if (lng.toLowerCase().indexOf('-latn') > 1) return 'ltr';
       return rtlLngs.indexOf(languageUtils.getLanguagePartFromCode(lng)) > -1 || lng.toLowerCase().indexOf('-arab') > 1 ? 'rtl' : 'ltr';
     }
-    static createInstance() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      let callback = arguments.length > 1 ? arguments[1] : undefined;
+    static createInstance(options = {}, callback) {
       return new I18n(options, callback);
     }
-    cloneInstance() {
-      let options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      let callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
+    cloneInstance(options = {}, callback = noop) {
       const forkResourceStore = options.forkResourceStore;
       if (forkResourceStore) delete options.forkResourceStore;
       const mergedOptions = {
@@ -25103,21 +25049,19 @@ return jQuery;
           prev[l] = {
             ...this.store.data[l]
           };
-          return Object.keys(prev[l]).reduce((acc, n) => {
+          prev[l] = Object.keys(prev[l]).reduce((acc, n) => {
             acc[n] = {
               ...prev[l][n]
             };
             return acc;
-          }, {});
+          }, prev[l]);
+          return prev;
         }, {});
         clone.store = new ResourceStore(clonedData, mergedOptions);
         clone.services.resourceStore = clone.store;
       }
       clone.translator = new Translator(clone.services, mergedOptions);
-      clone.translator.on('*', function (event) {
-        for (var _len6 = arguments.length, args = new Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
-          args[_key6 - 1] = arguments[_key6];
-        }
+      clone.translator.on('*', (event, ...args) => {
         clone.emit(event, ...args);
       });
       clone.init(mergedOptions, callback);
@@ -43703,6 +43647,9 @@ module.exports = Yaml;
                     result
                         .then( function(response) { return response.text(); })
                         .then( parseXML );
+
+                if (options.asJSON)
+                    result = result.then( function(xml){ return window.xmlToJSON(xml); });
                 break;
         }
 
@@ -43766,6 +43713,186 @@ module.exports = Yaml;
     };
 
 }(jQuery, this, Promise, document));
+
+
+;
+/****************************************************************************
+This work is licensed under Creative Commons GNU LGPL License.
+
+License: http://creativecommons.org/licenses/LGPL/2.1/
+Version: 0.9
+Author:  Stefan Goessner/2006
+Web:     http://goessner.net/
+****************************************************************************/
+
+(function (window /*, document, undefined*/) {
+    "use strict";
+
+function xml2json(xml, tab) {
+   var X = {
+      toObj: function(xml) {
+         var o = {}, n;
+         if (xml.nodeType==1) {   // element node ..
+            if (xml.attributes.length)   // element with attributes  ..
+               for (var i=0; i<xml.attributes.length; i++)
+                  o["@"+xml.attributes[i].nodeName] = (xml.attributes[i].nodeValue||"").toString();
+            if (xml.firstChild) { // element has child nodes ..
+               var textChild=0, cdataChild=0, hasElementChild=false;
+               for (n=xml.firstChild; n; n=n.nextSibling) {
+                  if (n.nodeType==1) hasElementChild = true;
+                  else if (n.nodeType==3 && n.nodeValue.match(/[^ \f\n\r\t\v]/)) textChild++; // non-whitespace text
+                  else if (n.nodeType==4) cdataChild++; // cdata section node
+               }
+               if (hasElementChild) {
+                  if (textChild < 2 && cdataChild < 2) { // structured element with evtl. a single text or/and cdata node ..
+                     X.removeWhite(xml);
+                     for (n=xml.firstChild; n; n=n.nextSibling) {
+                        if (n.nodeType == 3)  // text node
+                           o["#text"] = X.escape(n.nodeValue);
+                        else if (n.nodeType == 4)  // cdata node
+                           o["#cdata"] = X.escape(n.nodeValue);
+                        else if (o[n.nodeName]) {  // multiple occurence of element ..
+                           if (o[n.nodeName] instanceof Array)
+                              o[n.nodeName][o[n.nodeName].length] = X.toObj(n);
+                           else
+                              o[n.nodeName] = [o[n.nodeName], X.toObj(n)];
+                        }
+                        else  // first occurence of element..
+                           o[n.nodeName] = X.toObj(n);
+                     }
+                  }
+                  else { // mixed content
+                     if (!xml.attributes.length)
+                        o = X.escape(X.innerXml(xml));
+                     else
+                        o["#text"] = X.escape(X.innerXml(xml));
+                  }
+               }
+               else if (textChild) { // pure text
+                  if (!xml.attributes.length)
+                     o = X.escape(X.innerXml(xml));
+                  else
+                     o["#text"] = X.escape(X.innerXml(xml));
+               }
+               else if (cdataChild) { // cdata
+                  if (cdataChild > 1)
+                     o = X.escape(X.innerXml(xml));
+                  else
+                     for (n=xml.firstChild; n; n=n.nextSibling)
+                        o["#cdata"] = X.escape(n.nodeValue);
+               }
+            }
+            if (!xml.attributes.length && !xml.firstChild) o = null;
+         }
+         else if (xml.nodeType==9) { // document.node
+            o = X.toObj(xml.documentElement);
+         }
+         else
+            alert("unhandled node type: " + xml.nodeType);
+         return o;
+      },
+      toJson: function(o, name, ind) {
+         var json = name ? ("\""+name+"\"") : "";
+         if (o instanceof Array) {
+            for (var i=0,n=o.length; i<n; i++)
+               o[i] = X.toJson(o[i], "", ind+"\t");
+            json += (name?":[":"[") + (o.length > 1 ? ("\n"+ind+"\t"+o.join(",\n"+ind+"\t")+"\n"+ind) : o.join("")) + "]";
+         }
+         else if (o == null)
+            json += (name&&":") + "null";
+         else if (typeof(o) == "object") {
+            var arr = [];
+            for (var m in o)
+               arr[arr.length] = X.toJson(o[m], m, ind+"\t");
+            json += (name?":{":"{") + (arr.length > 1 ? ("\n"+ind+"\t"+arr.join(",\n"+ind+"\t")+"\n"+ind) : arr.join("")) + "}";
+         }
+         else if (typeof(o) == "string")
+            json += (name&&":") + "\"" + o.toString() + "\"";
+         else
+            json += (name&&":") + o.toString();
+         return json;
+      },
+      innerXml: function(node) {
+         var s = "";
+         if ("innerHTML" in node)
+            s = node.innerHTML;
+         else {
+            var asXml = function(n) {
+               var s = "";
+               if (n.nodeType == 1) {
+                  s += "<" + n.nodeName;
+                  for (var i=0; i<n.attributes.length;i++)
+                     s += " " + n.attributes[i].nodeName + "=\"" + (n.attributes[i].nodeValue||"").toString() + "\"";
+                  if (n.firstChild) {
+                     s += ">";
+                     for (var c=n.firstChild; c; c=c.nextSibling)
+                        s += asXml(c);
+                     s += "</"+n.nodeName+">";
+                  }
+                  else
+                     s += "/>";
+               }
+               else if (n.nodeType == 3)
+                  s += n.nodeValue;
+               else if (n.nodeType == 4)
+                  s += "<![CDATA[" + n.nodeValue + "]]>";
+               return s;
+            };
+            for (var c=node.firstChild; c; c=c.nextSibling)
+               s += asXml(c);
+         }
+         return s;
+      },
+      escape: function(txt) {
+         return txt.replace(/[\\]/g, "\\\\")
+                   .replace(/["]/g, '\\"')
+                   .replace(/[\n]/g, '\\n')
+                   .replace(/[\r]/g, '\\r');
+      },
+      removeWhite: function(e) {
+         e.normalize();
+         for (var n = e.firstChild; n; ) {
+            if (n.nodeType == 3) {  // text node
+               if (!n.nodeValue.match(/[^ \f\n\r\t\v]/)) { // pure whitespace text node
+                  var nxt = n.nextSibling;
+                  e.removeChild(n);
+                  n = nxt;
+               }
+               else
+                  n = n.nextSibling;
+            }
+            else if (n.nodeType == 1) {  // element node
+               X.removeWhite(n);
+               n = n.nextSibling;
+            }
+            else                      // any other node
+               n = n.nextSibling;
+         }
+         return e;
+      }
+   };
+   if (xml.nodeType == 9) // document node
+      xml = xml.documentElement;
+   var json = X.toJson(X.toObj(X.removeWhite(xml)), xml.nodeName, "\t");
+   return "{\n" + tab + (tab ? json.replace(/\t/g, tab) : json.replace(/\t|\n/g, "")) + "\n}";
+}
+
+
+window.xmlToJSON = function(xml) {
+    let jsonStr = xml2json(xml, ''),
+        json    = null;
+
+    try {
+        json = JSON.parse(jsonStr);
+    }
+    catch (error){
+        json = null;
+    }
+    return json;
+};
+
+}(this, document));
+
 
 
 ;
@@ -52726,7 +52853,7 @@ See https://ilyashubin.github.io/scrollbooster/
 }).call(this);
 ;
 //! moment-timezone.js
-//! version : 0.5.48
+//! version : 0.6.0
 //! Copyright (c) JS Foundation and other contributors
 //! license : MIT
 //! github.com/moment/moment-timezone
@@ -52756,7 +52883,7 @@ See https://ilyashubin.github.io/scrollbooster/
 	// 	return moment;
 	// }
 
-	var VERSION = "0.5.48",
+	var VERSION = "0.6.0",
 		zones = {},
 		links = {},
 		countries = {},
@@ -59867,6 +59994,10 @@ module.exports = g;
             if (options.center)
                 $parent.addClass('justify-content-center text-center');
 
+            if (options.middle || options.verticalAlignMiddle)
+                $parent.addClass('align-items-center');
+
+
             $parent._bsAppendContent( options.append || options.after, options.contentContext, null, options  );
 
             return this;
@@ -60115,12 +60246,13 @@ module.exports = g;
     $.fn.bsAccordionStatus = function(){
         function getStatus($elem){
             var result = [];
-            $elem.children('.card').each( function(index, elem){
+            $elem.children('.accordion-item').each( function(index, elem){
                 var $elem = $(elem);
-                result[index] = $elem.hasClass('show') ? getStatus($elem.find('> .collapse > .card-block > .accordion')) : false;
+                result[index] = $elem.hasClass('show') ? getStatus($elem.find('> .collapse > .accordion-body > .accordion')) : false;
             });
             return result.length ? result : true;
         }
+
         return getStatus(this);
     };
 
@@ -63434,6 +63566,10 @@ jquery-bootstrap-modal-promise.js
         //Remove all noty added on the modal and move down global backdrop
         $._bsNotyRemoveLayer();
 
+        //Call onHide
+        if (this.onHide)
+            this.onHide(this);
+
         //Remove the modal from DOM
         if (this.removeOnClose)
             this.get(0).remove();
@@ -63584,8 +63720,8 @@ jquery-bootstrap-modal-promise.js
                     updateElement(containers.$footer,       contentOptions.footer,       '_bsAddHtml' );
                 }
             }, this);
-            
-            
+
+
             return this;
         },
 
@@ -64163,7 +64299,7 @@ jquery-bootstrap-modal-promise.js
         if (this.bsModal.isFullScreenMode){
             this._bsModalFullScreenOff();
             this._bsModalFullScreenOn();
-        }            
+        }
 
         //Call onChange (if any)
         if (bsModal.onChange)
@@ -64404,7 +64540,7 @@ jquery-bootstrap-modal-promise.js
         adjustFullScreenOptions(options);
         adjustFullScreenOptions(options.minimized, options);
         adjustFullScreenOptions(options.extended, options);
-        
+
         //Check $.MODAL_NO_VERTICAL_MARGIN
         if ($.MODAL_NO_VERTICAL_MARGIN){
             options.relativeHeightOffset = 0;
@@ -64477,6 +64613,8 @@ jquery-bootstrap-modal-promise.js
 
         $result.onShow = options.onShow;
         $result.onClose = options.onClose;
+        $result.onHide = options.onHide;
+
 
         //Create as modal and adds methods - only allow close by esc for non-static modal (typical a non-form)
         new bootstrap.Modal($result, {
@@ -64518,7 +64656,7 @@ jquery-bootstrap-modal-promise.js
         //Save some options in bsModal
         ['noReopenFullScreen'].forEach( id => {
             $result.bsModal[id] = options[id];
-        }); 
+        });
 
         return $result;
     };
