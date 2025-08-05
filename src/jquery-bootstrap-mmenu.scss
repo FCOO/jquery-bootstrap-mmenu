@@ -200,11 +200,17 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
     }
 }
 
-//Only padding-left for sub-menus
+//Using border-left as padding for sub-menus
 .mm-listitem_vertical > .mm-panel {
     padding: 0 0 0 0 !important;
     border-left: 1em solid var(--mm-sub-item-left-border);
+    margin-left: 1px;
 }
+//First level do not need margin-left
+.mm-panels > .mm-panel > .mm-listview > .mm-listitem_vertical > .mm-panel {
+    margin-left: -1px;
+}
+
 
 //Overwrite standard to have different background and text-color for open items and non-opend items
 .mm-menu {

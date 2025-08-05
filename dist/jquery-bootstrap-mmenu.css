@@ -1607,6 +1607,11 @@ ADJUST MMENU AND JQUERY-BOOTSTRAP ELEMENTS
 .mm-listitem_vertical > .mm-panel {
   padding: 0 0 0 0 !important;
   border-left: 1em solid var(--mm-sub-item-left-border);
+  margin-left: 1px;
+}
+
+.mm-panels > .mm-panel > .mm-listview > .mm-listitem_vertical > .mm-panel {
+  margin-left: -1px;
 }
 
 .mm-menu .mm-listitem_opened > .mm-listitem__btn {
